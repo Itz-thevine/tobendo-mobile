@@ -1,5 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import axios from 'axios';
+import { __apiBaseUrl } from '../api/urls';
 
 // Function to build query params by filtering out undefined or null values
 const buildQueryParams = (params: { [key: string]: any }) => {
@@ -34,7 +35,7 @@ const fetchPartSuggestionDetails = async (params: {
       include_all: params.include_all ? 'true' : 'false', // Ensure boolean is converted to string
     });
 
-    const url = `https://c39hsxzv-7500.euw.devtunnels.ms/api/v1/techallieance/part-suggestion-deatils?${queryParams}`;
+    const url = `${__apiBaseUrl}/techallieance/part-suggestion-deatils?${queryParams}`;
 
     const { data } = await axios.get(url);
 

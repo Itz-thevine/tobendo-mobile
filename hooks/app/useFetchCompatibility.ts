@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { __apiBaseUrl } from '../api/urls';
 
 // Function to fetch compatibility data
 const fetchCompatibility = async ({ articleId, linkageType, lang }: {
@@ -6,7 +7,7 @@ const fetchCompatibility = async ({ articleId, linkageType, lang }: {
     linkageType: string,
     lang: string,
 }) => {
-  const url = new URL(`${process.env.EXPO_PUBLIC_BASE_URL}/listen/get-part-link-with-car/${articleId}`);
+  const url = new URL(`${__apiBaseUrl}/techallieance/get-part-link-with-car/${articleId}`);
   url.searchParams.append('linkage_type', linkageType);
   url.searchParams.append('lang', lang);
 

@@ -1,6 +1,7 @@
 import { articlesKeys } from '@/lib/react-query/queryKeys';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
+import { __apiUrls } from '../api/urls';
 
 export const useCreateArticle = () => {
   const queryClient = useQueryClient();
@@ -10,7 +11,7 @@ export const useCreateArticle = () => {
       console.log('the form values', values);
       // Pass values as the request body
       const response = await axios.post(
-        'https://c39hsxzv-7500.euw.devtunnels.ms/api/v1/techallieance/product', 
+        __apiUrls.createProduct, 
         values
       );
       return response.data;

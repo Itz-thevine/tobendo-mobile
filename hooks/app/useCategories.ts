@@ -1,6 +1,7 @@
 import { buildQueryParams } from '@/lib';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import axios from 'axios';
+import { __apiBaseUrl } from '../api/urls';
 
 
 const fetchCategories = async (params: {
@@ -18,7 +19,7 @@ const fetchCategories = async (params: {
       ...params,
     });
 
-    const url = `https://c39hsxzv-7500.euw.devtunnels.ms/api/v1/techallieance/get-sub-catogery?${queryParams}`;
+    const url = `${__apiBaseUrl}/techallieance/get-sub-catogery?${queryParams}`;
 
     const { data } = await axios.get(url);
 

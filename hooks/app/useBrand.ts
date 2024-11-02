@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
+import { __apiBaseUrl, __apiUrls } from '../api/urls';
 
 const fetchBrands = async () => {
-  const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/listen/brands?lang=en`);
+  const res = await fetch(__apiUrls.getVehicleMakes);
   return res.json();
 };
 
