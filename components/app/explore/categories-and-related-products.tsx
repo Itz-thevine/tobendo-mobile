@@ -2,10 +2,9 @@ import React from 'react';
 import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { combineStyles, width } from '@/lib';
 import { GlobalStyles } from '@/styles';
-import CategoryItem from '@/components/app/customer/category-item';
-import ProductCard from '@/components/app/customer/product-card';
-import { cCategories, RelatedProducts } from '@/static';
+import { RelatedProducts } from '@/static';
 import { productsItem } from '@/types';
+import SubCategoryItems from '../customer/sub-category-items';
 
 interface CategoriesAndRelatedProductsProps {
   openCategory: string | null;
@@ -14,13 +13,14 @@ interface CategoriesAndRelatedProductsProps {
 }
 
 const CategoriesAndRelatedProducts: React.FC<CategoriesAndRelatedProductsProps> = ({
-  openCategory,
-  handlePress,
+  // openCategory,
+  // handlePress,
   renderInventoryItem,
 }) => {
   return (
     <>
-      <View style={styles.categoryContainer}>
+      <SubCategoryItems />
+      {/* <View style={styles.categoryContainer}>
         {cCategories.map(({ category, subCategories, icon }) => (
           <CategoryItem
             image={icon}
@@ -31,7 +31,7 @@ const CategoriesAndRelatedProducts: React.FC<CategoriesAndRelatedProductsProps> 
             onPress={() => handlePress(category)}
           />
         ))}
-      </View>
+      </View> */}
       <View style={combineStyles(GlobalStyles, 'items_center', 'margin_t_sm')}> 
         <TouchableOpacity style={combineStyles(GlobalStyles, 'background_soft_blue', 'items_center', 'rounded_full', 'padding_x_sm', 'padding_t_xs', 'padding_b_xs' )}> 
           <Text style={combineStyles(GlobalStyles, 'text_lg', 'color_gray')}>More</Text>

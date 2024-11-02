@@ -1,12 +1,13 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import axios from 'axios';
+import { __apiUrls } from '../api/urls';
 
 // Define the fetch function to get autocomplete suggestions
 const fetchAutoCompleteSuggestions = async (searchQuery: string) => {
   if (!searchQuery) return [];
   
   try {
-    const { data } = await axios.get(`https://c39hsxzv-7500.euw.devtunnels.ms/api/v1/techallieance/auto-complete-suggestion/${searchQuery}?lang=en`);
+    const { data } = await axios.get(__apiUrls.searchSuggestions(searchQuery));
     // const { data } = await axios.get(`${process.env.EXPO_PUBLIC_BASE_URL}/techallieance/auto-complete-suggestion/${searchQuery}`);
     return data; 
   } catch (error) {

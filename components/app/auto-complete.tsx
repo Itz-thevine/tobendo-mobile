@@ -13,7 +13,7 @@ type AutocompleteProps = {
     searchOptionUp: boolean;
     onSearchChange: (query: string) => void;
     onSearchSelect: (item: string) => void;
-    handleOutsideClick: () => void;
+    handleOutsideClick?: () => void;
     isFetching: boolean,
     setSearchOptionUp: (value: boolean) => void
 };
