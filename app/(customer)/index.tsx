@@ -183,11 +183,11 @@ const CustomerScreen: React.FC = () => {
               // ]
               getEnginesResp.data?.counts?.map((engine, i) => (
                 <TouchableOpacity key={`${i}_${engine.mfrId}`} onPress={() => {
-                  console.log(engine.mfrName)
+                  console.log(engine.description)
                   setEngine(engine)
                   setIsModelModalOpen(false)
                 }}>
-                  <Text style={combineStyles(GlobalStyles, 'margin_b_xs')} >{engine.mfrName}</Text >
+                  <Text style={combineStyles(GlobalStyles, 'margin_b_xs')} >{engine.description}</Text >
                 </TouchableOpacity>
               ))
             }
@@ -202,7 +202,7 @@ const CustomerScreen: React.FC = () => {
                   setEngine(engine)
                   setIsModelModalOpen(false)
                 }}>
-                  <Text style={combineStyles(GlobalStyles, 'margin_b_xs')} >{engine.mfrName}</Text >
+                  <Text style={combineStyles(GlobalStyles, 'margin_b_xs')} >{engine.description}</Text >
                 </TouchableOpacity>
               ))
             } */}
@@ -252,7 +252,7 @@ const CustomerScreen: React.FC = () => {
             <DropdownItem
               label={
                 getEnginesResp.loading ? 'loading...' :
-                (engine && engine?.mfrId) ? engine.mfrName : `Select Engine`
+                (engine && engine?.mfrId) ? engine.description : `Select Engine`
               }   
               onPress={() => {
                 if(!getEnginesResp.loading) setIsEngineModalOpen(true);

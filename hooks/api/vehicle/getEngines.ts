@@ -9,6 +9,7 @@ type triggerProps = {
 export type vehicleEngine = {
     mfrId: number;
     mfrName: string;
+    description: string;
 };
 type dataProps = {
     total?: number;
