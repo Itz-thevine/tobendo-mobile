@@ -30,7 +30,7 @@ const RootLayout: React.FC = () => {
       onLayoutRootView();
     }
   }, [loaded, onLayoutRootView]);
-
+  
   if (!loaded) {
     return (
       <View style={styles.container}>

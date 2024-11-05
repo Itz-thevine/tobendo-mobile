@@ -1,4 +1,5 @@
 
+import { useAuth } from "@/context/auth";
 import { apiRequestHeaders, apiRequestMethod, useCallApi, useCallApiProps } from "./useCallApi";
 
 interface tsCallProps {
@@ -10,7 +11,8 @@ interface tsCallProps {
 }
 export const useApi = (props?: useCallApiProps) => {
     const api = useCallApi(props);
-
+    const authHook = useAuth();
+    
     const handle = {
         call: (call_props: tsCallProps) => {
             const contentType = (
@@ -71,6 +73,7 @@ export const useApi = (props?: useCallApiProps) => {
                     'Content-Type': contentType,
                     'Accept': contentType,
                     // 'Access-Control-Allow-Origin': '*',
+                    'Authorization': `Bearer ${authHook.JWTtoken}`,
                     ...call_props.headers
                 },
             });

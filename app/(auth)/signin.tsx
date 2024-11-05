@@ -10,6 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { parsePhoneNumberFromString, CountryCode, getCountryCallingCode } from 'libphonenumber-js';
 import { height, width } from '@/lib';
 import { countries } from '@/lib/countries'; // Ensure this path is correct
+import { useSignInApi } from '@/hooks/api/user/signIn';
 
 type FormValues = {
   emailOrPhone: string;
@@ -17,6 +18,11 @@ type FormValues = {
 };
 
 const SignInScreen: React.FC = () => {
+  const signInApi = useSignInApi();
+  const signInResp = signInApi.response;
+  const loading = signInResp.loading;
+  const isSuccess = signInResp.success;
+
   const { control, handleSubmit, setValue, formState: { errors } } = useForm<FormValues>({
     defaultValues: {
       emailOrPhone: '',
@@ -24,15 +30,17 @@ const SignInScreen: React.FC = () => {
     }
   });
 
-  const { login } = useAuth();
+  const authHook = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
-  const [isSuccess, setIsSuccess] = useState(false);
   const [countryCode, setCountryCode] = useState<CountryCode>('US'); // Default to US
   const [rememberPassword, setRememberPassword] = useState(false);
   const [loginMethod, setLoginMethod] = useState<'email' | 'phone'>('email'); // State to track the selected login method
+  const [form, SetForm] = useState<FormValues>({
+    emailOrPhone: '',
+    password: '',
+  });
 
   useEffect(() => {
     // Load remembered credentials from AsyncStorage
@@ -55,58 +63,54 @@ const SignInScreen: React.FC = () => {
   }, [setValue]);
 
   const onSubmit: SubmitHandler<FormValues> = async data => {
-    setLoading(true);
-    setModalVisible(false);
-    try {
-      let formattedInput: string;
-      if (loginMethod === 'phone') {
-        const phoneNumber = parsePhoneNumberFromString(data.emailOrPhone, countryCode);
-        formattedInput = phoneNumber?.formatInternational() || `${getCountryCallingCode(countryCode)}${data.emailOrPhone}`;
-      } else {
-        formattedInput = data.emailOrPhone;
-      }
+    let formattedInput: string;
+    if (loginMethod === 'phone') {
+      const phoneNumber = parsePhoneNumberFromString(data.emailOrPhone, countryCode);
+      formattedInput = phoneNumber?.formatInternational() || `${getCountryCallingCode(countryCode)}${data.emailOrPhone}`;
+    } else {
+      formattedInput = data.emailOrPhone;
+    }
+    SetForm(data)
+    signInApi.trigger({
+      username: formattedInput,
+      password: data.password,
+    });
+  };
 
-      const formData = new FormData();
-      formData.append('username', formattedInput);
-      formData.append('password', data.password);
-
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/profile/token`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      const result = await response.json();
-      setLoading(false);
-
-      if (response.ok) {
-        login(result);  // Update the auth context
+  useEffect(() => {
+    if(signInResp.loading === false){
+      setModalVisible(true);
+      if(signInResp.success){
+        const data = signInResp.data;
+        authHook.login(data);  // Update the auth context
         setModalMessage('Sign in successful!');
-        setIsSuccess(true);
-        router.push('(tabs)/home');
+        router.push('/(tabs)/home');
 
         if (rememberPassword) {
-          // Save credentials to AsyncStorage
-          await AsyncStorage.setItem('emailOrPhone', data.emailOrPhone);
-          await AsyncStorage.setItem('password', data.password);
-          await AsyncStorage.setItem('countryCode', countryCode);
+          async () => {
+            // Save credentials to AsyncStorage
+            await AsyncStorage.setItem('emailOrPhone', form.emailOrPhone);
+            await AsyncStorage.setItem('password', form.password);
+            await AsyncStorage.setItem('countryCode', countryCode);
+          }
         } else {
-          // Clear saved credentials
-          await AsyncStorage.removeItem('emailOrPhone');
-          await AsyncStorage.removeItem('password');
-          await AsyncStorage.removeItem('countryCode');
+          async () => {
+            // Clear saved credentials
+            await AsyncStorage.removeItem('emailOrPhone');
+            await AsyncStorage.removeItem('password');
+            await AsyncStorage.removeItem('countryCode');
+          }
         }
-      } else {
-        setModalMessage(`Sign in failed: ${result.detail || 'Unknown error'}`);
-        setIsSuccess(false);
       }
-      setModalVisible(true);
-    } catch (error) {
-      setLoading(false);
-      setModalMessage('Sign in failed: Network error');
-      setIsSuccess(false);
-      setModalVisible(true);
+      else {
+        setModalMessage(`Sign in failed: ${signInResp.error || 'Unknown error'}`);
+      }
     }
-  };
+    else {
+      if(modalMessage) setModalMessage('');
+      if(modalVisible) setModalVisible(false);
+    }
+  }, [signInResp.loading]);
 
   return (
     <View style={styles.container}>
@@ -227,7 +231,7 @@ const SignInScreen: React.FC = () => {
           {loading ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.signInButtonText}>Sign In</Text>}
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.createAccountButton} onPress={() => router.push('(auth)/signup')}>
+        <TouchableOpacity style={styles.createAccountButton} onPress={() => router.push('/(auth)/signup')}>
           <Text style={styles.createAccountButtonText}>Create a new account</Text>
         </TouchableOpacity>
 

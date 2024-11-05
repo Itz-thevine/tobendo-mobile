@@ -1,6 +1,13 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Href } from 'expo-router';
+import { otpType } from '@/hooks/api/user/sendUserOtp';
 
+type continueProps = {
+  route?: Href;
+  otpType?: otpType;
+  set?: (setProps?: Omit<continueProps, 'set'>) => void;
+};
 // Define the shape of the context value
 type AuthContextType = {
   isAuthenticated: boolean;
@@ -13,6 +20,7 @@ type AuthContextType = {
   email: string;
   JWTtoken: string;
   SetJWTtoken: (token: any) => void;
+  continue?: continueProps,
 };
 
 // Create the context with a default value
@@ -26,7 +34,7 @@ const AuthContext = createContext<AuthContextType>({
   email: '',
   SetEmail: () => {},
   JWTtoken: '',
-  SetJWTtoken: () => {}
+  SetJWTtoken: () => {},
 });
 
 type AuthProviderProps = {
@@ -37,7 +45,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<string | null >(null);
   const [otp, setOtp] = useState();
-  const [email, setEmail] = useState<string>('')
+  const [email, setEmail] = useState<string>('');
+  const [continueProps, setContinueProps] = useState<continueProps | undefined>(undefined);
 
   const [JWTtoken, setJWTtoken] = useState<string>('')
 
@@ -94,7 +103,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         email , 
         SetEmail,
         JWTtoken, 
-        SetJWTtoken
+        SetJWTtoken,
+        continue: {
+          ...continueProps,
+          set: setContinueProps,
+        }
     }}>
       {children}
     </AuthContext.Provider>

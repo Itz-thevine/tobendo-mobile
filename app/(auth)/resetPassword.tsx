@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, ActivityIndicator, Modal } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { router } from 'expo-router';
 import { useAuth } from '@/context/auth';
+import { useResetPasswordApi } from '@/hooks/api/user/resetPassword';
 
 type FormValues = {
   new_password: string;
@@ -11,7 +12,12 @@ type FormValues = {
 };
 
 const ResetPasswordScreen: React.FC = () => {
-    const {JWTtoken, email} = useAuth()
+  const resetApi = useResetPasswordApi();
+  const resetResp = resetApi.response;
+  const loading = resetResp.loading;
+  const isSuccess = resetResp.success;
+
+  const authHook = useAuth()
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormValues>({
     defaultValues: {
@@ -21,53 +27,35 @@ const ResetPasswordScreen: React.FC = () => {
   });
 
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
-  const [isSuccess, setIsSuccess] = useState(false);
 
   const onSubmit: SubmitHandler<FormValues> = async data => {
-    if (data.new_password !== data.confirm_password) {
-      setModalMessage('Passwords do not match');
-      setIsSuccess(false);
-      setModalVisible(true);
-      return;
-    }
 
-    setLoading(true);
-    setModalVisible(false);
-    try {
-      const response = await fetch('http://3.94.146.134/auth/reset-password', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'authorization' : `bearer ${JWTtoken}`
-        },
-        body: JSON.stringify({ 
-            email: email,
-            new_password: data.new_password,
-         }),
+    if (data.new_password === data.confirm_password) {
+      resetApi.trigger({
+        new_password: data.new_password,
+        email: authHook.email,
+        otp_code: authHook.otp,
       });
-
-      const result = await response.json();
-      setLoading(false);
-
-      if (response.ok) {
-        setModalMessage('Password reset successfully!');
-        setIsSuccess(true);
-        router.push('(tabs)');
-      } else {
-        setModalMessage(`Password reset failed: ${result.detail || 'Unknown error'}`);
-        setIsSuccess(false);
-      }
-      setModalVisible(true);
-    } catch (error) {
-      setLoading(false);
-      setModalMessage('Password reset failed: Network error');
-      setIsSuccess(false);
+    }
+    else {
+      setModalMessage('Passwords do not match');
       setModalVisible(true);
     }
   };
+
+  useEffect(() => {
+    if(resetResp.loading === false){
+      if(resetResp.success){
+        router.push('/(tabs)/home');
+      }
+      else {
+        setModalMessage(`Password reset failed: ${resetResp.error || 'Unknown error'}`);
+        setModalVisible(true);
+      }
+    }
+  }, [resetResp.loading]);
 
   return (
     <View style={styles.container}>

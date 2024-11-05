@@ -1,111 +1,62 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, ActivityIndicator, Modal } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome5';
-import { useForm, Controller, SubmitHandler } from 'react-hook-form';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/auth';
 import { Ionicons } from '@expo/vector-icons';
-import { width, height } from '@/lib';
+import { useVerifyUserOtpApi } from '@/hooks/api/user/verifyUserOtp';
+import OtpTimer from '@/components/OtpTimer';
+import { useSendUserOtpApi } from '@/hooks/api/user/sendUserOtp';
 
 type FormValues = {
   otp: string;
 };
 
 const OTPVerificationScreen: React.FC = () => {
+  const authHook = useAuth();
+  const otpType = authHook.continue?.otpType ?? 'email_verification';
+
+  const verifyApi = useVerifyUserOtpApi();
+  const verifyResp = verifyApi.response;
+  const verifyLoading = verifyResp.loading;
+  const isSuccess = verifyResp.success;
+  
+  const sendOtpApi = useSendUserOtpApi();
+  const sendOtpResp = sendOtpApi.response;
+
+  const resendOtpLoading = sendOtpResp.loading;
+
   const { control, handleSubmit, formState: { errors }, watch, setValue } = useForm<FormValues>({
     defaultValues: {
       otp: '',
     }
   });
 
-  const { email, SetJWTtoken } = useAuth();
-
-  console.log('email', email)
-  const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [countdown, setCountdown] = useState(60); // 60 seconds countdown
-  const [isVerifyLoading, setIsVerifyLoading] = useState(false);
-  const [verifyErrorModalMessage, setVerifyErrorModalMessage] = useState('');
+  const [defaultCountdown, setDefaultCountdown] = useState({
+    value: 60,
+    key: '',
+  });
 
   const otpRef = useRef<TextInput[]>([]);
   const otpValues = watch('otp').split('');
 
   const router = useRouter();
 
-  useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [countdown]);
-
   const onSubmit: SubmitHandler<FormValues> = async data => {
-    setLoading(true);
-    setModalVisible(false);
-
-    try {
-      const param = {
-        email: email,
-        otp_type: 'email_verification',
-        otp_code: data.otp
-      };
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/profile/verify_otp`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(param),
-      });
-
-      const result = await response.json();
-      setLoading(false);
-
-      if (response.ok) {
-        setModalMessage('OTP verified successfully!');
-        setIsSuccess(true);
-        SetJWTtoken(result.access_token.access_token);
-        router.push('(tabs)/home');
-      } else {
-        setModalMessage(`OTP verification failed: ${result.detail || 'Unknown error'}`);
-        setIsSuccess(false);
-      }
-      setModalVisible(true);
-    } catch (error) {
-      setLoading(false);
-      setModalMessage('OTP verification failed: Network error');
-      setIsSuccess(false);
-      setModalVisible(true);
-    }
+    verifyApi.trigger({
+        email: authHook.email,
+        otp_type: otpType,
+        otp_code: data.otp,
+    });
   };
 
   const handleResendOTP = async () => {
-    setIsVerifyLoading(true);
-    try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/profile/resend-otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email: email,
-          otp_type: 'email_verification',
-        }),
-      });
-
-      const otpResult = await response.json();
-      setIsVerifyLoading(false);
-
-      if (otpResult.message) {
-        setCountdown(60); // Reset the countdown timer
-      } else {
-        setVerifyErrorModalMessage(otpResult.detail || 'Unknown error');
-      }
-    } catch (error) {
-      setVerifyErrorModalMessage(`OTP resend failed: ${error || 'Unknown error'}`);
-      setIsVerifyLoading(false);
-    }
+    sendOtpApi.trigger({
+      email: authHook.email,
+      otp_type: otpType,
+    });
   };
 
   const handleOTPChange = (value: string, index: number) => {
@@ -122,6 +73,39 @@ const OTPVerificationScreen: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    if(verifyResp.loading === false){
+      setModalVisible(true);
+      if(verifyResp.success){
+        setModalMessage('OTP verified successfully!');
+        if(authHook.continue?.route && authHook.continue.set) authHook.continue.set(undefined);
+        router.push(authHook.continue?.route ? authHook.continue.route : '/(seller)/onboarding-seller');
+        // router.push('/(tabs)/home');
+      }
+      else {
+        setModalMessage(`OTP verification failed: ${verifyResp.error || 'Unknown error'}`)
+      }
+    }
+    else {
+      if(modalMessage) setModalMessage('');
+      if(modalVisible) setModalVisible(false);
+    }
+  }, [verifyResp.loading]);
+
+  useEffect(() => {
+    if(sendOtpResp.loading === false){
+      if(sendOtpResp.success){
+        setDefaultCountdown({value: 60, key: `${Date.now()}`}); // Reset the countdown timer
+        authHook.SetJWTtoken(sendOtpResp.data?.access_token);
+        authHook.SetOTP(sendOtpResp.data?.code);
+      }
+      else {
+        setModalVisible(true);
+        setModalMessage(`OTP resend failed: ${sendOtpResp.error || 'Unknown error'}`)
+      }
+    }
+  }, [sendOtpResp.loading]);
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -134,7 +118,7 @@ const OTPVerificationScreen: React.FC = () => {
       <View style={styles.content}>
         <Text style={styles.title}>Please enter code</Text>
         <Text style={styles.subtitle}>A verification code has been sent to your email</Text>
-        <Text style={styles.email}>{email}</Text>
+        <Text style={styles.email}>{authHook.email}</Text>
 
         <View style={styles.otpContainer}>
           {Array(6).fill(0).map((_, index) => (
@@ -151,20 +135,17 @@ const OTPVerificationScreen: React.FC = () => {
         </View>
         {errors.otp && <Text style={styles.errorText}>{errors.otp.message}</Text>}
 
-        <Text style={styles.countdown}>
-          {countdown > 0 ? `Don't receive code? Resend (${countdown}s)` : 'You can resend the OTP now.'}
-        </Text>
-
-        {isVerifyLoading ? <ActivityIndicator /> : (
-          <TouchableOpacity onPress={handleResendOTP} disabled={countdown > 0}>
-            <Text style={[styles.resendText, countdown > 0 && styles.resendTextDisabled]}>Resend OTP</Text>
-          </TouchableOpacity>
-        )}
+        <OtpTimer
+          key={defaultCountdown.key}
+          defaultCountdown={defaultCountdown.value}
+          otpLoading={resendOtpLoading}
+          onResendPress={handleResendOTP}
+        />
       </View>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={[styles.verifyButton, otpValues.join('').length < 6 && styles.verifyButtonDisabled]} onPress={handleSubmit(onSubmit)} disabled={otpValues.join('').length < 6 || loading}>
-          {loading ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.verifyButtonText}>Verify</Text>}
+        <TouchableOpacity style={[styles.verifyButton, otpValues.join('').length < 6 && styles.verifyButtonDisabled]} onPress={handleSubmit(onSubmit)} disabled={otpValues.join('').length < 6 || verifyLoading}>
+          {verifyLoading ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.verifyButtonText}>Verify</Text>}
         </TouchableOpacity>
       </View>
 
@@ -251,21 +232,6 @@ const styles = StyleSheet.create({
     marginRight: 8,
     color: '#333333',
     backgroundColor: '#FFFFFF',
-  },
-  countdown: {
-    fontSize: 16,
-    color: '#333',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  resendText: {
-    fontSize: 16,
-    color: '#1D6AFF',
-    textAlign: 'center',
-    textDecorationLine: 'underline',
-  },
-  resendTextDisabled: {
-    color: '#C4C4C4',
   },
   footer: {
     marginBottom: 30,

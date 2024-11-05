@@ -1,12 +1,15 @@
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, ActivityIndicator, Modal, Platform } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { Picker } from '@react-native-picker/picker';
 import { height, width } from '@/lib';
 import { countries } from '@/lib/countries';
-import { parsePhoneNumberFromString, getCountryCallingCode, CountryCode } from 'libphonenumber-js';
+import { CountryCode } from 'libphonenumber-js';
+import { useCreateUserApi } from '@/hooks/api/user/createUser';
+import { useAuth } from '@/context/auth';
+import { useSendUserOtpApi } from '@/hooks/api/user/sendUserOtp';
 
 type FormValues = {
   email: string;
@@ -16,78 +19,79 @@ type FormValues = {
 };
 
 const SignUpScreen: React.FC = () => {
+  const authHook = useAuth();
   const { control, handleSubmit, formState: { errors } } = useForm<FormValues>({
     defaultValues: {
       email: '',
       phone_number: '',
-      name: '',
+      // name: '',
       password: '',
     }
   });
 
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [email, setEmail] = useState('');
   const [countryCode, setCountryCode] = useState<CountryCode>('US'); // Default to US
+  const createApi = useCreateUserApi();
+  const createResp = createApi.response;
 
+  const sendOtpApi = useSendUserOtpApi();
+  const sendOtpResp = sendOtpApi.response;
+
+  const loading = createResp.loading;
+  const isSuccess = createResp.success;
   const onSubmit: SubmitHandler<FormValues> = async data => {
-    setLoading(true);
-    setModalVisible(false);
-    try {
-      const phoneNumber = parsePhoneNumberFromString(data.phone_number, countryCode as CountryCode);
-      const formattedPhoneNumber = phoneNumber?.formatInternational();
-
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/profile/users/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ ...data, username: formattedPhoneNumber }),
-      });
-
-      const result = await response.json();
-      setLoading(false);
-
-      if (response.ok) {
-        setModalMessage('Sign up successful!');
-        setIsSuccess(true);
-
-        // Make the second request to resend OTP
-        const otpResponse = await fetch(`${process.env.REACT_APP_API_URL}/profile/resend-otp`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            email: data.email,
-            otp_type: 'email_verification',
-          }),
-        });
-
-        const otpResult = await otpResponse.json();
-
-        if (otpResponse.ok) {
-          router.push('/(auth)/otpScreen');
-        } else {
-          setModalMessage(`OTP resend failed: ${otpResult.detail || 'Unknown error'}`);
-          setIsSuccess(false);
-          setModalVisible(true);
-        }
-      } else {
-        setModalMessage(`Sign up failed: ${result.detail || 'Unknown error'}`);
-        setIsSuccess(false);
-        setModalVisible(true);
-      }
-    } catch (error) {
-      setLoading(false);
-      setModalMessage('Sign up failed: Network error');
-      setIsSuccess(false);
-      setModalVisible(true);
-    }
+    createApi.trigger({
+      email: data.email,
+      phone_number: data.phone_number,
+      password: data.password,
+    });
   };
 
+  useEffect(() => {
+    if(createResp.loading === false){
+      setModalVisible(true);
+      if(createResp.success){
+        setModalMessage('Sign up successful!');
+
+        const email = createResp.data?.email;
+        if(email){
+          setEmail(email);
+
+          //send OTP;
+          sendOtpApi.trigger({
+            email,
+            otp_type: 'email_verification',
+          });
+        }
+      }
+      else {
+        setModalMessage(createResp.error || 'Unknown error')
+      }
+    }
+    else {
+      if(modalMessage) setModalMessage('');
+      if(modalVisible) setModalVisible(false);
+    }
+  }, [createResp.loading]);
+
+  useEffect(() => {
+    if(sendOtpResp.loading === false){
+      if(sendOtpResp.success){
+        authHook.SetEmail(email);
+        authHook.SetJWTtoken(sendOtpResp.data?.access_token);
+        authHook.SetOTP(sendOtpResp.data?.code);
+        router.push('/(auth)/otpScreen');
+      }
+      else {
+        setModalVisible(true);
+        setModalMessage(`OTP resend failed: ${sendOtpResp.error || 'Unknown error'}`)
+      }
+    }
+  }, [sendOtpResp.loading]);
+  
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -150,7 +154,7 @@ const SignUpScreen: React.FC = () => {
       </View>
       {errors.phone_number && <Text style={styles.errorText}>{errors.phone_number.message}</Text>}
 
-      <View style={styles.inputContainer}>
+      {/* <View style={styles.inputContainer}>
         <Icon name="user" size={20} color="#C4C4C4" style={styles.icon} />
         <Controller
           control={control}
@@ -168,7 +172,7 @@ const SignUpScreen: React.FC = () => {
           )}
         />
       </View>
-      {errors.name && <Text style={styles.errorText}>{errors.name.message}</Text>}
+      {errors.name && <Text style={styles.errorText}>{errors.name.message}</Text>} */}
 
       <View style={styles.inputContainer}>
         <Icon name="lock" size={20} color="#C4C4C4" style={styles.icon} />

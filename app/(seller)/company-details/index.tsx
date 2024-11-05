@@ -1,33 +1,71 @@
-import React, { useState } from 'react';
-import { SafeAreaView, View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView, Modal, Pressable } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import React, { useEffect, useState } from 'react';
+import { SafeAreaView, View, Text, TextInput, TouchableOpacity, ScrollView, Pressable, ActivityIndicator, Modal, StyleSheet } from 'react-native';
 import { combineStyles } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import Icon from 'react-native-vector-icons/Ionicons';
 import CustomModal from '@/components/shared/custom-modal';
 import { router } from 'expo-router';
 import AppHeader from '@/components/shared/app-header';
+import { useAddCompanyDetailsApi } from '@/hooks/api/user/addCompanyDetails';
+import { Ionicons } from '@expo/vector-icons';
 
 const CompanyDetailsScreen = () => {
-  const [selectedLicenseType, setSelectedLicenseType] = useState('License Type');
-  const [isLicenseModalOpen, setIsLicenseModalOpen] = useState(false)
+  const companyApi = useAddCompanyDetailsApi();
+  const companyResp = companyApi.response;
 
+  const [form, setForm] = useState({
+    name: '',
+    number: '',
+    licenseType: 'License Type',
+  });
+  const [modal, setModal] = useState({
+    visible: false,
+    message: '',
+  });
+  const setFormValue = (formKey: keyof typeof form, formValue: string) => {
+    setForm({
+      ...form,
+      [formKey]: formValue,
+    });
+  }
+  const [isLicenseModalOpen, setIsLicenseModalOpen] = useState(false)
   const lincenses = ['license 1', 'license 2', 'license 3', 'license 4']
 
+  const handleSubmit = () => {
+    console.log(form)
+    companyApi.trigger({
+      company_name: form.name,
+      registered_number: form.number,
+      license_type: form.licenseType,
+    });
+  }
+  useEffect(() => {
+    if(companyResp.loading === false){
+      if(companyResp.success){
+        router.push('/bank-details')
+      }
+      else {
+        setModal({
+          visible: true,
+          message: `Error: ${companyResp.error || 'Unknown error'}`,
+        });
+      }
+    }
+  }, [companyResp.loading]);
+  
   return (
     <SafeAreaView style={combineStyles(GlobalStyles, 'safeArea')}>
       <CustomModal
         isVisible={isLicenseModalOpen}
         onClose={() => setIsLicenseModalOpen(false)}
-        height={300}
       >
         <View style={combineStyles(GlobalStyles, 'padding_sm')}>
           <Text style={combineStyles(GlobalStyles, 'text_2xl', 'font_medium')}>License Types</Text>
           <View style={combineStyles(GlobalStyles, 'margin_t_sm')}>
             {
-              lincenses.map((lincense) => (
-                <Pressable onPress={() => {setSelectedLicenseType(lincense); setIsLicenseModalOpen(false)}}>
-                  <Text style={combineStyles(GlobalStyles, 'text_lg', 'padding_y_xs')}>{lincense}</Text>
+              lincenses.map((license, i) => (
+                <Pressable key={i} onPress={() => {setFormValue('licenseType', license); setIsLicenseModalOpen(false)}}>
+                  <Text style={combineStyles(GlobalStyles, 'text_lg', 'padding_y_xs')}>{license}</Text>
                 </Pressable>
               ))
             }
@@ -43,28 +81,83 @@ const CompanyDetailsScreen = () => {
 
           <View style={combineStyles(GlobalStyles, 'margin_b_sm', 'margin_t_sm')}>
             <Text style={combineStyles(GlobalStyles, 'text_sm', 'color_gray')}>Company Name</Text>
-            <TextInput style={combineStyles(GlobalStyles, 'text_lg', 'margin_t_xs', 'border_b_xs', 'border_gray', 'padding_b_xs')} defaultValue="Alameya Auto Parts" />
+            <TextInput onChangeText={(text) => setFormValue('name', text)} style={combineStyles(GlobalStyles, 'text_lg', 'margin_t_xs', 'border_b_xs', 'border_gray', 'padding_b_xs')} placeholder="Alameya Auto Parts" />
           </View>
 
           <View style={combineStyles(GlobalStyles, 'margin_b_sm', 'margin_t_sm')}>
             <Text style={combineStyles(GlobalStyles, 'text_sm', 'color_gray')}>Registration Number</Text>
-            <TextInput style={combineStyles(GlobalStyles, 'text_lg', 'margin_t_xs', 'border_b_xs', 'border_gray', 'padding_b_xs')} defaultValue="5859584-205-HM" />
+            <TextInput onChangeText={(text) => setFormValue('number', text)} style={combineStyles(GlobalStyles, 'text_lg', 'margin_t_xs', 'border_b_xs', 'border_gray', 'padding_b_xs')} placeholder="5859584-205-HM" />
           </View>
 
           <TouchableOpacity style={[combineStyles(GlobalStyles, 'background_white', 'rounded_full', 'flex_row', 'jusify_between', 'padding_sm', 'margin_t_sm')]} onPress={() => setIsLicenseModalOpen(true)}>
-            <Text style={combineStyles(GlobalStyles, 'text_lg')}>{selectedLicenseType}</Text>
+            <Text style={combineStyles(GlobalStyles, 'text_lg')}>{form.licenseType}</Text>
             <Icon name={ 'chevron-down'} size={20} style={combineStyles(GlobalStyles, 'color_gray')}/>
           </TouchableOpacity>
         </View>
       </ScrollView>
 
       <View style={combineStyles(GlobalStyles, 'absolute', 'background_white', 'bottom_0', 'right_0', 'left_0', 'padding_y_xs', 'padding_x_sm' )}>
-        <TouchableOpacity style={combineStyles(GlobalStyles, 'background_royal_blue', 'items_center', 'rounded_full', 'padding_y_sm')} onPress={() =>router.push('/bank-details')}>
-          <Text style={combineStyles(GlobalStyles, 'text_lg', 'color_white', 'font_medium')}>Next</Text>
+        <TouchableOpacity style={combineStyles(GlobalStyles, 'background_royal_blue', 'items_center', 'rounded_full', 'padding_y_sm')} onPress={handleSubmit}>
+                  {
+                    companyResp.loading ?
+                    <ActivityIndicator color="#FFFFFF" /> :
+                    <Text style={combineStyles(GlobalStyles, 'text_lg', 'color_white', 'font_medium')}>Next</Text>
+                  }
         </TouchableOpacity>
       </View>
+      
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modal.visible}
+        onRequestClose={() => setModal({...modal, visible: false})}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Ionicons
+              name={companyResp.success ? "checkmark-circle" : "close-circle"}
+              size={50}
+              color={companyResp.success ? "green" : "red"}
+              style={styles.modalIcon}
+            />
+            <Text>{modal.message}</Text>
+            <TouchableOpacity style={styles.closeButton} onPress={() => setModal({...modal, visible: false})}>
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
+const styles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: 300,
+    padding: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalIcon: {
+    marginBottom: 10,
+  },
+  closeButton: {
+    marginTop: 20,
+    backgroundColor: '#1D6AFF',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  closeButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+  },
+});
 
 export default CompanyDetailsScreen;

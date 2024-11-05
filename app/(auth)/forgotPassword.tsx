@@ -1,17 +1,22 @@
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, ActivityIndicator, Modal } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { useAuth } from '@/context/auth';
+import { useSendUserOtpApi } from '@/hooks/api/user/sendUserOtp';
 
 type FormValues = {
   email: string;
 };
 
 const ForgotPasswordScreen = () => {
+  const sendOtpApi = useSendUserOtpApi();
+  const sendOtpResp = sendOtpApi.response;
+  const loading = sendOtpResp.loading;
+
   const [usePhone, setUsePhone] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
   const { control, handleSubmit, formState: { errors } } = useForm<FormValues>({
@@ -19,45 +24,38 @@ const ForgotPasswordScreen = () => {
       email: '',
     }
   });
-
-  const {SetEmail} = useAuth()
+  const authHook = useAuth()
 
   const toggleInputMethod = () => {
     setUsePhone(!usePhone);
   };
 
   const onSubmit: SubmitHandler<FormValues> = async data => {
-    setLoading(true);
-    try {
+    setEmail(data.email);
+    sendOtpApi.trigger({
+      email: data.email,
+      otp_type: 'forgot_password',
+    });
+  };
 
-
-      const response = await fetch('http://3.94.146.134/auth/resend-otp', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email: data.email,
-          otp_type: 'forgot_password',
-          otp_code: '' // Assuming otp_code is to be generated on the server side
-        })
-      });
-
-      if (response.ok) {
-        SetEmail(data.email)
+  useEffect(() => {
+    if(sendOtpResp.loading === false){
+      if(sendOtpResp.success){
+        authHook.SetJWTtoken(sendOtpResp.data?.access_token);
+        authHook.SetOTP(sendOtpResp.data?.code);
+        authHook.SetEmail(email)
+        if(authHook.continue?.set) authHook.continue.set({
+          route: '/(auth)/resetPassword',
+          otpType: 'forgot_password',
+        });
         router.push('/(auth)/otpScreen');
-      } else {
-        const result = await response.json();
-        setModalMessage(`Error: ${result.message || 'Unknown error'}`);
+      }
+      else {
+        setModalMessage(`Error: ${sendOtpResp.error || 'Unknown error'}`);
         setModalVisible(true);
       }
-    } catch (error) {
-      setModalMessage('Network error. Please try again later.');
-      setModalVisible(true);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [sendOtpResp.loading]);
 
   return (
     <View style={styles.container}>

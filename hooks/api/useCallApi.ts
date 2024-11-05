@@ -2,13 +2,19 @@
 import { useState } from "react";
 
 export type apiRequestHeaders = HeadersInit | undefined;
-export type apiRequestMethod = 'get' | 'post' | 'delete';
+export type apiRequestMethod = 'get' | 'post' | 'delete' | 'put';
 type CallProps = {
     method?: apiRequestMethod;
     form: FormData | string;
     headers?: apiRequestHeaders;
     url: string;
 }
+
+type errorDetailItem = {
+    msg?: string;
+};
+type errorDetail = errorDetailItem[] | string;
+
 type ResponseProps = {
     error?: string;
     success?: boolean;
@@ -44,16 +50,21 @@ export const useCallApi = (props?: useCallApiProps) => {
                 fetchReqs.body = call_props.form;
             }
             const fetchResp = await fetch(url, fetchReqs);
+            const fetchData = await fetchResp.json();
 
             if(fetchResp.ok){
-                const fetchData = await fetchResp.json();
                 newResponse.success = true;
                 newResponse.data = fetchData;
             }
             else {
+                const detail = fetchData?.detail as errorDetail | undefined;
+                const errorMsg = (
+                    typeof detail === 'string' ? detail :
+                    Array.isArray(detail) ? detail[0].msg : undefined
+                );
                 newResponse.success = false;
                 newResponse.data = undefined;
-                newResponse.error = 'something went wrong';
+                newResponse.error = errorMsg ?? 'something went wrong';
             }
             
             newResponse.loading = false;

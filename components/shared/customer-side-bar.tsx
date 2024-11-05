@@ -8,12 +8,14 @@ import { GlobalStyles } from '@/styles';
 import { router } from 'expo-router';
 import AccordionMenuItem from './accordion-menu-item';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from '@/context/auth';
 
 const screenWidth = Dimensions.get('window').width;
 
 const Sidebar: React.FC<{ isVisible: boolean, onClose: () => void }> = ({ isVisible, onClose }) => {
   const sidebarAnim = useRef(new Animated.Value(-screenWidth)).current;
-
+  const authHook = useAuth();
+  
   useEffect(() => {
     Animated.timing(sidebarAnim, {
       toValue: isVisible ? 0 : -screenWidth,
@@ -119,8 +121,10 @@ const Sidebar: React.FC<{ isVisible: boolean, onClose: () => void }> = ({ isVisi
         <MenuContainer>
           <MenuItem title="Switch to Seller" onPress={() => {
             AsyncStorage.setItem('currentMode', 'seller');
-            // router.push('/(seller)/onboarding-seller')
-            router.push('/(seller)/seller')
+            router.push(
+              authHook.user ? '/(seller)/seller' : '/(auth)/signin'
+            )
+            // router.push('/(seller)/seller')
           }} />
           <MenuItem title="Help & Support" onPress={() => router.push('/')} />
         </MenuContainer>
