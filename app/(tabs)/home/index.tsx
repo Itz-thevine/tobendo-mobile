@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, TextInput, TouchableOpacity, Dimensions, FlatList, Modal, Alert, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, TextInput, TouchableOpacity, Dimensions, FlatList, Modal, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Swiper from 'react-native-swiper';
 import { useRouter } from 'expo-router';
@@ -7,13 +7,12 @@ import SelectModelModal from '@/components/app/home/selectModelModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NotificationPopover from '@/components/app/NotificationPopover';
 import { QueryClientProvider, useQuery } from '@tanstack/react-query';
-import { NotifyOnChangeProps, QueryClient } from '@tanstack/query-core'
+import { QueryClient } from '@tanstack/query-core';
 import { useFocusNotifyOnChangeProps } from '@/hooks/useFocusNotifyOnChangeProps';
 import { useAuth } from '@/context/auth';
 import { getGreeting } from '@/lib';
 import { ActivityIndicator } from 'react-native-paper';
 import HotDealsCard from '@/components/app/hotDealsCard';
-import HorizontalSlide from '@/components/app/home/horizontalbrandslide';
 import { Brand } from '@/constants';
 import CategoriesDisplay from '@/components/app/home/categoriesHorizontalScroll';
 import { useBrands } from '@/hooks/app/useBrand';

@@ -65,7 +65,7 @@ const CustomerScreen: React.FC = () => {
       });
     }
   }, [make?.id, model?.id]);
-
+  
   return (
     <SafeAreaView style={combineStyles(GlobalStyles, 'safeArea')}>
       {/* modals */}

@@ -37,7 +37,7 @@ export const useCallApi = (props?: useCallApiProps) => {
             loading: true,
             error: undefined,
         });
-
+        
         try {
             const newResponse = {...response};
             let url = call_props.url;

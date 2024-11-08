@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated, Image, ImageSourcePropType } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
-import { combineStyles, width } from '@/lib';
+import { combineStyles } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import { useGetSubCategoriesApi } from '@/hooks/api/vehicle/getSubCategories';
 
@@ -21,7 +21,7 @@ const SubCategoryItem: React.FC<SubCategoryItemProps> = (props: SubCategoryItemP
   const subCategories = (getResp.data?.data?.array || [])?.slice(0, 10);
 
   useEffect(() => {
-    if(props.hasChilds && props.parentNodeId){
+    if(props?.hasChilds && props.parentNodeId){
       getSubCateogriesApi.trigger({
         parent_node_id: props.parentNodeId,
       });

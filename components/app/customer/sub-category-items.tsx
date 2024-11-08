@@ -31,7 +31,7 @@ const SubCategoryItems = () => {
                   // image={icon}
                   category={item.assemblyGroupName}
                   parentNodeId={item.assemblyGroupNodeId}
-                  hasChilds={item.hasChilds}
+                  hasChilds={item?.hasChilds}
                   isOpen={openCategoryName === item.assemblyGroupName}
                   onPress={() => {
                     handlePress(item.assemblyGroupName);

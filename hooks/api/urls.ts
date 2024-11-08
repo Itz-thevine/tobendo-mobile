@@ -11,10 +11,10 @@ export const __apiUrls = {
     
     addCompanyDetails: `${__apiBaseUrl}/seller/`,
 
-    getVehicleMakes: `${__apiBaseUrl}/techallieance/brands/`,
-    getVehicleModels: (brandId: number | string) => `${__apiBaseUrl}/techallieance/models/${brandId}/`,
-    getVehicleEngines: (brandId: number | string, modelId: number | string) => `${__apiBaseUrl}/techallieance/engines/${brandId}/${modelId}`,
-    searchSuggestions: (query?: string) => `${__apiBaseUrl}/techallieance/auto-complete-suggestion/${query ?? ''}/`,
-    getSubCategories: `${__apiBaseUrl}/techallieance/get-sub-catogery/`,
-    createProduct: `${__apiBaseUrl}/techallieance/product/`,
+    getVehicleMakes: `${__apiBaseUrl}/techallience/brands/`,
+    getVehicleModels: (brandId: number | string) => `${__apiBaseUrl}/techallience/models/${brandId}/`,
+    getVehicleEngines: (brandId: number | string, modelId: number | string) => `${__apiBaseUrl}/techallience/engines/${brandId}/${modelId}`,
+    searchSuggestions: (query?: string) => `${__apiBaseUrl}/techallience/auto-complete-suggestion/${query ?? ''}/`,
+    getSubCategories: `${__apiBaseUrl}/techallience/get-sub-catogery/`,
+    createProduct: `${__apiBaseUrl}/techallience/product/`,
 };
