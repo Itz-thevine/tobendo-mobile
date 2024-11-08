@@ -1,9 +1,7 @@
 // CustomTabs.tsx
 
-import { combineStyles, height, width } from '@/lib';
-import { GlobalStyles } from '@/styles';
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Inventory from './seller/inventory-V1';
 import Earnings from './seller/earnings-V1';
 import OrderTabs from './seller/order-V1';

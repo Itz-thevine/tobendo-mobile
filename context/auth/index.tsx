@@ -53,9 +53,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const loadUserData = useCallback(async () => {
     try {
       const storedUser = await AsyncStorage.getItem('user');
+      const email = await AsyncStorage.getItem('email');
       if (storedUser) {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser)
+        setUser(parsedUser);
         setIsAuthenticated(true);
+        setJWTtoken(parsedUser?.access_token);
+      }
+      if(email){
+        setEmail(email);
       }
     } catch (error) {
       console.error('Failed to load user data', error);
@@ -70,13 +76,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsAuthenticated(true);
     setUser(user);
     await AsyncStorage.setItem('user', JSON.stringify(user));
+    await AsyncStorage.setItem('email', email);
     loadUserData();
   }, [loadUserData]);
 
   const logout = useCallback(async () => {
     setIsAuthenticated(false);
     await AsyncStorage.removeItem('user');
+    await AsyncStorage.removeItem('email');
     setUser(null);
+    setEmail('');
     loadUserData();
   }, [loadUserData]);
 

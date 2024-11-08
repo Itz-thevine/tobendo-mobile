@@ -2,19 +2,15 @@ import { combineStyles, height, width } from '@/lib';
 import { inventoryData } from '@/static';
 import { GlobalStyles } from '@/styles';
 import { InventoryItem } from '@/types';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
 import TopSellerItemCard from './top-seller-item-card-V1';
 import InventoryItemCard from './inventory-item-card';
 import CustomModal from '@/components/shared/custom-modal';
 import ProductSuggestion from './product-suggestion-list';
-import { useGetUserProductsApi } from '@/hooks/api/user/getUserProducts';
 
 
 const Inventory: React.FC = () => {
-  const getProductsApi = useGetUserProductsApi();
-  const getProductsResp = getProductsApi.response;
-
   const [isProductListModal, setIsProductListModal] = useState(false)
   
   const renderTopSellerItem = ({ item, index }: { item: InventoryItem, index: number }) => (
@@ -24,14 +20,6 @@ const Inventory: React.FC = () => {
   const renderInventoryItem = ({ item }: { item: InventoryItem }) => (
     <InventoryItemCard item={item}/>
   );
-
-  // console.log(getProductsResp)
-  useEffect(() => {
-    getProductsApi.trigger({
-      page: 1,
-      page_size: 10,
-    });
-  }, []);
 
   return (
     <SafeAreaView style={[combineStyles(GlobalStyles, 'relative', 'background_softer_blue'), { height: height}]}>

@@ -73,7 +73,7 @@ export const useApi = (props?: useCallApiProps) => {
                     'Content-Type': contentType,
                     'Accept': contentType,
                     // 'Access-Control-Allow-Origin': '*',
-                    'Authorization': `Bearer ${authHook.JWTtoken}`,
+                    'Authorization': `Bearer ${authHook.JWTtoken || authHook.user?.access_token}`,
                     ...call_props.headers
                 },
             });

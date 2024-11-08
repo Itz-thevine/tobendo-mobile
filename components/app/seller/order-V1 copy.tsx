@@ -1,65 +1,55 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, ScrollView, SafeAreaView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, ScrollView, Image, SafeAreaView } from 'react-native';
 import { combineStyles, height } from '@/lib';
 import { GlobalStyles } from '@/styles';
-import { useGetCustomerOrdersApi } from '@/hooks/api/user/getCustomerOrders';
 
 const OrderTabs: React.FC = () => {
-  const getOrdersApi = useGetCustomerOrdersApi();
-  const getOrdersResp = getOrdersApi.response;
-
   const [activeTab, setActiveTab] = useState<'in-progress' | 'completed' | 'canceled'>('in-progress');
 
-  const orders = getOrdersResp.data ?? [];
-  const inProgressOrders = orders;
-  const completedOrders = orders;
-  const canceledOrders = orders;
+  const inProgressOrders = [
+    {
+      id: '1',
+      products: [
+        { id: '1', name: 'QUARTZ INEO FIRST 0W-30', image: require('@/assets/images/seller/image 5.png') },
+        { id: '2', name: 'QUARTZ INEO FIRST 0W-30', image: require('@/assets/images/seller/image 5.png') },
+      ],
+      address: '1234 Main St, Springfield, USA',
+      status: 'Shipped',
+      arrivalDate: 'Wed, Jun 10',
+    },
+  ];
 
+  const completedOrders = [
+    {
+      id: '3',
+      products: [
+        { id: '4', name: 'MOBIL 1 SYNTHETIC 10W-30', image: require('@/assets/images/seller/image 5.png') },
+      ],
+      address: '9102 Pine Rd, Springfield, USA',
+      status: 'Delivered',
+      arrivalDate: 'Mon, Jun 8',
+    },
+  ];
 
-  // const inProgressOrders = [
-  //   {
-  //     id: '1',
-  //     products: [
-  //       { id: '1', name: 'QUARTZ INEO FIRST 0W-30', image: require('@/assets/images/seller/image 5.png') },
-  //       { id: '2', name: 'QUARTZ INEO FIRST 0W-30', image: require('@/assets/images/seller/image 5.png') },
-  //     ],
-  //     address: '1234 Main St, Springfield, USA',
-  //     status: 'Shipped',
-  //     arrivalDate: 'Wed, Jun 10',
-  //   },
-  // ];
+  const canceledOrders = [
+    {
+      id: '4',
+      products: [
+        { id: '5', name: 'PENNZOIL 5W-30', image: require('@/assets/images/seller/image 5.png') },
+      ],
+      address: '3456 Elm St, Springfield, USA',
+      status: 'Canceled',
+      arrivalDate: 'Canceled',
+    },
+  ];
 
-  // const completedOrders = [
-  //   {
-  //     id: '3',
-  //     products: [
-  //       { id: '4', name: 'MOBIL 1 SYNTHETIC 10W-30', image: require('@/assets/images/seller/image 5.png') },
-  //     ],
-  //     address: '9102 Pine Rd, Springfield, USA',
-  //     status: 'Delivered',
-  //     arrivalDate: 'Mon, Jun 8',
-  //   },
-  // ];
-
-  // const canceledOrders = [
-  //   {
-  //     id: '4',
-  //     products: [
-  //       { id: '5', name: 'PENNZOIL 5W-30', image: require('@/assets/images/seller/image 5.png') },
-  //     ],
-  //     address: '3456 Elm St, Springfield, USA',
-  //     status: 'Canceled',
-  //     arrivalDate: 'Canceled',
-  //   },
-  // ];
-
-  const renderOrderItem = ({ item, index }: { item: typeof orders[0], index: number }) => (
-    <View key={`${index}_${item?.id}`} style={combineStyles(GlobalStyles, 'background_white')}>
-      {/* <View style={combineStyles(GlobalStyles, 'border_b_xs', 'border_gray', 'padding_b_sm')}>
-        {item.items?.map((product) => (
-          <View key={product.product_id} style={styles.product}>
+  const renderOrderItem = ({ item }: { item: any }) => (
+    <View style={combineStyles(GlobalStyles, 'background_white')}>
+      <View style={combineStyles(GlobalStyles, 'border_b_xs', 'border_gray', 'padding_b_sm')}>
+        {item.products.map((product: any) => (
+          <View key={product.id} style={styles.product}>
             <Image
-              source={product}
+              source={product.image}
               style={[GlobalStyles.rounded_xs, { width: 100, height: 100 }]}
               resizeMode='contain'
             />
@@ -71,15 +61,15 @@ const OrderTabs: React.FC = () => {
             </View>
           </View>
         ))}
-      </View> */}
+      </View>
 
       <View style={combineStyles(GlobalStyles, 'margin_t_sm')}>
-        <Text style={styles.statusText}>{item.shipping_address}</Text>
+        <Text style={styles.statusText}>{item.address}</Text>
         <View style={combineStyles(GlobalStyles, 'margin_t_sm', 'flex_row', 'jusify_between')}>
           <View style={styles.statusBadge}>
             <Text style={styles.statusText}>{item.status}</Text>
           </View>
-          <Text style={styles.arrivalDate}>Arrives: {item.delivery_option?.estimated_date}</Text>
+          <Text style={styles.arrivalDate}>Arrives: {item.arrivalDate}</Text>
         </View>
       </View>
     </View>
@@ -97,10 +87,6 @@ const OrderTabs: React.FC = () => {
         return [];
     }
   };
-  
-  useEffect(() => {
-    getOrdersApi.trigger();
-  }, []);
 
   return (
     <SafeAreaView style={[combineStyles(GlobalStyles,  'background_softer_blue'), {height: height}]}>
@@ -126,16 +112,12 @@ const OrderTabs: React.FC = () => {
             </TouchableOpacity>
         </View>
 
-        {
-            orders.length ?
-            <FlatList
-                data={getOrders()}
-                renderItem={renderOrderItem}
-                keyExtractor={(item) => item.id ?? ''}
-                contentContainerStyle={combineStyles(GlobalStyles, 'background_white', 'padding_sm', 'gap_md', 'rounded_xs', 'margin_t_sm')}
-            /> :
-            <Text style={{textAlign: 'center', marginTop: 20}}>no orders</Text>
-        }
+        <FlatList
+            data={getOrders()}
+            renderItem={renderOrderItem}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={combineStyles(GlobalStyles, 'background_white', 'padding_sm', 'gap_md', 'rounded_xs', 'margin_t_sm')}
+        />
         </ScrollView>
     </SafeAreaView>
   );

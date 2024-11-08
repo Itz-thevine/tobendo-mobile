@@ -85,7 +85,7 @@ const SignInScreen: React.FC = () => {
         if(loginMethod === 'email') authHook.SetEmail(form.emailOrPhone);
         authHook.login(data);  // Update the auth context
         setModalMessage('Sign in successful!');
-        router.push('/(tabs)/home');
+        router.push('/(seller)/seller');
 
         if (rememberPassword) {
           async () => {

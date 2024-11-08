@@ -10,6 +10,9 @@ export const __apiUrls = {
     signIn: `${__apiBaseUrl}/auth/token/`,
     
     addCompanyDetails: `${__apiBaseUrl}/seller/`,
+    
+    getCustomerOrders: `${__apiBaseUrl}/order/`,
+    getUserProducts: `${__apiBaseUrl}/product/me/`,
 
     getVehicleMakes: `${__apiBaseUrl}/techallience/brands/`,
     getVehicleModels: (brandId: number | string) => `${__apiBaseUrl}/techallience/models/${brandId}/`,
