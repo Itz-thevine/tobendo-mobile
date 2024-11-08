@@ -1,11 +1,9 @@
-import StockStatus from '@/components/stock-status';
 import { combineStyles, height, width } from '@/lib';
 import { inventoryData } from '@/static';
 import { GlobalStyles } from '@/styles';
 import { InventoryItem } from '@/types';
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, SafeAreaView, ScrollView } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { View, Text, FlatList, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
 import TopSellerItemCard from './top-seller-item-card-V1';
 import InventoryItemCard from './inventory-item-card';
 import CustomModal from '@/components/shared/custom-modal';

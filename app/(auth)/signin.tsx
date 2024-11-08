@@ -82,6 +82,7 @@ const SignInScreen: React.FC = () => {
       setModalVisible(true);
       if(signInResp.success){
         const data = signInResp.data;
+        if(loginMethod === 'email') authHook.SetEmail(form.emailOrPhone);
         authHook.login(data);  // Update the auth context
         setModalMessage('Sign in successful!');
         router.push('/(tabs)/home');

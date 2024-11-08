@@ -1,7 +1,7 @@
 import { buildQueryParams } from '@/lib';
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { __apiBaseUrl, __apiUrls } from '../api/urls';
+import { __apiBaseUrl } from '../api/urls';
 
 const fetchCategories = async (params: {
  lang: Lang
@@ -11,7 +11,7 @@ const fetchCategories = async (params: {
       ...params,
     });
 
-    const url = `${__apiBaseUrl}/techallieance/get-product-brand?${queryParams}`;
+    const url = `${__apiBaseUrl}/techallience/get-product-brand?${queryParams}`;
 
     const { data } = await axios.get(url);
     return data;

@@ -1,5 +1,5 @@
 import { buildQueryParams } from '@/lib';
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { __apiBaseUrl } from '../api/urls';
 
@@ -15,7 +15,7 @@ const FetchPartRelatedWithCar = async (params: {
       ...params,
     });
 
-    const url = `${__apiBaseUrl}/techallieance/get-part-link-with-car/${params.legacy_article_id}`;
+    const url = `${__apiBaseUrl}/techallience/get-part-link-with-car/${params.legacy_article_id}`;
 
     const { data } = await axios.get(url, {params});
 

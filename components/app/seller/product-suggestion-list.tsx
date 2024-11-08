@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Dimensions, FlatList, SafeAreaView, ScrollView, Keyboard, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { InventoryItem } from '@/types';
 import { combineStyles } from '@/lib';
 import { GlobalStyles } from '@/styles';
-import { inventoryData } from '@/static';
 import Autocomplete from '../auto-complete';
 import ProductSuggestionItem from './product-suggestion-list-item';
 import { useAutoCompleteSuggestions } from '@/hooks/app/useAutoCompleteSuggestions';
@@ -89,8 +86,8 @@ const ProductSuggestion: React.FC<{setIsVisible: (value: boolean) => void}> = ({
                     ) : (
                         <FlatList
                             data={productsData?.articles}
-                            renderItem={({ item }) => (
-                                <ProductSuggestionItem item={item} selectedProduct={selectedProduct} setIsVisible={setIsVisible} />
+                            renderItem={({ item, index }) => (
+                                <ProductSuggestionItem key={`${index}_${item?.id}`} item={item} selectedProduct={selectedProduct} setIsVisible={setIsVisible} />
                             )}
                             keyExtractor={(item, index) => `${index}`}
                             numColumns={1}

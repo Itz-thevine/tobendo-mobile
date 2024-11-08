@@ -1,4 +1,4 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { __apiBaseUrl } from '../api/urls';
 
@@ -35,7 +35,7 @@ const fetchPartSuggestionDetails = async (params: {
       include_all: params.include_all ? 'true' : 'false', // Ensure boolean is converted to string
     });
 
-    const url = `${__apiBaseUrl}/techallieance/part-suggestion-deatils?${queryParams}`;
+    const url = `${__apiBaseUrl}/techallience/part-suggestion-deatils?${queryParams}`;
 
     const { data } = await axios.get(url);
 

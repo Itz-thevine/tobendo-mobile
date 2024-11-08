@@ -1,5 +1,4 @@
-import { buildQueryParams } from '@/lib';
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { __apiBaseUrl } from '../api/urls';
 
@@ -10,7 +9,7 @@ const fetchVehiclesById = async ({car_ids}: {
   try {
 
 
-    const url = `${__apiBaseUrl}/techallieance/get-vehicle-by-id`;
+    const url = `${__apiBaseUrl}/techallience/get-vehicle-by-id`;
 
     const { data } = await axios.post(url, {
         car_ids

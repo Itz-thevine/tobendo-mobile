@@ -7,7 +7,7 @@ const fetchCompatibility = async ({ articleId, linkageType, lang }: {
     linkageType: string,
     lang: string,
 }) => {
-  const url = new URL(`${__apiBaseUrl}/techallieance/get-part-link-with-car/${articleId}`);
+  const url = new URL(`${__apiBaseUrl}/techallience/get-part-link-with-car/${articleId}`);
   url.searchParams.append('linkage_type', linkageType);
   url.searchParams.append('lang', lang);
 

@@ -185,7 +185,7 @@ const CustomerScreen: React.FC = () => {
                 <TouchableOpacity key={`${i}_${engine.mfrId}`} onPress={() => {
                   console.log(engine.description)
                   setEngine(engine)
-                  setIsModelModalOpen(false)
+                  setIsEngineModalOpen(false)
                 }}>
                   <Text style={combineStyles(GlobalStyles, 'margin_b_xs')} >{engine.description}</Text >
                 </TouchableOpacity>

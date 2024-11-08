@@ -1,15 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import AppHeader from '@/components/shared/app-header';
-import { combineStyles, height } from '@/lib';
+import { combineStyles } from '@/lib';
 import { GlobalStyles } from '@/styles';
-import Inventory from '@/components/app/seller/inventory-V1';
 import CustomTabs from '@/components/app/custom-tab';
-import CustomModal from '@/components/shared/custom-modal';
-import ProductSuggestion from '@/components/app/seller/product-suggestion-list';
 import { router } from 'expo-router';
-import OrderTabs from '@/components/app/seller/order-V1';
 
 type Order = {
   id: string;

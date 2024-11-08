@@ -1,5 +1,5 @@
 import { buildQueryParams } from '@/lib';
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { __apiBaseUrl } from '../api/urls';
 
@@ -19,7 +19,7 @@ const fetchCategories = async (params: {
       ...params,
     });
 
-    const url = `${__apiBaseUrl}/techallieance/get-sub-catogery?${queryParams}`;
+    const url = `${__apiBaseUrl}/techallience/get-sub-catogery?${queryParams}`;
 
     const { data } = await axios.get(url);
 
@@ -38,7 +38,7 @@ export const useCategories = (params: {
   all_category?: boolean;
   linked?: boolean;
   lang?: string;
-  hasChild: boolean
+  hasChild?: boolean
 }) => {
   const { hasChild, ...fetchParams } = params;
 

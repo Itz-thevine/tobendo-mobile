@@ -56,12 +56,15 @@ const Sidebar: React.FC<{ isVisible: boolean, onClose: () => void }> = ({ isVisi
           />
         </View>
 
-        <View style={[combineStyles(GlobalStyles, 'padding_l_sm', 'padding_r_sm'), styles.emailContainer]}>
-          <TouchableOpacity onPress={() => router.push('/profile')}>
-            <Text style={styles.email}>examplegroup@gmail.com</Text>
-          </TouchableOpacity>
-          <EntypoIcon name="chevron-right" size={24} color="white" />
-        </View>
+        {
+          authHook.email &&
+          <View style={[combineStyles(GlobalStyles, 'padding_l_sm', 'padding_r_sm'), styles.emailContainer]}>
+            <TouchableOpacity onPress={() => router.push('/profile')}>
+              <Text style={styles.email}>{authHook.email}</Text>
+            </TouchableOpacity>
+            <EntypoIcon name="chevron-right" size={24} color="white" />
+          </View>
+        }
 
         <View style={combineStyles(GlobalStyles, 'margin_sm')}>
             <TouchableOpacity style={combineStyles(GlobalStyles, 'margin_b_sm')} onPress={() => router.push('/cart')}>
