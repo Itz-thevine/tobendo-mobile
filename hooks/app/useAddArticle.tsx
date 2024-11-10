@@ -11,7 +11,8 @@ export const useCreateArticle = () => {
       console.log('the form values', values);
       // Pass values as the request body
       const response = await axios.post(
-        __apiUrls.createProduct, 
+        // __apiUrls.createProduct, 
+        __apiUrls.createUserProducts,
         values
       );
       return response.data;

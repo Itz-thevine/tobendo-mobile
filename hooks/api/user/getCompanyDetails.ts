@@ -1,26 +1,33 @@
 import { __apiUrls } from "../urls";
 import { useApi } from "../useApi";
 import { useCallApiProps } from "../useCallApi";
-import { companyDetails } from "./getCompanyDetails";
 
 type triggerProps = {
-    company_name: string;
-    registered_number: string;
-    license_type: string;
+    
 }
+export type companyDetails = {
+    company_name?: string;
+    registered_number?: string;
+    license_type?: string;
+    id?: string;
+    updated_at?: string;
+    created_at?: string;
+    is_verify?: boolean;
+    is_seller_status?: string;
+    is_seller?: boolean;
+};
 type dataProps = companyDetails;
-export const useAddCompanyDetailsApi = (props?: useCallApiProps) => {
+export const useGetCompanyDetailsApi = (props?: useCallApiProps) => {
     const api = useApi(props);
     return {
         response: {
             ...api.response,
             data: api.response?.data as dataProps | undefined,
         },
-        trigger: (triggerProps: triggerProps) => {
+        trigger: (triggerProps?: triggerProps) => {
             api.call({
                 formObject: triggerProps,
                 url: __apiUrls.addCompanyDetails,
-                method: 'post',
             });
         },
     };

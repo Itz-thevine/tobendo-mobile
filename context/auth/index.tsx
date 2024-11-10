@@ -12,6 +12,8 @@ type continueProps = {
 type AuthContextType = {
   isAuthenticated: boolean;
   user: any;
+  isSeller?: boolean;
+  setIsSeller: (isSelller?: boolean) => void;
   login: (user: any) => void;
   logout: () => void;
   SetOTP: (otp: any) => void;
@@ -35,6 +37,7 @@ const AuthContext = createContext<AuthContextType>({
   SetEmail: () => {},
   JWTtoken: '',
   SetJWTtoken: () => {},
+  setIsSeller: () => {},
 });
 
 type AuthProviderProps = {
@@ -47,22 +50,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [otp, setOtp] = useState();
   const [email, setEmail] = useState<string>('');
   const [continueProps, setContinueProps] = useState<continueProps | undefined>(undefined);
+  const [isSeller, setIsSeller] = useState<boolean | undefined>(undefined);
 
   const [JWTtoken, setJWTtoken] = useState<string>('')
 
   const loadUserData = useCallback(async () => {
     try {
       const storedUser = await AsyncStorage.getItem('user');
-      const email = await AsyncStorage.getItem('email');
+      const userToken = await AsyncStorage.getItem('userToken');
+      const isSeller = await AsyncStorage.getItem('userIsSeller');
+      let email: string | undefined;
       if (storedUser) {
         const parsedUser = JSON.parse(storedUser)
+        email = parsedUser?.email;
         setUser(parsedUser);
         setIsAuthenticated(true);
         setJWTtoken(parsedUser?.access_token);
       }
-      if(email){
-        setEmail(email);
-      }
+
+      setEmail(email ?? '');
+      setJWTtoken(userToken ?? '');
+      setIsSeller(isSeller === 'true' ? true : false);
     } catch (error) {
       console.error('Failed to load user data', error);
     }
@@ -76,17 +84,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsAuthenticated(true);
     setUser(user);
     await AsyncStorage.setItem('user', JSON.stringify(user));
-    await AsyncStorage.setItem('email', email);
     loadUserData();
   }, [loadUserData]);
 
   const logout = useCallback(async () => {
     setIsAuthenticated(false);
     await AsyncStorage.removeItem('user');
-    await AsyncStorage.removeItem('email');
+    await AsyncStorage.removeItem('userToken');
     setUser(null);
     setEmail('');
-    loadUserData();
+    setIsSeller(undefined);
+    setJWTtoken('')
   }, [loadUserData]);
 
   const SetOTP = (otp: any) => {
@@ -97,10 +105,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setEmail(email)
   }
 
-  const SetJWTtoken = (token: string) => {
+  const SetJWTtoken = async (token: string) => {
+    await AsyncStorage.setItem('userToken', token);
     setJWTtoken(token)
   }
-
+  const handleSetIsSeller = async (isSeller?: boolean) => {
+    await AsyncStorage.setItem('userIsSeller', isSeller ? 'true' : 'false');
+    setIsSeller(isSeller);
+  }
   return (
     <AuthContext.Provider value={{
         isAuthenticated, 
@@ -116,7 +128,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         continue: {
           ...continueProps,
           set: setContinueProps,
-        }
+        },
+        isSeller,
+        setIsSeller: handleSetIsSeller,
     }}>
       {children}
     </AuthContext.Provider>

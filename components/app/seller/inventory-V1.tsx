@@ -25,7 +25,6 @@ const Inventory: React.FC = () => {
     <InventoryItemCard item={item}/>
   );
 
-  // console.log(getProductsResp)
   useEffect(() => {
     getProductsApi.trigger({
       page: 1,

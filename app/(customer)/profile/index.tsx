@@ -1,5 +1,6 @@
 import CustomModal from '@/components/shared/custom-modal';
 import CustomerAppHeader from '@/components/shared/customers-app-header';
+import { useAuth } from '@/context/auth';
 import { combineStyles, height } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import { router } from 'expo-router';
@@ -10,8 +11,14 @@ import { View, Text, StyleSheet, TouchableOpacity, Dimensions, SafeAreaView, Ima
 const screenWidth = Dimensions.get('window').width;
 
 const WithdrawScreen: React.FC = () => {
+  const authHook = useAuth();
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [agreeToTAC, setAgreeToTAC] = useState(false)
+
+  const handleSignOut = () => {
+    authHook.logout();
+    router.push('/(customer)')
+  }
   return (
     <SafeAreaView style={combineStyles(GlobalStyles, 'safeArea')}>
       <CustomModal
@@ -136,7 +143,7 @@ const WithdrawScreen: React.FC = () => {
           </View>
 
           <View style={combineStyles(GlobalStyles, 'items_center', 'margin_t_sm')}> 
-            <TouchableOpacity style={combineStyles(GlobalStyles, 'background_soft_blue', 'items_center', 'rounded_full', 'padding_sm' )} onPress={() => router.push('/(customer)/customer')}> 
+            <TouchableOpacity style={combineStyles(GlobalStyles, 'background_soft_blue', 'items_center', 'rounded_full', 'padding_sm' )} onPress={handleSignOut}> 
                 <Text style={combineStyles(GlobalStyles, 'text_lg')}>Sign Out</Text>
             </TouchableOpacity>
           </View>

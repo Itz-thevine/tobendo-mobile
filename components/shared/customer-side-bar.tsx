@@ -57,10 +57,10 @@ const Sidebar: React.FC<{ isVisible: boolean, onClose: () => void }> = ({ isVisi
         </View>
 
         {
-          authHook.email &&
+          authHook.user?.email &&
           <View style={[combineStyles(GlobalStyles, 'padding_l_sm', 'padding_r_sm'), styles.emailContainer]}>
             <TouchableOpacity onPress={() => router.push('/profile')}>
-              <Text style={styles.email}>{authHook.email}</Text>
+              <Text style={styles.email}>{authHook.user?.email}</Text>
             </TouchableOpacity>
             <EntypoIcon name="chevron-right" size={24} color="white" />
           </View>
@@ -125,9 +125,11 @@ const Sidebar: React.FC<{ isVisible: boolean, onClose: () => void }> = ({ isVisi
           <MenuItem title="Switch to Seller" onPress={() => {
             AsyncStorage.setItem('currentMode', 'seller');
             router.push(
-              authHook.user ? '/(seller)/seller' : '/(auth)/signin'
+              authHook.user ? (
+                authHook.isSeller ? '/(seller)/seller' : '/(seller)/onboarding-seller'
+              ) : '/(auth)/signin'
             )
-            // router.push('/(seller)/seller')
+            // router.push('/bank-details')
           }} />
           <MenuItem title="Help & Support" onPress={() => router.push('/')} />
         </MenuContainer>

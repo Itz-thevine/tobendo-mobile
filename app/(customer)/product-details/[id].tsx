@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, FlatList, ScrollView, SafeAreaView, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Image, FlatList, ScrollView, SafeAreaView, StyleSheet } from 'react-native';
 import { combineStyles, width, height } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import MCIIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import CustomerAppHeader from '@/components/shared/customers-app-header';
 import Counter from '@/components/shared/counter';
 import SearchBar from '@/components/app/customer/search-bar';
-import FAIcon from "react-native-vector-icons/FontAwesome"
+import FAIcon from "react-native-vector-icons/FontAwesome";
 import ProductCard2 from '@/components/app/customer/product-card-2';
 import { inventoryData } from '@/static';
 import { InventoryItem } from '@/types';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 
 const ProductDetailsScreen: React.FC = () => {
+  const {productId} = useLocalSearchParams();
   const [quantity, setQuantity] = useState<number>(1);
   const [count, setCount] = useState<number>(1);
 

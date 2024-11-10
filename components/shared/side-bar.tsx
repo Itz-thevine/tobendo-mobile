@@ -57,10 +57,10 @@ const Sidebar: React.FC<{ isVisible: boolean, onClose: () => void }> = ({ isVisi
 
 
         {
-          authHook.email &&
+          authHook.user?.email &&
           <View style={[combineStyles(GlobalStyles, 'padding_l_sm', 'padding_r_sm'), styles.emailContainer]}>
             <TouchableOpacity onPress={() => router.push('/(seller)/profile')}>
-              <Text style={styles.email}>{authHook.email}</Text>
+              <Text style={styles.email}>{authHook.user?.email}</Text>
             </TouchableOpacity>
             <EntypoIcon name="chevron-right" size={24} color="white" />
           </View>

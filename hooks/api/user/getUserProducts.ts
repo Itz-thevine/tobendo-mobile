@@ -6,12 +6,41 @@ type triggerProps = {
     page?: number;
     page_size?: number;
 }
-type item = {
+export type userProductItem = {
     id?: string;
+    articleNumber?: number;
+    dataSupplierId?: number;
+    mfrName?: string;
+    genericArticleDescription?: string;
+    itemDescription?: string;
+    detailDescription?: object;
+    legacyArticleId?: string | number;
+    assemblyGroupNodeId?: number;
+    assemblyGroupName?: string;
+    linkageTargetTypes?: string[];
+    condition?: "new";
+    currency?: string;
+    count?: number;
+    price?: number;
+    gtins?: string[];
+    tradeNumbers?: string[];
+    oemNumbers?: {
+    articleNumber?: string;
+    mfrId?: number;
+    mfrName?: string
+    }[];
     images?: string[];
+    car_ids?: number[];
+    criteria?: {
+        criteriaDescription?: string;
+        criteriaUnitDescription?: string;
+        criteriaAbbrDescription?: string;
+        criteriaType?: string;
+        formattedValue?: string;
+    }[];
 }
 type dataProps = {
-    result?: item[];
+    result?: userProductItem[];
     page?: number;
     per_page?: number;
     total_pages?: number;

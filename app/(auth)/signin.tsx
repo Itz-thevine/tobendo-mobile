@@ -84,6 +84,7 @@ const SignInScreen: React.FC = () => {
         const data = signInResp.data;
         if(loginMethod === 'email') authHook.SetEmail(form.emailOrPhone);
         authHook.login(data);  // Update the auth context
+        authHook.SetJWTtoken(data?.access_token);
         setModalMessage('Sign in successful!');
         router.push('/(seller)/seller');
 

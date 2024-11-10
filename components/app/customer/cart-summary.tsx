@@ -2,9 +2,10 @@ import React from 'react';
 import { View, Text, TouchableOpacity, FlatList, ScrollView, StyleSheet } from 'react-native';
 import { combineStyles } from '@/lib'; // Assuming this is a utility function for combining styles
 import { GlobalStyles } from '@/styles'; // Assuming this is your global styles file
+import { cartItem } from '@/hooks/api/user/getCartItems';
 
 interface CartSummaryProps {
-  cartItems: any[];
+  cartItems?: cartItem[];
   renderCartItem: ({ item }: { item: any }) => JSX.Element;
   RelatedProducts: any[];
   renderRelatedProduct: ({ item }: { item: any }) => JSX.Element;
@@ -26,7 +27,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({
         {/* Cart Items */}
         <View style={combineStyles(GlobalStyles, 'margin_sm', 'flex_row', 'gap_sm', 'items_center')}>
           <View style={[combineStyles(GlobalStyles, 'background_warning', 'rounded_full', 'jusify_center', 'items_center'), { width: 30, height: 30 }]}>
-            <Text style={combineStyles(GlobalStyles, 'color_white', 'font_bold')}>{cartItems.length}</Text>
+            <Text style={combineStyles(GlobalStyles, 'color_white', 'font_bold')}>{cartItems?.length ?? 0}</Text>
           </View>
           <Text style={combineStyles(GlobalStyles, 'text_2xl', 'font_bold')}>Items</Text>
         </View>

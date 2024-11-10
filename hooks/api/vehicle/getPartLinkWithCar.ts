@@ -1,15 +1,14 @@
 import { __apiUrls } from "../urls";
 import { useApi } from "../useApi";
 import { useCallApiProps } from "../useCallApi";
-import { userProps } from "./getUser";
 
 type triggerProps = {
-    email: string;
-    phone_number: string | number;
-    password: string;
+    legacyArticleId: number;
+    linkage_type?: 'P' | string;
+    lang?: string;
 }
-type dataProps = userProps;
-export const useCreateUserApi = (props?: useCallApiProps) => {
+type dataProps = number[];
+export const useGetPartLinkWithCarApi = (props?: useCallApiProps) => {
     const api = useApi(props);
     return {
         response: {
@@ -19,8 +18,7 @@ export const useCreateUserApi = (props?: useCallApiProps) => {
         trigger: (triggerProps: triggerProps) => {
             api.call({
                 formObject: triggerProps,
-                url: __apiUrls.createUser,
-                method: 'post',
+                url: __apiUrls.getPartLinkWithCar(triggerProps.legacyArticleId),
             });
         },
     };

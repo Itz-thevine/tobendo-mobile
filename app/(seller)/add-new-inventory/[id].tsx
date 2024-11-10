@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView, Dimensions, Platform, SafeAreaView, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import CategoryComponent from '@/components/app/listProducts/addCaetgories';
-import CompatibilityComp from '@/components/app/listProducts/compatibility';
 import AppHeader from '@/components/shared/app-header';
 import { combineStyles, height } from '@/lib';
 import { GlobalStyles } from '@/styles';
@@ -12,13 +10,11 @@ import CharacterCounterInput from '@/components/character-counter-Input';
 import Icon from 'react-native-vector-icons/Ionicons';
 import CustomModal from '@/components/shared/custom-modal';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useProducts } from '@/hooks/app/useProducts';
 import CompatibilityCompV2 from '@/components/app/listProducts/compatibility/compatibilty-v2';
 import AddBrandToArticle from '@/components/app/listProducts/addBrands';
 import * as FileSystem from 'expo-file-system';
-import { useCreateArticle } from '@/hooks/app/useAddArticle';
-import { AxiosError } from 'axios';
-import processError from '@/lib/error';
+import { createUserProductTriggerProps, useCreateUserProductsApi } from '@/hooks/api/user/createUserProduct';
+import { useGetPartSuggestionDetailsApi } from '@/hooks/api/vehicle/getPartSuggestionDetails';
 
 
 const { width } = Dimensions.get('window');
@@ -32,34 +28,29 @@ interface ImageDetails {
 
 
 const ProductListing = () => {
+  const getPartDetailsApi = useGetPartSuggestionDetailsApi();
+  const getPartDetailsResp = getPartDetailsApi.response;
+  const detailsLoading = getPartDetailsResp.loading;
+  const articles = getPartDetailsResp.data?.articles || [];
+
+  const createApi = useCreateUserProductsApi();
+  const createResp = createApi.response;
+  const createLoading = createResp.loading;
+
   const [title, setTitle] = useState('');
-  const [brand, setBrand] = useState('');
-  const [description, setDescription] = useState('');
+  // const [brand, setBrand] = useState('');
+  // const [description, setDescription] = useState('');
   const [quantity, setQuantity] = useState('');
   const [price, setPrice] = useState('');
   const [mainImage, setMainImage] = useState<ImageDetails | null>(null);
   const [additionalImages, setAdditionalImages] = useState<ImageDetails[]>([]);
-  const [isButtonEnabled, setIsButtonEnabled] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const [agreeToTAC, setAgreeToTAC] = useState(false)
   const [isAddInventoryModal, setIsAddInventoryModal] = useState(false)
   const [selectedCategories, setSelectedCategories] = useState<any[]>([]);
   const [selectedCompatibilities, setCompatibilities] = useState<any[]>([]);
 
-
-  const { mutate, isPending } = useCreateArticle()
-
   const { id } = useLocalSearchParams();
-  const { data: productData = {}, isLoading, isError } = useProducts({
-    legacy_article_ids: parseInt(id as string),
-    search_query:'',
-    page: 1,
-    per_page: 1,
-    lang: 'en',
-    include_all: true,
-    search_type: '99',
-  }); 
-
   const pickImage = async (setImage: (image: ImageDetails) => void) => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -83,16 +74,13 @@ const ProductListing = () => {
     setAdditionalImages([...additionalImages, image]);
   };
 
-  // console.log('productData', productData?.articles[0]?.articleNumber)
-
-
   const convertToBase64 = async (uri: string) => {
     const base64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
     return base64;
   };
 
   const handleSubmit = async () => {
-    if (!productData || !productData.articles || productData.articles.length === 0) {
+    if (articles.length === 0) {
       console.error("No product data available");
       return;
     }
@@ -111,72 +99,94 @@ const ProductListing = () => {
       );
     }
   
-    const article = {
-      articleNumber: productData.articles[0].articleNumber,
-      dataSupplierId: productData.articles[0].dataSupplierId,
-      mfrName: productData.articles[0].mfrName,
+    const article = articles[0];
+    const newArticle: createUserProductTriggerProps = {
+      ...article,
+      linkageTargetTypes: article.linkageTargetTypes ?? [`I don't know what to pass here`],
+      legacyArticleId: article.legacyArticleId ?? `like what the fuck`,
+      articleNumber: Number((article?.articleNumber ?? 0).toString().replace(/[^0-9]/g, '')),
       genericArticleDescription: title,
       itemDescription: "",
       detailDescription: {},
-      legacyArticleId: productData.articles[0].genericArticles[0].legacyArticleId,
       assemblyGroupNodeId:
-        selectedCategories.length > 0 ? selectedCategories[selectedCategories?.length - 1].assemblyGroupNodeId : null,
+        selectedCategories.length > 0 ? selectedCategories[selectedCategories?.length - 1].assemblyGroupNodeId : 0,
       assemblyGroupName:
-        selectedCategories.length > 0 ? selectedCategories[selectedCategories?.length - 1].assemblyGroupName : null,
-      linkageTargetTypes: productData.articles[0].genericArticles[0].linkageTargetTypes,
+        selectedCategories.length > 0 ? selectedCategories[selectedCategories?.length - 1].assemblyGroupName : '0',
       condition: "new",
       currency: "usd",
-      count: quantity,
-      price: price,
-      gtins: productData.articles[0].gtins,
-      tradeNumbers: productData.articles[0].tradeNumbers,
-      oemNumbers: productData.articles[0].oemNumbers,
-      images: [mainImageBase64, ...additionalImagesBase64],
+      count: quantity ? Number(quantity) : 0,
+      price: price ? Number(price) : 0,
+      images: [mainImageBase64 ?? '', ...additionalImagesBase64],
       car_ids: selectedCompatibilities.map((car) => car.carId),
-      criteria: productData.articles[0].articleCriteria,
     };
   
     // Call the mutation
-    mutate(
-      { article },
-      {
-        onSuccess: (value) => {
-          console.log("Request succeeded:", value);
-          setIsAddInventoryModal(true);
-          setIsSubmitting(false);
-        },
-        onError: (error) => {
-          console.log("Request failed:", error);
-          if (error instanceof AxiosError) {
-            processError(error);
-          }
-          setIsSubmitting(false); // Stop loading state on error
-        },
-      }
-    );
+    createApi.trigger(newArticle);
   };
   
-
-  useEffect(() => {
-    if (productData.articles?.length > 0) {
-      const article = productData.articles[0];
+  //   if (productData.articles?.length > 0) {
+  //     const article = productData.articles[0];
             
-      if (article.images?.length > 0) {
-        setMainImage({
-          uri: article.images[0].imageURL400, 
-          width: 400,
-          height: 400,
-          type: "image/jpeg"
-        });
-      }
+  //     if (article.images?.length > 0) {
+  //       setMainImage({
+  //         uri: article.images[0].imageURL400, 
+  //         width: 400,
+  //         height: 400,
+  //         type: "image/jpeg"
+  //       });
+  //     }
 
-      // Set the item title from the backend if available
-      if (article.genericArticles?.length > 0) {
-        setTitle(article.genericArticles[0].genericArticleDescription);
+  //     // Set the item title from the backend if available
+  //     if (article.genericArticles?.length > 0) {
+  //       setTitle(article.genericArticles[0].genericArticleDescription);
+  //     }
+  //   }
+  // }, [productData]);
+  useEffect(() => {
+    getPartDetailsApi.trigger({
+      legacy_article_ids: parseInt(id as string),
+      search_query:'',
+      page: 1,
+      per_page: 1,
+      lang: 'en',
+      include_all: true,
+      search_type: 99,
+    });
+  }, []);
+  useEffect(() => {
+    if(getPartDetailsResp.loading === false && getPartDetailsResp.success){
+      const articles = getPartDetailsResp.data?.articles || [];
+      if (articles?.length > 0) {
+        const article = articles[0];
+        // console.log(article)
+
+        if (Array.isArray(article.images) && article.images[0]?.imageURL400) {
+          setMainImage({
+            uri: article.images[0]?.imageURL400, 
+            width: 400,
+            height: 400,
+            type: "image/jpeg"
+          });
+        }
+  
+        // Set the item title from the backend if available
+        if (article.genericArticles?.length) {
+          setTitle(article.genericArticles[0]?.genericArticleDescription ?? '');
+        }
       }
     }
-  }, [productData]);
-
+  }, [getPartDetailsResp.loading]);
+  useEffect(() => {
+    if(createResp.loading === false){
+      if(createResp.success){
+        console.log("Request succeeded:", createResp.data);
+        setIsAddInventoryModal(true);
+      }
+      else {
+        console.log('-----error', createResp.errorDetail)
+      }
+    }
+  }, [createResp.loading]);
 
   
 
@@ -219,7 +229,7 @@ const ProductListing = () => {
         <AppHeader/>
 
         {
-          isLoading ? (
+          detailsLoading ? (
             <View style={[combineStyles(GlobalStyles, 'background_soft_blue', 'padding_y_sm'), {height}]}>
               <ActivityIndicator size="small" color="#000" />
             </View>
@@ -330,7 +340,7 @@ const ProductListing = () => {
           onPress={() => handleSubmit()}
         >
           {
-            isPending ? (
+            createLoading ? (
               <ActivityIndicator size={15} color={'white'}/>
             ): (
               <Text style={combineStyles(GlobalStyles, 'text_lg', 'color_white', 'font_medium')}>Add New Inventory</Text>

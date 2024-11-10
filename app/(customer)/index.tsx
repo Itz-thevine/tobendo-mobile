@@ -39,7 +39,6 @@ const CustomerScreen: React.FC = () => {
   const [isEngineModalOpen, setIsEngineModalOpen] = useState(false)
 
   const router = useRouter()
-  
   useEffect(() => {
     const modeCheck = async () => {
       if (await AsyncStorage.getItem('currentMode') === 'seller') {

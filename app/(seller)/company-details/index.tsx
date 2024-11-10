@@ -8,10 +8,12 @@ import { router } from 'expo-router';
 import AppHeader from '@/components/shared/app-header';
 import { useAddCompanyDetailsApi } from '@/hooks/api/user/addCompanyDetails';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '@/context/auth';
 
 const CompanyDetailsScreen = () => {
   const companyApi = useAddCompanyDetailsApi();
   const companyResp = companyApi.response;
+  const authHook = useAuth();
 
   const [form, setForm] = useState({
     name: '',
@@ -42,7 +44,8 @@ const CompanyDetailsScreen = () => {
   useEffect(() => {
     if(companyResp.loading === false){
       if(companyResp.success){
-        router.push('/bank-details')
+        authHook.setIsSeller(companyResp.data?.is_seller);
+        router.push('/bank-details');
       }
       else {
         setModal({
@@ -98,11 +101,11 @@ const CompanyDetailsScreen = () => {
 
       <View style={combineStyles(GlobalStyles, 'absolute', 'background_white', 'bottom_0', 'right_0', 'left_0', 'padding_y_xs', 'padding_x_sm' )}>
         <TouchableOpacity style={combineStyles(GlobalStyles, 'background_royal_blue', 'items_center', 'rounded_full', 'padding_y_sm')} onPress={handleSubmit}>
-                  {
-                    companyResp.loading ?
-                    <ActivityIndicator color="#FFFFFF" /> :
-                    <Text style={combineStyles(GlobalStyles, 'text_lg', 'color_white', 'font_medium')}>Next</Text>
-                  }
+          {
+            companyResp.loading ?
+            <ActivityIndicator color="#FFFFFF" /> :
+            <Text style={combineStyles(GlobalStyles, 'text_lg', 'color_white', 'font_medium')}>Next</Text>
+          }
         </TouchableOpacity>
       </View>
       

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { SafeAreaView, View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView, Modal, Pressable } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import { combineStyles, height } from '@/lib';
+import { SafeAreaView, View, Text, TextInput, TouchableOpacity, Image, ScrollView, Pressable } from 'react-native';
+import { combineStyles } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import Icon from 'react-native-vector-icons/Ionicons';
 import CustomModal from '@/components/shared/custom-modal';
@@ -22,7 +21,6 @@ const BankDetailsScreen = () => {
       <CustomModal
         isVisible={isLicenseModalOpen}
         onClose={() => setIsLicenseModalOpen(false)}
-        height={300}
       >
         <View style={combineStyles(GlobalStyles, 'padding_sm')}>
           <Text style={combineStyles(GlobalStyles, 'text_2xl', 'font_medium')}>Account Types</Text>
@@ -40,7 +38,6 @@ const BankDetailsScreen = () => {
       <CustomModal
         isVisible={isSellerModalOpen}
         onClose={() => setIsSellerModalOpen(false)}
-        height={350}
       >
         <View style={combineStyles(GlobalStyles, 'padding_sm')}>
             <Text style={combineStyles(GlobalStyles, 'text_2xl', 'font_medium')}>Are you sure you want to start</Text>
@@ -69,7 +66,6 @@ const BankDetailsScreen = () => {
       <CustomModal
         isVisible={isSellerSuccessModalOpen}
         onClose={() => setIsSellerSuccesModalOpen(false)}
-        height={height}
         contentBackground={'transparent'}
         hasCloseBtn={false}
       >
@@ -96,7 +92,7 @@ const BankDetailsScreen = () => {
           
         </View>
       </CustomModal>
-        
+
       <AppHeader/>
       <ScrollView style={combineStyles(GlobalStyles, 'background_soft_blue')}>
         <View style={combineStyles(GlobalStyles, 'safeArea', 'padding_sm', 'background_soft_blue')}>

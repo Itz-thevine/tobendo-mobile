@@ -17,6 +17,7 @@ type errorDetail = errorDetailItem[] | string;
 
 type ResponseProps = {
     error?: string;
+    errorDetail?: any;
     success?: boolean;
     data?: unknown;
     loading?: boolean;
@@ -37,6 +38,8 @@ export const useCallApi = (props?: useCallApiProps) => {
             loading: true,
             error: undefined,
         });
+
+        let rawFetchResp: any;
         
         try {
             const newResponse = {...response};
@@ -50,6 +53,7 @@ export const useCallApi = (props?: useCallApiProps) => {
                 fetchReqs.body = call_props.form;
             }
             const fetchResp = await fetch(url, fetchReqs);
+            rawFetchResp = fetchResp;
             const fetchData = await fetchResp.json();
 
             if(fetchResp.ok){
@@ -65,6 +69,9 @@ export const useCallApi = (props?: useCallApiProps) => {
                 newResponse.success = false;
                 newResponse.data = undefined;
                 newResponse.error = errorMsg ?? 'something went wrong';
+                newResponse.errorDetail = fetchData?.detail;
+
+                console.log('---useCallApi--catch---', fetchData)
             }
             
             newResponse.loading = false;
@@ -72,7 +79,7 @@ export const useCallApi = (props?: useCallApiProps) => {
             setResponse({...newResponse});
         }
         catch(err){
-            console.log(err);
+            console.log('---useCallApi--catch---', err, rawFetchResp);
 
             const newResponse = {...response};
             newResponse.data = undefined;

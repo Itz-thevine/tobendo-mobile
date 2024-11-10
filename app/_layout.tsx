@@ -9,12 +9,14 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { AuthProvider } from '@/context/auth';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import ReactQueryProviders from '@/lib/react-query/provider';
+import InitializeUserData from '@/components/InitializeUserData';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 const RootLayout: React.FC = () => {
   const colorScheme = useColorScheme();
+
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
@@ -48,6 +50,7 @@ const RootLayout: React.FC = () => {
       <ReactQueryProviders>
         <GestureHandlerRootView>
           <AuthProvider>
+            <InitializeUserData />
             <Stack initialRouteName='(onboard)'>
               <Stack.Screen name="(onboard)" options={{ headerShown: false }} />
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

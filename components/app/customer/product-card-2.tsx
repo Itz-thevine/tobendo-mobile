@@ -1,22 +1,21 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import StockStatus from '@/components/stock-status';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { combineStyles } from '@/lib';
 import { GlobalStyles } from '@/styles';
-import { InventoryItem } from '@/types';
+import { cartItem } from '@/hooks/api/user/getCartItems';
 
 type InventoryItemCardProps = {
-  item: InventoryItem;
+  item: cartItem;
 };
 
 const ProductCard2: React.FC<InventoryItemCardProps> = ({ item }) => {
   return (
     <View style={[combineStyles(GlobalStyles, 'border_soft_blue', 'border_xs', 'rounded_xs', 'padding_xs', 'jusify_center', 'items_center', 'background_white'), { width: 250 }]}>
-      <Image
+      {/* <Image
         source={item.image}
         style={[GlobalStyles.rounded_xs, { width: 220, height: 180 }]}
         resizeMode='contain'
-      />
+      /> */}
       <View style={combineStyles(GlobalStyles, 'margin_t_sm', 'margin_b_xs')}>
         <Image
           source={require('../../../assets/images/seller/image11.png')}

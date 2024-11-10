@@ -1,23 +1,20 @@
-import React, { useState } from 'react';
-import { View, ScrollView, SafeAreaView, Image, StyleSheet, Text, TouchableOpacity, FlatList, TextInput } from 'react-native';
-import { combineStyles, height, width } from '@/lib';
+import React, { useEffect, useState } from 'react';
+import { View, ScrollView, SafeAreaView, StyleSheet, Text, TouchableOpacity, TextInput, FlatList } from 'react-native';
+import { combineStyles } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import CustomerAppHeader from '@/components/shared/customers-app-header';
 import SearchBar from '@/components/app/customer/search-bar';
 import CustomModal from '@/components/shared/custom-modal';
-import { productsItem } from '@/types';
-import MCIIcon from 'react-native-vector-icons/MaterialCommunityIcons';
-import CategoriesAndRelatedProducts from '@/components/app/explore/categories-and-related-products';
-import ProductCard from '@/components/app/customer/product-card';
-import Marquee from '@/components/shared/marquee';
-import { MarqueeImages } from '@/static';
 import Filter from '@/components/shared/filter';
 import Sort from '@/components/shared/sort';
-import RelatedProductsWrapper from '@/components/app/explore/related-products';
+import { useGetPartSuggestionDetailsApi } from '@/hooks/api/vehicle/getPartSuggestionDetails';
+import ProductCard from '@/components/app/customer/product-card-4';
 
 
 const ExploreScreen: React.FC = () => {
-  const [selectedVehicle, setSelectedVehicle] = useState('car');
+  const getPartDetailsApi = useGetPartSuggestionDetailsApi();
+  const getPartDetailsResp = getPartDetailsApi.response;
+
   const [make, setMake] = useState('Select Make');
   const [model, setModel] = useState('Select Model');
   const [quantity, setQuantity] = useState<string>('');
@@ -42,9 +39,17 @@ const ExploreScreen: React.FC = () => {
     setOpenCategory(prev => (prev === category ? null : category));
   };
 
-  const renderInventoryItem = ({ item }: { item: productsItem }) => (
-    <ProductCard item={item}/>
-  );
+  const articleItems = getPartDetailsResp.data?.articles || [];
+  console.log(articleItems)
+  useEffect(() => {
+    getPartDetailsApi.trigger({
+      page: 1,
+      per_page: 10,
+      lang: 'en',
+      include_all: false,
+      search_type: 99,
+    });
+  }, []);
 
   return (
     <SafeAreaView style={combineStyles(GlobalStyles, 'safeArea')}>
@@ -53,7 +58,6 @@ const ExploreScreen: React.FC = () => {
       <CustomModal
         isVisible={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}
-        height={height * 0.7}
         title='Filter'
       >
         <ScrollView style={combineStyles(GlobalStyles, 'padding_xs')}>
@@ -112,7 +116,6 @@ const ExploreScreen: React.FC = () => {
       <CustomModal
         isVisible={isSortModalOpen}
         onClose={() => setIsSortModalOpen(false)}
-        height={350}
         title='Sort'
       >
         <ScrollView style={combineStyles(GlobalStyles, 'padding_sm')}>
@@ -148,7 +151,7 @@ const ExploreScreen: React.FC = () => {
         <View style={combineStyles(GlobalStyles, 'background_dark_blue', 'margin_b_sm')}>
           <SearchBar />
          
-          <View style={combineStyles(GlobalStyles, 'background_white', 'padding_sm', 'margin_sm', 'rounded_xs')}>
+          {/* <View style={combineStyles(GlobalStyles, 'background_white', 'padding_sm', 'margin_sm', 'rounded_xs')}>
             <View style={combineStyles(GlobalStyles, 'flex_row', 'jusify_between')}>
               <View style={combineStyles(GlobalStyles, 'flex_row', 'items_center')}>
                 <MCIIcon name="car-side" size={24} color={"blue"}/>
@@ -164,43 +167,44 @@ const ExploreScreen: React.FC = () => {
             </View>
             <Text style={combineStyles(GlobalStyles, 'margin_t_sm', 'text_lg')}>S-Class 2.0 CDTI DIESEL</Text>
             <Text style={combineStyles(GlobalStyles, 'margin_t_xs')}>(165 HP / 121 KW, YEAR FROM 2013 - 2023)</Text>
-          </View>
+          </View> */}
         </View>
 
         <View style={combineStyles(GlobalStyles, 'flex_row', 'jusify_between', 'margin_sm', 'margin_b_sm')}>
           <Filter onPress={() => setIsFilterModalOpen(true)}/>
           <Sort onPress={() => setIsSortModalOpen(true)}/>
         </View>
-
-        <View style={combineStyles(GlobalStyles, 'safeArea', 'jusify_center', 'items_center', )}>
-          <Marquee images={MarqueeImages} />
+      
+        <View style={styles.manufacturerContainer}>
+          <FlatList
+            data={articleItems}
+            renderItem={({item, index: i}) => {
+              return (
+                <ProductCard
+                  key={`${i}_${item.legacyArticleId}`}
+                  item={item}
+                />
+              )
+            }}
+            keyExtractor={(item) => (item.genericArticleId ?? '').toString()}
+            contentContainerStyle={[combineStyles(GlobalStyles, 'gap_xl')]}
+          />
         </View>
 
-        {
-          currentDisplay === 1 ? (
-            <CategoriesAndRelatedProducts 
-              openCategory={openCategory}
-              handlePress={handlePress}
-              renderInventoryItem={renderInventoryItem}
-            />
-          ): 
-          (
-            <RelatedProductsWrapper 
-              openCategory={openCategory}
-              handlePress={handlePress}
-              renderInventoryItem={renderInventoryItem}
-            />
-          )
-        }
-
-
+        {/* <RelatedProductsWrapper 
+          openCategory={openCategory}
+          handlePress={handlePress}
+          renderInventoryItem={renderInventoryItem}
+        /> */}
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  // Other styles...
+  manufacturerContainer: {
+    margin: 20,
+  },
 });
 
 export default ExploreScreen;

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Image, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import CustomerAppHeader from '@/components/shared/customers-app-header';
 import ProgressBar from '@/components/shared/progress-bar';
@@ -8,13 +8,20 @@ import PaymentMethod from '@/components/app/customer/cart-payment-summary';
 import CartConfirmation from '@/components/app/customer/cart-confirmation';
 import ProductCard2 from '@/components/app/customer/product-card-2';
 import ProductCard3 from '@/components/app/customer/product-card-3';
-import { combineStyles, height } from '@/lib';
+import { combineStyles } from '@/lib';
 import { RelatedProducts } from '@/static';
 import { GlobalStyles } from '@/styles';
 import CustomModal from '@/components/shared/custom-modal';
 import { router } from 'expo-router';
+import { cartItem, useGetCartItemsApi } from '@/hooks/api/user/getCartItems';
 
 const CartScreen: React.FC = () => {
+  const getCartItemsApi = useGetCartItemsApi();
+  const getCartItemsResp = getCartItemsApi.response;
+
+  const cart = (getCartItemsResp.data || [])[0] || {};
+  const cartItems = cart.items;
+
   const [currentStep, setCurrentStep] = useState(0);
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const steps = ['Cart', 'Delivery', 'Payment', 'Confirm'];
@@ -28,22 +35,17 @@ const CartScreen: React.FC = () => {
     setCurrentStep(prev => Math.max(prev - 1, 0));
   };
 
-  const [cartItems, setCartItems] = useState([
-    { id: '1', image: require('@/assets/images/Group 41.png'), brand: 'Total Energies', title: 'QUARTZ INEO FIRST 0W-30', price: 25, quantity: 1 },
-    { id: '2', image: require('@/assets/images/Group 41.png'), brand: 'Mobil', title: 'QUARTZ INEO FIRST 0W-30', price: 26, quantity: 1 },
-  ]);
+  // const [cartItems, setCartItems] = useState<cartItem[]>([
+    // { id: '1', image: require('@/assets/images/Group 41.png'), brand: 'Total Energies', title: 'QUARTZ INEO FIRST 0W-30', price: 25, quantity: 1 },
+    // { id: '2', image: require('@/assets/images/Group 41.png'), brand: 'Mobil', title: 'QUARTZ INEO FIRST 0W-30', price: 26, quantity: 1 },
+  // ]);
 
-  const total = useMemo(() => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0), [cartItems]);
+  // const total = useMemo(() => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0), [cartItems]);
+  const total = cart.total_price ?? 0;
 
-  const renderCartItem = ({ item }: { item: any }) => <ProductCard3 item={item} />;
+  const renderCartItem = ({ item }: { item: cartItem }) => <ProductCard3 item={item} />;
 
-  const renderRelatedProduct = ({ item }: { item: any }) => <ProductCard2 item={item} />;
-
-  const updateQuantity = (id: string, newQuantity: number) => {
-    setCartItems(prevItems =>
-      prevItems.map(item => (item.id === id ? { ...item, quantity: Math.max(1, newQuantity) } : item))
-    );
-  };
+  const renderRelatedProduct = ({ item }: { item: cartItem }) => <ProductCard2 item={item} />;
 
   const renderCurrentStep = () => {
     switch (currentStep) {
@@ -69,12 +71,17 @@ const CartScreen: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    if(getCartItemsResp.loading === false && getCartItemsResp.success){
+      
+    }
+  }, [getCartItemsResp.loading]);
+
   return (
     <SafeAreaView style={combineStyles(GlobalStyles, 'safeArea')}>
         <CustomModal
         isVisible={isConfirmationModalOpen}
         onClose={() => setIsConfirmationModalOpen(false)}
-        height={height}
         contentBackground={'transparent'}
         hasCloseBtn={false}
       >

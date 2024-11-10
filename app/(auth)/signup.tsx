@@ -57,6 +57,7 @@ const SignUpScreen: React.FC = () => {
         setModalMessage('Sign up successful!');
 
         const email = createResp.data?.email;
+        authHook.login(createResp.data);
         if(email){
           setEmail(email);
 
@@ -83,6 +84,10 @@ const SignUpScreen: React.FC = () => {
         authHook.SetEmail(email);
         authHook.SetJWTtoken(sendOtpResp.data?.access_token);
         authHook.SetOTP(sendOtpResp.data?.code);
+        if(authHook.continue?.set) authHook.continue.set({
+          otpType: 'email_verification',
+        });
+        console.log(sendOtpResp.data?.code)
         router.push('/(auth)/otpScreen');
       }
       else {
