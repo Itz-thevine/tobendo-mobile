@@ -2,39 +2,41 @@ import React from 'react';
 import { View, Text, TouchableOpacity, FlatList, ScrollView, StyleSheet } from 'react-native';
 import { combineStyles } from '@/lib'; // Assuming this is a utility function for combining styles
 import { GlobalStyles } from '@/styles'; // Assuming this is your global styles file
-import { cartItem } from '@/hooks/api/user/getCartItems';
+import { cartItem } from '@/hooks/api/user-cart/getCartItems';
+import { customerProductItem } from '@/hooks/api/user/getCustomerProducts';
+import ProductCard3 from './product-card-3';
+import ProductCard2 from './product-card-2';
 
 interface CartSummaryProps {
   cartItems?: cartItem[];
-  renderCartItem: ({ item }: { item: any }) => JSX.Element;
-  RelatedProducts: any[];
-  renderRelatedProduct: ({ item }: { item: any }) => JSX.Element;
-  totalAmount: string;
+  relatedItems?: customerProductItem[];
+  totalAmount: number;
   moveNext: () => void;
+  removeItem?: (itemIndex: number) => void;
 }
-
-const CartSummary: React.FC<CartSummaryProps> = ({
-  cartItems,
-  renderCartItem,
-  RelatedProducts,
-  renderRelatedProduct,
-  totalAmount,
-  moveNext,
-}) => {
+const CartSummary = (props: CartSummaryProps) => {
   return (
     <View style={[combineStyles(GlobalStyles, 'background_softer_blue'),{ flex: 1 }]}>
       <ScrollView>
         {/* Cart Items */}
         <View style={combineStyles(GlobalStyles, 'margin_sm', 'flex_row', 'gap_sm', 'items_center')}>
           <View style={[combineStyles(GlobalStyles, 'background_warning', 'rounded_full', 'jusify_center', 'items_center'), { width: 30, height: 30 }]}>
-            <Text style={combineStyles(GlobalStyles, 'color_white', 'font_bold')}>{cartItems?.length ?? 0}</Text>
+            <Text style={combineStyles(GlobalStyles, 'color_white', 'font_bold')}>{props.cartItems?.length ?? 0}</Text>
           </View>
           <Text style={combineStyles(GlobalStyles, 'text_2xl', 'font_bold')}>Items</Text>
         </View>
         <FlatList
-          data={RelatedProducts}
-          renderItem={renderCartItem}
-          keyExtractor={(item) => item.id}
+          data={props.cartItems}
+          renderItem={({item, index}) => (
+            <ProductCard3
+              item={item}
+              cart_id={item.cart_id}
+              onDelete={() => {
+                if(props.removeItem) props.removeItem(index);
+              }}
+            />
+          )}
+          keyExtractor={(item) => `${item.cart_id}_${item.product_id}`}
           style={styles.cartList}
           contentContainerStyle={combineStyles(GlobalStyles, 'gap_sm', 'margin_sm')}
         />
@@ -43,9 +45,9 @@ const CartSummary: React.FC<CartSummaryProps> = ({
         <View style={combineStyles(GlobalStyles, 'margin_sm')}>
           <Text style={combineStyles(GlobalStyles, 'text_2xl', 'margin_b_sm')}>You Might Also Like</Text>
           <FlatList
-            data={RelatedProducts}
-            renderItem={renderRelatedProduct}
-            keyExtractor={(item) => item.id}
+            data={props.relatedItems}
+            renderItem={({item}) => <ProductCard2 item={item} />}
+            keyExtractor={(item) => `${item.id}`}
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={combineStyles(GlobalStyles, 'gap_sm')}
@@ -59,14 +61,14 @@ const CartSummary: React.FC<CartSummaryProps> = ({
           <Text style={combineStyles(GlobalStyles, 'text_2xl')}>Total</Text>
           <View style={combineStyles(GlobalStyles, 'flex_row')}>
             <Text style={combineStyles(GlobalStyles, 'text_3xl', 'margin_t_xs', 'margin_b_xs')}>{'$'}</Text>
-            <Text style={combineStyles(GlobalStyles, 'text_3xl', 'margin_t_xs', 'margin_b_xs', 'font_bold')}>{totalAmount}</Text>
+            <Text style={combineStyles(GlobalStyles, 'text_3xl', 'margin_t_xs', 'margin_b_xs', 'font_bold')}>{props.totalAmount}</Text>
           </View>
         </View>
 
         <View style={combineStyles(GlobalStyles, 'flex_row', 'jusify_between')}>
           <TouchableOpacity
             style={[combineStyles(GlobalStyles, 'background_royal_blue', 'items_center', 'rounded_full', 'padding_y_sm'), { width: '100%' }]}
-            onPress={moveNext}
+            onPress={props.moveNext}
           >
             <Text style={combineStyles(GlobalStyles, 'text_lg', 'color_white', 'font_medium')}>Proceed Buying</Text>
           </TouchableOpacity>

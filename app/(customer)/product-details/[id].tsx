@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Image, FlatList, ScrollView, SafeAreaView, StyleSheet } from 'react-native';
 import { combineStyles, width, height } from '@/lib';
 import { GlobalStyles } from '@/styles';
@@ -8,24 +8,53 @@ import Counter from '@/components/shared/counter';
 import SearchBar from '@/components/app/customer/search-bar';
 import FAIcon from "react-native-vector-icons/FontAwesome";
 import ProductCard2 from '@/components/app/customer/product-card-2';
-import { inventoryData } from '@/static';
-import { InventoryItem } from '@/types';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useGetCustomerProductsApi } from '@/hooks/api/user/getCustomerProducts';
+import { userProductItem } from '@/hooks/api/user/getUserProducts';
+import { useGetProductSuggestionsApi } from '@/hooks/api/user/getProductSuggestions';
+import { useAuth } from '@/context/auth';
+import { useAddItemToCartApi } from '@/hooks/api/user-cart/addItemToCart';
 
 const ProductDetailsScreen: React.FC = () => {
-  const {productId} = useLocalSearchParams();
-  const [quantity, setQuantity] = useState<number>(1);
+  const authHook = useAuth();
+
+  const {id: productId} = useLocalSearchParams();
+  const getProductsApi = useGetCustomerProductsApi();
+  const getProductsResp = getProductsApi.response;
+
+  const addItemApi = useAddItemToCartApi();
+  const addItemResp = addItemApi.response;
+
+  const getProductSuggestionsApi = useGetProductSuggestionsApi();
+  const getProductSuggestionsResp = getProductSuggestionsApi.response;
+
+  const productItems = getProductsResp.data?.result || [];
+  const productItem = productItems[0] ? productItems[0] : undefined;
+  const itemImageUrl = productItem?.images ? productItem.images[0] : undefined;
+
   const [count, setCount] = useState<number>(1);
 
-  const relatedProducts = [
-    { id: '1', image: require('@/assets/images/castrol.png'), title: 'QUARTZ INEO FIRST 0W-30', price: '$13.00' },
-    { id: '2', image: require('@/assets/images/castrol.png'), title: 'QUARTZ INEO FIRST 5W-40', price: '$13.00' },
-    { id: '3', image: require('@/assets/images/castrol.png'), title: 'QUARTZ INEO FIRST 10W-60', price: '$13.00' },
-  ];
-
-  const renderRelatedProduct = ({ item }: { item: InventoryItem }) => (
-    <ProductCard2 item={item}/>
-  );
+  const addItem = () => {
+      addItemApi.trigger({
+          user_id: authHook.user.id,
+          items: {
+              product_id: `${productId}`,
+              quantity: count,
+          },
+      });
+  }
+  
+  useEffect(() => {
+    getProductsApi.trigger({
+      product_id: `${productId}`,
+    });
+    getProductSuggestionsApi.trigger();
+  }, []);
+  useEffect(() => {
+      if(addItemResp.success){
+        router.push('/cart');
+      }
+  }, [addItemResp.success]);
 
   return (
     <SafeAreaView style={combineStyles(GlobalStyles, 'safeArea')}>
@@ -38,18 +67,18 @@ const ProductDetailsScreen: React.FC = () => {
               <View style={combineStyles(GlobalStyles, 'flex_row', 'jusify_between')}>
                 <View style={combineStyles(GlobalStyles, 'flex_row', 'items_center')}>
                   <MCIIcon name="car-side" size={24} color={"blue"}/>
-                  <Text style={combineStyles(GlobalStyles, 'text_2xl', 'font_bold' ,'margin_l_xs')}>Mercedes</Text>
+                  <Text style={combineStyles(GlobalStyles, 'text_2xl', 'font_bold' ,'margin_l_xs')}>{productItem?.mfrName}</Text>
                 </View>
                 <TouchableOpacity>
                   <Image
-                      source={require('../../../assets/images/seller/rect1499.png')}
+                      source={require('@/assets/images/seller/image 6.png')}
                       style={[{ width: 20, height: 20 }]}
                       resizeMode='contain'
                   />  
                 </TouchableOpacity>
               </View>
-              <Text style={combineStyles(GlobalStyles, 'margin_t_sm', 'text_lg')}>S-Class 2.0 CDTI DIESEL</Text>
-              <Text style={combineStyles(GlobalStyles, 'margin_t_xs')}>(165 HP / 121 KW, YEAR FROM 2013 - 2023)</Text>
+              <Text style={combineStyles(GlobalStyles, 'margin_t_sm', 'text_lg')}>{productItem?.itemDescription || productItem?.genericArticleDescription}</Text>
+              <Text style={combineStyles(GlobalStyles, 'margin_t_xs')}>{productItem?.assemblyGroupName}</Text>
             </View>
           </View>
 
@@ -71,9 +100,9 @@ const ProductDetailsScreen: React.FC = () => {
             <View style={combineStyles(GlobalStyles, 'margin_sm', )}>
               <View style={combineStyles(GlobalStyles, 'flex_row', 'items_center', 'gap_sm', 'margin_b_xs')}>
                 <Image source={require('@/assets/images/seller/image 6.png')} style={{height: 40, width: 50}} resizeMode="contain" />
-                <Text style={styles.productBrand}>Total Energies</Text>
+                <Text style={styles.productBrand}>{productItem?.assemblyGroupName}</Text>
               </View>
-            <Text style={styles.productTitle}>QUARTZ INEO FIRST 0W-30</Text>
+            <Text style={styles.productTitle}>{productItem?.itemDescription || productItem?.genericArticleDescription}</Text>
             <Text style={combineStyles(GlobalStyles, 'color_gray')}>5 L - ref. 214178 - Engine oil</Text>
             <Text style={combineStyles(GlobalStyles, 'color_gray', 'margin_b_sm')}>Delivery: Sat 1 May</Text>
 
@@ -92,12 +121,13 @@ const ProductDetailsScreen: React.FC = () => {
             </View>
 
             {/* Product Description */}
-            <View style={combineStyles(GlobalStyles, 'padding_sm')}>
-            <Text style={combineStyles(GlobalStyles, 'text_2xl', 'margin_b_sm')}>Product Description</Text>
-            <Text style={combineStyles(GlobalStyles, 'line_lg')}>
-               Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-            </Text>
-            </View>
+            {
+              productItem?.itemDescription &&
+              <View style={combineStyles(GlobalStyles, 'padding_sm')}>
+                <Text style={combineStyles(GlobalStyles, 'text_2xl', 'margin_b_sm')}>Product Description</Text>
+                <Text style={combineStyles(GlobalStyles, 'line_lg')}>{productItem?.itemDescription}</Text>
+              </View>
+            }
 
             {/* Get in Touch */}
             <View style={[combineStyles(GlobalStyles, 'background_dark_blue', 'padding_sm', 'flex_row', 'jusify_between'), {paddingVertical: 50}]}>
@@ -111,9 +141,11 @@ const ProductDetailsScreen: React.FC = () => {
             <View style={combineStyles(GlobalStyles, 'padding_sm')}>
               <Text style={combineStyles(GlobalStyles, 'text_lg', 'margin_b_sm')}>You Might Also Like</Text>
               <FlatList
-                data={inventoryData}
-                renderItem={renderRelatedProduct}
-                keyExtractor={(item) => item.id}
+                data={getProductSuggestionsResp.data?.result}
+                renderItem={({item}: {item: userProductItem}) => (
+                  <ProductCard2 item={item}/>
+                )}
+                keyExtractor={(item, i) => `${i}_${item.legacyArticleId}`}
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={[combineStyles(GlobalStyles, 'gap_xl')]}
@@ -133,12 +165,11 @@ const ProductDetailsScreen: React.FC = () => {
             <View style={[combineStyles(GlobalStyles, 'flex_row', 'margin_t_xs', 'jusify_between', 'safeArea', 'margin_r_xs', 'margin_l_xs', 'margin_b_xs')]}>
                 <View style={combineStyles(GlobalStyles, 'flex_row')}>
                     <Text style={combineStyles(GlobalStyles, 'text_3xl', 'margin_t_xs', 'margin_b_xs')}>{'$'}</Text>
-                    <Text style={combineStyles(GlobalStyles, 'text_3xl', 'margin_t_xs', 'margin_b_xs', 'font_bold')}>{'4,955'}</Text>
+                    <Text style={combineStyles(GlobalStyles, 'text_3xl', 'margin_t_xs', 'margin_b_xs', 'font_bold')}>{productItem?.price}</Text>
                 </View>
                 <View style={[combineStyles(GlobalStyles)]}>
                     <Counter count={count} setCount={setCount}/>
                 </View>
-        
             </View>
             <View style={combineStyles(GlobalStyles, 'flex_row', 'jusify_between')}>
                 <TouchableOpacity style={[combineStyles(GlobalStyles, 'border_royal_blue', 'border_sm', 'padding_t_xs', 'padding_b_xs', 'rounded_full', 'items_center', 'padding_x_xs', 'flex_row'), {width: "38%"}]}>
@@ -149,10 +180,11 @@ const ProductDetailsScreen: React.FC = () => {
                     />
                     <Text style={combineStyles(GlobalStyles, 'text_lg', 'margin_l_xs', 'margin_r_xs')}>Add To Cart</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[combineStyles(GlobalStyles, 'background_royal_blue', 'items_center', 'rounded_full', 'padding_y_xs'), {width: '58%'}]} onPress={() => {
-                    router.push('/cart')
-                    
-                    }}>
+                <TouchableOpacity style={[combineStyles(GlobalStyles, 'background_royal_blue', 'items_center', 'rounded_full', 'padding_y_xs'), {width: '58%'}]}
+                    onPress={() => {
+                      addItem();
+                    }}
+                  >
                     <Text style={combineStyles(GlobalStyles, 'text_lg', 'color_white', 'font_medium')}>Apply</Text>
                 </TouchableOpacity>
 

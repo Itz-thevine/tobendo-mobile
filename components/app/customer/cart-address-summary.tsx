@@ -6,11 +6,12 @@ import MCIIcon from 'react-native-vector-icons/MaterialCommunityIcons'; // Make 
 
 
 interface CartAddressSummaryProps {
-    moveNext: () => void;
-  }
+  totalAmount: number;
+  moveNext: () => void;
+}
 
   
-const CartAddressSummary: React.FC<CartAddressSummaryProps> = ({moveNext}) => {
+const CartAddressSummary = (props: CartAddressSummaryProps) => {
   const [selectedAddress, setSelectedAddress] = useState('Fann Hock, Dakar');
   const [selectedDeliveryOption, setSelectedDeliveryOption] = useState('Standard');
 
@@ -67,9 +68,9 @@ const CartAddressSummary: React.FC<CartAddressSummaryProps> = ({moveNext}) => {
         <View style={combineStyles(GlobalStyles, 'absolute', 'background_white', 'bottom_0', 'right_0', 'left_0', 'padding_y_xs', 'padding_x_sm')}>
         <View style={[combineStyles(GlobalStyles, 'flex_row', 'jusify_between')]}>
             <Text style={combineStyles(GlobalStyles, 'text_2xl')}>Total</Text>
-            <Text style={combineStyles(GlobalStyles, 'text_2xl', 'font_bold')}>$51.00</Text>
+            <Text style={combineStyles(GlobalStyles, 'text_2xl', 'font_bold')}>{`$${props.totalAmount}`}</Text>
         </View>
-        <TouchableOpacity style={[combineStyles(GlobalStyles, 'background_royal_blue', 'items_center', 'rounded_full', 'padding_y_sm', 'margin_t_xs')]} onPress={moveNext}>
+        <TouchableOpacity style={[combineStyles(GlobalStyles, 'background_royal_blue', 'items_center', 'rounded_full', 'padding_y_sm', 'margin_t_xs')]} onPress={props.moveNext}>
             <Text style={combineStyles(GlobalStyles, 'text_lg', 'color_white', 'font_medium')}>Next</Text>
         </TouchableOpacity>
         </View>

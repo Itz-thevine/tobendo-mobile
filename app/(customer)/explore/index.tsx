@@ -7,13 +7,13 @@ import SearchBar from '@/components/app/customer/search-bar';
 import CustomModal from '@/components/shared/custom-modal';
 import Filter from '@/components/shared/filter';
 import Sort from '@/components/shared/sort';
-import { useGetPartSuggestionDetailsApi } from '@/hooks/api/vehicle/getPartSuggestionDetails';
 import ProductCard from '@/components/app/customer/product-card-4';
+import { useGetCustomerProductsApi } from '@/hooks/api/user/getCustomerProducts';
 
 
 const ExploreScreen: React.FC = () => {
-  const getPartDetailsApi = useGetPartSuggestionDetailsApi();
-  const getPartDetailsResp = getPartDetailsApi.response;
+  const getProductsApi = useGetCustomerProductsApi();
+  const getProductsResp = getProductsApi.response;
 
   const [make, setMake] = useState('Select Make');
   const [model, setModel] = useState('Select Model');
@@ -39,15 +39,12 @@ const ExploreScreen: React.FC = () => {
     setOpenCategory(prev => (prev === category ? null : category));
   };
 
-  const articleItems = getPartDetailsResp.data?.articles || [];
-  console.log(articleItems)
+  const productItems = getProductsResp.data?.result || [];
+  
   useEffect(() => {
-    getPartDetailsApi.trigger({
+    getProductsApi.trigger({
       page: 1,
-      per_page: 10,
-      lang: 'en',
-      include_all: false,
-      search_type: 99,
+      page_size: 10,
     });
   }, []);
 
@@ -177,16 +174,16 @@ const ExploreScreen: React.FC = () => {
       
         <View style={styles.manufacturerContainer}>
           <FlatList
-            data={articleItems}
+            data={productItems}
             renderItem={({item, index: i}) => {
               return (
                 <ProductCard
-                  key={`${i}_${item.legacyArticleId}`}
+                  key={`${i}_${item.product_id}`}
                   item={item}
                 />
               )
             }}
-            keyExtractor={(item) => (item.genericArticleId ?? '').toString()}
+            keyExtractor={(item) => (item.product_id ?? '').toString()}
             contentContainerStyle={[combineStyles(GlobalStyles, 'gap_xl')]}
           />
         </View>

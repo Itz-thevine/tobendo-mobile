@@ -7,7 +7,7 @@ type triggerProps = {
     page_size?: number;
 }
 export type userProductItem = {
-    id?: string;
+    product_id?: string;
     articleNumber?: number;
     dataSupplierId?: number;
     mfrName?: string;

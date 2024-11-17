@@ -1,37 +1,49 @@
 import { combineStyles, height, width } from '@/lib';
-import { inventoryData } from '@/static';
 import { GlobalStyles } from '@/styles';
-import { InventoryItem } from '@/types';
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
 import TopSellerItemCard from './top-seller-item-card-V1';
 import InventoryItemCard from './inventory-item-card';
 import CustomModal from '@/components/shared/custom-modal';
 import ProductSuggestion from './product-suggestion-list';
-import { useGetUserProductsApi } from '@/hooks/api/user/getUserProducts';
+import { useGetUserProductsApi, userProductItem } from '@/hooks/api/user/getUserProducts';
+import { partDetailsArticleItem, useGetPartSuggestionDetailsApi } from '@/hooks/api/vehicle/getPartSuggestionDetails';
 
 
 const Inventory: React.FC = () => {
+  const getPartDetailsApi = useGetPartSuggestionDetailsApi();
+  const getPartDetailsResp = getPartDetailsApi.response;
+  
   const getProductsApi = useGetUserProductsApi();
   const getProductsResp = getProductsApi.response;
 
   const [isProductListModal, setIsProductListModal] = useState(false)
   
-  const renderTopSellerItem = ({ item, index }: { item: InventoryItem, index: number }) => (
-    <TopSellerItemCard key={`${index}_${item?.id}`} item={item}/>
+  const renderTopSellerItem = ({ item, index }: { item: partDetailsArticleItem, index: number }) => (
+    <TopSellerItemCard key={`${index}_${item?.legacyArticleId}`} item={item}/>
   );
 
-  const renderInventoryItem = ({ item }: { item: InventoryItem }) => (
+  const renderInventoryItem = ({ item }: { item: userProductItem }) => (
     <InventoryItemCard item={item}/>
   );
 
+  const topSellerItems = getPartDetailsResp.data?.articles;
+  const productItems = getProductsResp.data?.result ?? [];
+
   useEffect(() => {
+    getPartDetailsApi.trigger({
+      page: 1,
+      per_page: 10,
+      lang: 'en',
+      include_all: false,
+      search_type: 99,
+    });
     getProductsApi.trigger({
       page: 1,
       page_size: 10,
     });
   }, []);
-
+  
   return (
     <SafeAreaView style={[combineStyles(GlobalStyles, 'relative', 'background_softer_blue'), { height: height}]}>
       <CustomModal
@@ -46,9 +58,10 @@ const Inventory: React.FC = () => {
           <ScrollView style={combineStyles(GlobalStyles, 'padding_sm')} showsVerticalScrollIndicator={false}>
               <Text style={combineStyles(GlobalStyles, 'text_2xl', 'margin_b_sm')}>Top Sellers</Text>
               <FlatList
-                  data={inventoryData}
+                  // data={inventoryData}
+                  data={topSellerItems}
                   renderItem={renderTopSellerItem}
-                  keyExtractor={(item) => item.id}
+                  keyExtractor={(item) => `${item.legacyArticleId ?? ''}`}
                   horizontal
                   style={[combineStyles(GlobalStyles, 'margin_b_sm')]}
                   contentContainerStyle={[combineStyles(GlobalStyles, 'gap_xl')]}
@@ -56,9 +69,9 @@ const Inventory: React.FC = () => {
               />
               <Text style={combineStyles(GlobalStyles, 'text_2xl', 'margin_t_sm', 'margin_b_sm')}>Inventory</Text>
               <FlatList
-                  data={inventoryData}
+                  data={productItems}
                   renderItem={renderInventoryItem}
-                  keyExtractor={(item) => item.id}
+                  keyExtractor={(item) => item.id ?? ''}
                   contentContainerStyle={[combineStyles(GlobalStyles, 'gap_xl')]}
               />
               {/* <View style={{width: '100%', height: 200}}></View> */}

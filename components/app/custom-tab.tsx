@@ -20,7 +20,7 @@ const CustomTabs: React.FC<sellerTab> = ({selectedTab, setSelectedTab}) => {
         return <OrderTabs/>;
       case 'Inventory':
         return( 
-          <Inventory/>           
+          <Inventory/>
         );
       case 'Earnings':
         return <Earnings/>;

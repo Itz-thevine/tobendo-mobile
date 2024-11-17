@@ -6,76 +6,105 @@ import CartSummary from '@/components/app/customer/cart-summary';
 import CartAddressSummary from '@/components/app/customer/cart-address-summary';
 import PaymentMethod from '@/components/app/customer/cart-payment-summary';
 import CartConfirmation from '@/components/app/customer/cart-confirmation';
-import ProductCard2 from '@/components/app/customer/product-card-2';
-import ProductCard3 from '@/components/app/customer/product-card-3';
 import { combineStyles } from '@/lib';
-import { RelatedProducts } from '@/static';
 import { GlobalStyles } from '@/styles';
 import CustomModal from '@/components/shared/custom-modal';
 import { router } from 'expo-router';
-import { cartItem, useGetCartItemsApi } from '@/hooks/api/user/getCartItems';
+import { cartItem, useGetCartItemsApi } from '@/hooks/api/user-cart/getCartItems';
+import { useGetCustomerProductsApi } from '@/hooks/api/user/getCustomerProducts';
+import { useGetProductSuggestionsApi } from '@/hooks/api/user/getProductSuggestions';
 
 const CartScreen: React.FC = () => {
   const getCartItemsApi = useGetCartItemsApi();
   const getCartItemsResp = getCartItemsApi.response;
 
-  const cart = (getCartItemsResp.data || [])[0] || {};
-  const cartItems = cart.items;
-
+  const getProductsApi = useGetCustomerProductsApi();
+  const getProductsResp = getProductsApi.response;
+  // const cartItems = getProductsResp.data?.result || [];
+  
+  const getSuggestionsApi = useGetProductSuggestionsApi();
+  const getSuggestionsResp = getSuggestionsApi.response;
+  const relatedItems = getSuggestionsResp.data?.result || [];
+  
+  const [cartItems, setCartItems] = useState(getCartItemsResp.data || []);
+  const [totalAmount, setTotalAmout] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const steps = ['Cart', 'Delivery', 'Payment', 'Confirm'];
   
-
   const moveNext = () => {
     setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
   };
-
   const movePrevious = () => {
     setCurrentStep(prev => Math.max(prev - 1, 0));
   };
-
-  // const [cartItems, setCartItems] = useState<cartItem[]>([
-    // { id: '1', image: require('@/assets/images/Group 41.png'), brand: 'Total Energies', title: 'QUARTZ INEO FIRST 0W-30', price: 25, quantity: 1 },
-    // { id: '2', image: require('@/assets/images/Group 41.png'), brand: 'Mobil', title: 'QUARTZ INEO FIRST 0W-30', price: 26, quantity: 1 },
-  // ]);
-
-  // const total = useMemo(() => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0), [cartItems]);
-  const total = cart.total_price ?? 0;
-
-  const renderCartItem = ({ item }: { item: cartItem }) => <ProductCard3 item={item} />;
-
-  const renderRelatedProduct = ({ item }: { item: cartItem }) => <ProductCard2 item={item} />;
+  const removeItem = (itemIndex: number) => {
+    const newItems = [...cartItems];
+    newItems.splice(itemIndex, 1);
+    setCartItems(newItems);
+  }
 
   const renderCurrentStep = () => {
     switch (currentStep) {
       case 0:
         return (
           <CartSummary
+            totalAmount={totalAmount}
             cartItems={cartItems}
-            renderCartItem={renderCartItem}
-            RelatedProducts={RelatedProducts}
-            renderRelatedProduct={renderRelatedProduct}
-            totalAmount={total.toString()}
+            relatedItems={relatedItems}
             moveNext={moveNext}
+            removeItem={removeItem}
           />
         );
       case 1:
-        return <CartAddressSummary moveNext={moveNext} />;
+        return <CartAddressSummary totalAmount={totalAmount} moveNext={moveNext} />;
       case 2:
-        return <PaymentMethod moveNext={moveNext} />;
+        return <PaymentMethod totalAmount={totalAmount} moveNext={moveNext} />;
       case 3:
-        return <CartConfirmation moveNext={() => setIsConfirmationModalOpen(true)} />;
+        return <CartConfirmation
+          cartItems={cartItems}
+          totalAmount={totalAmount}
+          moveNext={() => setIsConfirmationModalOpen(true)}
+          updateItem={updateItem}
+          removeItem={removeItem}
+        />;
       default:
         return null;
     }
   };
+  const getTotalAmount = (items: cartItem[]) => {
+    let newTotalAmount = 0;
+      cartItems.map((item) => {
+        newTotalAmount += (item.price ?? 0) * (item.quantity ?? 0);
+      });
+
+    return newTotalAmount;
+  }
+  const updateItem = (itemIndex: number, itemProps: Partial<cartItem>) => {
+    const newItems = [...cartItems];
+    const item = newItems[itemIndex];
+    if(item){
+      newItems[itemIndex] = {
+        ...item,
+        ...itemProps,
+      };
+    }
+    setCartItems(newItems);
+    setTotalAmout(getTotalAmount(newItems));
+  }
 
   useEffect(() => {
-    if(getCartItemsResp.loading === false && getCartItemsResp.success){
-      
+    getCartItemsApi.trigger();
+    getProductsApi.trigger();
+  }, []);
+  useEffect(() => {
+    if(getCartItemsResp.success){
+      setCartItems(getCartItemsResp.data || []);
     }
-  }, [getCartItemsResp.loading]);
+  }, [getCartItemsResp.success]);
+  useEffect(() => {
+    setTotalAmout(getTotalAmount(cartItems));
+  }, [cartItems.length]);
 
   return (
     <SafeAreaView style={combineStyles(GlobalStyles, 'safeArea')}>

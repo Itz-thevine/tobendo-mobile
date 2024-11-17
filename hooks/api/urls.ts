@@ -12,10 +12,16 @@ export const __apiUrls = {
     
     addCompanyDetails: `${__apiBaseUrl}/seller/`,
     
-    getCustomerOrders: `${__apiBaseUrl}/order/`,
     getUserProducts: `${__apiBaseUrl}/product/me/`,
     createUserProducts: `${__apiBaseUrl}/product/create/`,
     getCartItems: `${__apiBaseUrl}/cart/`,
+    addItemToCart: `${__apiBaseUrl}/cart/`,
+    removeCartItem: (cartId: string) => `${__apiBaseUrl}/cart/${cartId}`,
+    checkoutCart: `${__apiBaseUrl}/checkout/`,
+    
+    getCustomerOrders: `${__apiBaseUrl}/order/`,
+    getCustomerProducts: `${__apiBaseUrl}/customer-product/`,
+    getProductSuggestions: `${__apiBaseUrl}/customer-product/`,
 
     getVehicleMakes: `${__apiBaseUrl}/techallience/brands/`,
     getVehicleModels: (brandId: number | string) => `${__apiBaseUrl}/techallience/models/${brandId}/`,

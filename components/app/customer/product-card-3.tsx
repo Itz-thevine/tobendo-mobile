@@ -1,65 +1,83 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { combineStyles, width } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import { router } from 'expo-router';
 import ArtIcon from "react-native-vector-icons/AntDesign";
-import { cartItem } from '@/hooks/api/user/getCartItems';
+import { useRemoveCartItemApi } from '@/hooks/api/user-cart/removeCartItem';
+import { customerProductItem } from '@/hooks/api/user/getCustomerProducts';
 
-type productCard = {
-  item: cartItem;
+type ProductCard3Props = {
+    cart_id?: string;
+    item: customerProductItem;
+    onDelete?: () => void;
 };
 
-const ProductCard3: React.FC<productCard> = ({ item }) => {
-    const [count, setCount] = useState(0)
-  return (
-    <TouchableOpacity onPress={() => router.push('/(customer)/product-details')} style={[combineStyles(GlobalStyles, 'border_soft_blue', 'background_white', 'border_xs', 'rounded_xs', 'padding_xs', 'jusify_center', 'safeArea')]}>
-        <View style={[combineStyles(GlobalStyles, 'flex_row', 'items_center')]}>
-            {/* <View >
-                <Image
-                    source={item.image}
-                    style={[GlobalStyles.rounded_xs, { width: width*0.3, height: 120 }]}
-                    resizeMode='contain'
-                />
-            </View> */}
-            <View style={[combineStyles(GlobalStyles, 'margin_l_xs')]}>
-                <View style={combineStyles(GlobalStyles, 'flex_row', 'items_center')}>
-                    <Image
-                    source={require('../../../assets/images/seller/image 6.png')}
-                    // source={{ uri: 'https://via.placeholder.com/50' }}
-                    style={[{ width: 50, height: 30 }]}
-                    resizeMode='cover'
-                    />
-                    <Text style={combineStyles(GlobalStyles, 'margin_l_xs', 'font_medium')}>{'Total Energies'}</Text>
-                </View>
+const ProductCard3 = (props: ProductCard3Props) => {
+    const deleteApi = useRemoveCartItemApi();
+    const deleteResp = deleteApi.response;
 
-                <Text style={[combineStyles(GlobalStyles, 'text_2xl', 'font_medium', 'line_lg', 'margin_t_xs'), {width: width*0.5}]}>{item.name}</Text>
-                <Text style={combineStyles(GlobalStyles, 'text_lg', 'font_medium', 'line_lg', 'margin_t_xs', 'color_gray')}>{'Delivery: Sat 1 May'}</Text>
-            </View>
-        </View>
-        <View style={[combineStyles(GlobalStyles, 'background_soft_blue', 'margin_t_sm'), {width: '100%', height: 1}]}></View>
-        <View style={[combineStyles(GlobalStyles, 'flex_row', 'margin_t_xs', 'jusify_between', 'safeArea', 'margin_r_xs', 'margin_l_xs')]}>
-            <View style={combineStyles(GlobalStyles, 'flex_row', 'items_center')}>
-                <Text style={combineStyles(GlobalStyles, 'text_2xl', 'color_gray')}>Total: </Text>
-                <Text style={combineStyles(GlobalStyles, 'text_3xl', 'margin_t_xs', 'margin_b_xs')}>{'$'}</Text>
-                <Text style={combineStyles(GlobalStyles, 'text_3xl', 'margin_t_xs', 'margin_b_xs', 'font_bold')}>{item.price}</Text>
-            </View>
-            <View style={[combineStyles(GlobalStyles, 'flex_row', 'items_center' )]}>
-                <View style={[combineStyles(GlobalStyles, 'margin_r_sm', 'background_softer_blue', 'flex_row', 'items_center' , 'padding_xs', 'rounded_full')]}>
-                    <ArtIcon name='delete' size={20} color={'#A2112A'} />
+    const deleteItem = () => {
+        if(props.cart_id) deleteApi.trigger({
+            cart_id: props.cart_id,
+        });
+    }
+
+    useEffect(() => {
+        if(deleteResp.success && props.onDelete) props.onDelete();
+    }, [deleteResp.success]);
+    return (
+        <View style={[combineStyles(GlobalStyles, 'border_soft_blue', 'background_white', 'border_xs', 'rounded_xs', 'padding_xs', 'jusify_center', 'safeArea')]}>
+            <TouchableOpacity onPress={() => router.push(`/(customer)/product-details/${props.item.id}`)}>
+                <View style={[combineStyles(GlobalStyles, 'flex_row', 'items_center')]}>
+                    {/* <View >
+                        <Image
+                            source={item.image}
+                            style={[GlobalStyles.rounded_xs, { width: width*0.3, height: 120 }]}
+                            resizeMode='contain'
+                        />
+                    </View> */}
+                    <View style={[combineStyles(GlobalStyles, 'margin_l_xs')]}>
+                        <View style={combineStyles(GlobalStyles, 'flex_row', 'items_center')}>
+                            <Image
+                            source={require('../../../assets/images/seller/image 6.png')}
+                            // source={{ uri: 'https://via.placeholder.com/50' }}
+                            style={[{ width: 50, height: 30 }]}
+                            resizeMode='cover'
+                            />
+                            <Text style={combineStyles(GlobalStyles, 'margin_l_xs', 'font_medium')}>{'Total Energies'}</Text>
+                        </View>
+
+                        <Text style={[combineStyles(GlobalStyles, 'text_2xl', 'font_medium', 'line_lg', 'margin_t_xs'), {width: width*0.5}]}>{props.item.genericArticleDescription}</Text>
+                        <Text style={combineStyles(GlobalStyles, 'text_lg', 'font_medium', 'line_lg', 'margin_t_xs', 'color_gray')}>{'Delivery: Sat 1 May'}</Text>
+                    </View>
                 </View>
-                <TouchableOpacity style={combineStyles(GlobalStyles, 'background_royal_blue', 'padding_t_xs', 'padding_b_xs', 'rounded_full', 'items_center', 'padding_x_xs', 'flex_row')}>
-                    <Image
-                        source={require('@/assets/images/Group 28_white.png')}
-                        style={[{ height: 16 }]}
-                        resizeMode='contain'
-                    />
-                    <Text style={combineStyles(GlobalStyles, 'color_white', 'text_lg', 'margin_l_xs')}>Add To Cart</Text>
-                </TouchableOpacity>
+            </TouchableOpacity>
+            <View style={[combineStyles(GlobalStyles, 'background_soft_blue', 'margin_t_sm'), {width: '100%', height: 1}]}></View>
+            <View style={[combineStyles(GlobalStyles, 'flex_row', 'margin_t_xs', 'jusify_between', 'safeArea', 'margin_r_xs', 'margin_l_xs')]}>
+                <View style={combineStyles(GlobalStyles, 'flex_row', 'items_center')}>
+                    <Text style={combineStyles(GlobalStyles, 'text_2xl', 'color_gray')}>Total: </Text>
+                    <Text style={combineStyles(GlobalStyles, 'text_3xl', 'margin_t_xs', 'margin_b_xs')}>{'$'}</Text>
+                    <Text style={combineStyles(GlobalStyles, 'text_3xl', 'margin_t_xs', 'margin_b_xs', 'font_bold')}>{props.item.price}</Text>
+                </View>
+                <View style={[combineStyles(GlobalStyles, 'flex_row', 'items_center' )]}>
+                    <TouchableOpacity onPress={deleteItem}>
+                        <View style={[combineStyles(GlobalStyles, 'margin_r_sm', 'background_softer_blue', 'flex_row', 'items_center' , 'padding_xs', 'rounded_full')]}>
+                            <ArtIcon name='delete' size={20} color={'#A2112A'} onPress={deleteItem} />
+                        </View>
+                    </TouchableOpacity>
+                    {/* <TouchableOpacity style={combineStyles(GlobalStyles, 'background_royal_blue', 'padding_t_xs', 'padding_b_xs', 'rounded_full', 'items_center', 'padding_x_xs', 'flex_row')}>
+                        <Image
+                            source={require('@/assets/images/Group 28_white.png')}
+                            style={[{ height: 16 }]}
+                            resizeMode='contain'
+                        />
+                        <Text style={combineStyles(GlobalStyles, 'color_white', 'text_lg', 'margin_l_xs')}>Add To Cart</Text>
+                    </TouchableOpacity> */}
+                </View>
             </View>
         </View>
-    </TouchableOpacity>
-  );
+    );
 };
 
 export default ProductCard3;

@@ -1,12 +1,12 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import StockStatus from '@/components/stock-status';
 import { combineStyles, width } from '@/lib';
 import { GlobalStyles } from '@/styles';
-import { userProductItem } from '@/hooks/api/user/getUserProducts';
+import { InventoryItem } from '@/types';
 
 type InventoryItemCardProps = {
-  item: userProductItem;
+  item: InventoryItem;
 };
 
 const InventoryItemCard: React.FC<InventoryItemCardProps> = ({ item }) => {
