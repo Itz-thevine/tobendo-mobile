@@ -26,23 +26,29 @@ const CartSummary = (props: CartSummaryProps) => {
           </View>
           <Text style={combineStyles(GlobalStyles, 'text_2xl', 'font_bold')}>Items</Text>
         </View>
-        <FlatList
-          data={props.cartItems}
-          renderItem={({item, index}) => (
-            <ProductCard3
-              item={item}
-              onDelete={() => {
-                if(props.removeItem) props.removeItem(index);
-              }}
-            />
-          )}
-          keyExtractor={(item) => `${item.cart_id}_${item.product_id}`}
-          style={styles.cartList}
-          contentContainerStyle={combineStyles(GlobalStyles, 'gap_sm', 'margin_sm')}
-        />
         {
           props.loading ?
-          <ActivityIndicator /> : <></>
+          <ActivityIndicator /> :
+          <>
+            {
+              props.cartItems?.length ?
+              <FlatList
+                data={props.cartItems}
+                renderItem={({item, index}) => (
+                  <ProductCard3
+                    item={item}
+                    onDelete={() => {
+                      if(props.removeItem) props.removeItem(index);
+                    }}
+                  />
+                )}
+                keyExtractor={(item) => `${item.cart_id}_${item.product_id}`}
+                style={styles.cartList}
+                contentContainerStyle={combineStyles(GlobalStyles, 'gap_sm', 'margin_sm')}
+              /> :
+              <Text style={{textAlign: 'center'}}>no items</Text>
+            }
+          </>
         }
 
         {/* Related Products */}
@@ -72,9 +78,13 @@ const CartSummary = (props: CartSummaryProps) => {
           </View>
         </View>
 
-        <View style={combineStyles(GlobalStyles, 'flex_row', 'jusify_between')}>
+        <View style={{
+          ...combineStyles(GlobalStyles, 'flex_row', 'jusify_between'),
+          opacity: !props.cartItems?.length ? 0.6 : undefined
+        }}>
           <TouchableOpacity
             style={[combineStyles(GlobalStyles, 'background_royal_blue', 'items_center', 'rounded_full', 'padding_y_sm'), { width: '100%' }]}
+            disabled={!props.cartItems?.length}
             onPress={props.moveNext}
           >
             <Text style={combineStyles(GlobalStyles, 'text_lg', 'color_white', 'font_medium')}>Proceed Buying</Text>

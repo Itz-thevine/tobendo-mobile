@@ -12,6 +12,7 @@ import CustomModal from '@/components/shared/custom-modal';
 import { router } from 'expo-router';
 import { cartItem, useGetCartItemsApi } from '@/hooks/api/user-cart/getCartItems';
 import { useGetProductSuggestionsApi } from '@/hooks/api/user/getProductSuggestions';
+import { addressProps, useGetAddressesApi } from '@/hooks/api/address/getAddresses';
 
 const CartScreen = () => {
   const getCartItemsApi = useGetCartItemsApi();
@@ -20,11 +21,15 @@ const CartScreen = () => {
   const getSuggestionsApi = useGetProductSuggestionsApi();
   const getSuggestionsResp = getSuggestionsApi.response;
   const relatedItems = getSuggestionsResp.data?.result || [];
+
+  const getAddressesApi = useGetAddressesApi();
+  const getAddressesResp = getAddressesApi.response;
   
   const [cartItems, setCartItems] = useState(getCartItemsResp.data || []);
   const [totalAmount, setTotalAmout] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState<addressProps | undefined>(undefined);
   const steps = ['Cart', 'Delivery', 'Payment', 'Confirm'];
   
   const moveNext = () => {
@@ -53,7 +58,13 @@ const CartScreen = () => {
           />
         );
       case 1:
-        return <CartAddressSummary totalAmount={totalAmount} moveNext={moveNext} />;
+        return <CartAddressSummary
+          totalAmount={totalAmount}
+          addressList={getAddressesResp.data}
+          selectedAddress={selectedAddress}
+          onSelectAddress={setSelectedAddress}
+          moveNext={moveNext}
+        />;
       case 2:
         return <PaymentMethod totalAmount={totalAmount} moveNext={moveNext} />;
       case 3:

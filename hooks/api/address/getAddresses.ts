@@ -5,7 +5,7 @@ import { useCallApiProps } from "../useCallApi";
 type triggerProps = {
     
 }
-type addressProps = {
+export type addressProps = {
     address_line_1?: string,
     address_line_2?: string,
     city?: string,
@@ -18,7 +18,7 @@ type addressProps = {
     updated_at?: string
 };
 type dataProps = addressProps[];
-export const useGetAddresses = (props?: useCallApiProps) => {
+export const useGetAddressesApi = (props?: useCallApiProps) => {
     const api = useApi(props);
     return {
         response: {
