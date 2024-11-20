@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, FlatList, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { combineStyles } from '@/lib'; // Assuming this is a utility function for combining styles
 import { GlobalStyles } from '@/styles'; // Assuming this is your global styles file
 import { cartItem } from '@/hooks/api/user-cart/getCartItems';
@@ -11,6 +11,7 @@ interface CartSummaryProps {
   cartItems?: cartItem[];
   relatedItems?: customerProductItem[];
   totalAmount: number;
+  loading?: boolean;
   moveNext: () => void;
   removeItem?: (itemIndex: number) => void;
 }
@@ -30,7 +31,6 @@ const CartSummary = (props: CartSummaryProps) => {
           renderItem={({item, index}) => (
             <ProductCard3
               item={item}
-              cart_id={item.cart_id}
               onDelete={() => {
                 if(props.removeItem) props.removeItem(index);
               }}
@@ -40,20 +40,29 @@ const CartSummary = (props: CartSummaryProps) => {
           style={styles.cartList}
           contentContainerStyle={combineStyles(GlobalStyles, 'gap_sm', 'margin_sm')}
         />
+        {
+          props.loading ?
+          <ActivityIndicator /> : <></>
+        }
 
         {/* Related Products */}
-        <View style={combineStyles(GlobalStyles, 'margin_sm')}>
-          <Text style={combineStyles(GlobalStyles, 'text_2xl', 'margin_b_sm')}>You Might Also Like</Text>
-          <FlatList
-            data={props.relatedItems}
-            renderItem={({item}) => <ProductCard2 item={item} />}
-            keyExtractor={(item) => `${item.id}`}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={combineStyles(GlobalStyles, 'gap_sm')}
-          />
-        </View>
-        <View style={{ width: '100%', height: 200 }}></View>
+        {
+          props.relatedItems?.length ?
+          <>
+            <View style={combineStyles(GlobalStyles, 'margin_sm')}>
+              <Text style={combineStyles(GlobalStyles, 'text_2xl', 'margin_b_sm')}>You Might Also Like</Text>
+              <FlatList
+                data={props.relatedItems}
+                renderItem={({item}) => <ProductCard2 item={item} />}
+                keyExtractor={(item) => `${item.id}`}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={combineStyles(GlobalStyles, 'gap_sm')}
+              />
+            </View>
+            <View style={{ width: '100%', height: 200 }}></View>
+          </> : <></>
+        }
       </ScrollView>
 
       <View style={combineStyles(GlobalStyles, 'absolute', 'background_white', 'bottom_0', 'right_0', 'left_0', 'padding_y_xs', 'padding_x_sm')}>

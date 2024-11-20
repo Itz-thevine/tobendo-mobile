@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, SafeAreaView, StyleSheet, Text, TouchableOpacity, TextInput, FlatList } from 'react-native';
+import { View, ScrollView, SafeAreaView, StyleSheet, Text, TouchableOpacity, TextInput, FlatList, ActivityIndicator } from 'react-native';
 import { combineStyles } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import CustomerAppHeader from '@/components/shared/customers-app-header';
@@ -10,36 +10,67 @@ import Sort from '@/components/shared/sort';
 import ProductCard from '@/components/app/customer/product-card-4';
 import { useGetCustomerProductsApi } from '@/hooks/api/user/getCustomerProducts';
 
-
+type sortOrder = 'asc' | 'desc';
 const ExploreScreen: React.FC = () => {
   const getProductsApi = useGetCustomerProductsApi();
   const getProductsResp = getProductsApi.response;
+  const loading = getProductsResp.loading;
 
-  const [make, setMake] = useState('Select Make');
-  const [model, setModel] = useState('Select Model');
-  const [quantity, setQuantity] = useState<string>('');
-  const [price, setPrice] = useState<string>('');
-  const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const [filters, setFilters] = useState({
+    minPrice: undefined as number | undefined,
+    maxPrice: undefined as number | undefined,
+    brand: undefined as string | undefined,
+    sortOrder: undefined as sortOrder | undefined,
+    searchQuery: undefined as string | undefined,
+  });
+  
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [isSortModalOpen, setIsSortModalOpen] = useState(false);
   const [currentDisplay, setcurrentDisplay] = useState(1);
-  const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
-  const [selectedSortValue, setSelectedSortValue] = useState<string | null>(null);
 
 
   const brands = ['Mercedes', 'BMW', 'Nissan', 'Fiat', 'Mazda', 'Hyundai', 'Audi', 'Alfa Romeo', 'Kia', 'Ford', 'Opel'];
-  const sortValues = ['Price: Low to High', 'Price: High to Low'];
-
-  const handleSelect = (brand: string) => {
-    setSelectedBrand(brand);
-  };
-
-
-  const handlePress = (category: string) => {
-    setOpenCategory(prev => (prev === category ? null : category));
+  // const sortValues = ['Price: Low to High', 'Price: High to Low'];
+  const sortValues: Record<sortOrder, string> = {
+    asc: `Low to High`,
+    desc: `High to Low`,
   };
 
   const productItems = getProductsResp.data?.result || [];
+  const filteredItems = productItems.filter((item) => {
+    return (
+      (
+        !filters.searchQuery
+        || (
+          filters.searchQuery
+          && (
+            item.assemblyGroupName?.toLocaleLowerCase().includes(filters.searchQuery.toLowerCase())
+            || item.itemDescription?.toLocaleLowerCase().includes(filters.searchQuery.toLowerCase())
+            || item.genericArticleDescription?.toLocaleLowerCase().includes(filters.searchQuery.toLowerCase())
+            || item.mfrName?.toLocaleLowerCase().includes(filters.searchQuery.toLowerCase())
+          )
+        )
+      )
+      && (
+        filters.minPrice === undefined
+        || (
+          filters.minPrice !== undefined && (item.price ?? 0) >= filters.minPrice
+        )
+      )
+      && (
+        filters.maxPrice === undefined
+        || (
+          filters.maxPrice !== undefined && (item.price ?? 0) <= filters.maxPrice
+        )
+      )
+    )
+  }).sort((a, b) => {
+    return (
+        (filters?.sortOrder === 'asc') ? (a.price ?? 0) - (b.price ?? 0) :
+        (filters?.sortOrder === 'desc') ? (b.price ?? 0) - (a.price ?? 0) :
+        0
+    )
+});
   
   useEffect(() => {
     getProductsApi.trigger({
@@ -47,10 +78,9 @@ const ExploreScreen: React.FC = () => {
       page_size: 10,
     });
   }, []);
-
+  
   return (
     <SafeAreaView style={combineStyles(GlobalStyles, 'safeArea')}>
-
       
       <CustomModal
         isVisible={isFilterModalOpen}
@@ -66,8 +96,13 @@ const ExploreScreen: React.FC = () => {
                   <Text style={[combineStyles(GlobalStyles, 'color_gray'), {marginTop: 5}]}>From</Text>
                   <TextInput
                     style={combineStyles(GlobalStyles, 'text_sm', 'margin_l_xs')}
-                    value={quantity}
-                    onChangeText={setQuantity}
+                    // value={filters.minPrice?.toString()}
+                    onChangeText={(value) => {
+                      setFilters({
+                        ...filters,
+                        minPrice: parseInt(value),
+                      });
+                    }}
                   />
                 </View>
 
@@ -75,8 +110,13 @@ const ExploreScreen: React.FC = () => {
                   <Text style={[combineStyles(GlobalStyles, 'color_gray'),  {marginTop: 5}]}>to</Text>
                   <TextInput
                     style={combineStyles(GlobalStyles, 'margin_l_xs')}
-                    value={price}
-                    onChangeText={setPrice}
+                    // value={filters.maxPrice?.toString()}
+                    onChangeText={(value) => {
+                      setFilters({
+                        ...filters,
+                        maxPrice: parseInt(value),
+                      });
+                    }}
                   />
                 </View>
               </View>
@@ -86,11 +126,16 @@ const ExploreScreen: React.FC = () => {
                 {brands.map((brand, index) => (
                   <TouchableOpacity 
                     style={combineStyles(GlobalStyles, 'flex_row', 'items_center', 'margin_b_xs')}
-                    onPress={() => handleSelect(brand)} 
+                    onPress={() => {
+                      setFilters({
+                        ...filters,
+                        brand,
+                      });
+                    }} 
                     key={index}
                   >
                     <View style={[combineStyles(GlobalStyles, "border_xs", 'rounded_full', 'border_gray', 'items_center', 'jusify_center'), {height: 20, width: 20}]}>
-                      <View style={ selectedBrand === brand && [combineStyles(GlobalStyles, 'background_dark_blue', 'rounded_full'), {width: 12, height: 12}]}></View>
+                      <View style={ filters.brand === brand && [combineStyles(GlobalStyles, 'background_dark_blue', 'rounded_full'), {width: 12, height: 12}]}></View>
                     </View>
                     <Text style={combineStyles(GlobalStyles, 'color_gray', 'margin_l_sm')}>{brand}</Text>
                   </TouchableOpacity>
@@ -102,7 +147,7 @@ const ExploreScreen: React.FC = () => {
         </ScrollView>
         <View style={combineStyles(GlobalStyles, 'absolute', 'background_white', 'bottom_0', 'right_0', 'left_0', 'padding_y_xs', 'padding_x_sm' )}>
           <TouchableOpacity style={combineStyles(GlobalStyles, 'background_royal_blue', 'items_center', 'rounded_full', 'padding_y_sm')} onPress={() => {
-             setcurrentDisplay(1)
+            //  setcurrentDisplay(1)
             setIsFilterModalOpen(false)
             
             }}>
@@ -118,14 +163,19 @@ const ExploreScreen: React.FC = () => {
         <ScrollView style={combineStyles(GlobalStyles, 'padding_sm')}>
             <View style={combineStyles(GlobalStyles, 'margin_t_sm')}>
                 <Text style={combineStyles(GlobalStyles, 'text_2xl', 'font_medium', 'margin_b_sm')}>Sort By</Text>
-                {sortValues.map((sortValue, index) => (
+                {Object.entries(sortValues).map(([sortOrder, sortValue], index) => (
                   <TouchableOpacity 
                     style={combineStyles(GlobalStyles, 'flex_row', 'items_center', 'margin_b_xs')}
-                    onPress={() => setSelectedSortValue(sortValue)} 
+                    onPress={() => {
+                      setFilters({
+                        ...filters,
+                        sortOrder: sortOrder as sortOrder,
+                      });
+                    }} 
                     key={index}
                   >
                     <View style={[combineStyles(GlobalStyles, "border_xs", 'rounded_full', 'border_gray', 'items_center', 'jusify_center'), {height: 20, width: 20}]}>
-                      <View style={ selectedSortValue === sortValue && [combineStyles(GlobalStyles, 'background_dark_blue', 'rounded_full'), {width: 12, height: 12}]}></View>
+                      <View style={ filters.sortOrder === sortOrder && [combineStyles(GlobalStyles, 'background_dark_blue', 'rounded_full'), {width: 12, height: 12}]}></View>
                     </View>
                     <Text style={combineStyles(GlobalStyles, 'color_gray', 'margin_l_sm')}>{sortValue}</Text>
                   </TouchableOpacity>
@@ -136,7 +186,7 @@ const ExploreScreen: React.FC = () => {
         <View style={combineStyles(GlobalStyles, 'absolute', 'background_white', 'bottom_0', 'right_0', 'left_0', 'padding_y_xs', 'padding_x_sm' )}>
           <TouchableOpacity style={combineStyles(GlobalStyles, 'background_royal_blue', 'items_center', 'rounded_full', 'padding_y_sm')} onPress={() => {
             setIsSortModalOpen(false)
-            setcurrentDisplay(2)
+            // setcurrentDisplay(2)
           }}>
             <Text style={combineStyles(GlobalStyles, 'text_lg', 'color_white', 'font_medium')}>Apply</Text>
           </TouchableOpacity>
@@ -146,25 +196,14 @@ const ExploreScreen: React.FC = () => {
       <CustomerAppHeader />
       <ScrollView style={combineStyles(GlobalStyles, 'background_softer_blue')}>
         <View style={combineStyles(GlobalStyles, 'background_dark_blue', 'margin_b_sm')}>
-          <SearchBar />
-         
-          {/* <View style={combineStyles(GlobalStyles, 'background_white', 'padding_sm', 'margin_sm', 'rounded_xs')}>
-            <View style={combineStyles(GlobalStyles, 'flex_row', 'jusify_between')}>
-              <View style={combineStyles(GlobalStyles, 'flex_row', 'items_center')}>
-                <MCIIcon name="car-side" size={24} color={"blue"}/>
-                <Text style={combineStyles(GlobalStyles, 'text_2xl', 'font_bold' ,'margin_l_xs')}>Mercedes</Text>
-              </View>
-              <TouchableOpacity>
-                <Image
-                    source={require('../../../assets/images/seller/rect1499.png')}
-                    style={[{ width: 20, height: 20 }]}
-                    resizeMode='contain'
-                />  
-              </TouchableOpacity>
-            </View>
-            <Text style={combineStyles(GlobalStyles, 'margin_t_sm', 'text_lg')}>S-Class 2.0 CDTI DIESEL</Text>
-            <Text style={combineStyles(GlobalStyles, 'margin_t_xs')}>(165 HP / 121 KW, YEAR FROM 2013 - 2023)</Text>
-          </View> */}
+          <SearchBar
+            onChangeText={(searchQuery) => {
+              setFilters({
+                ...filters,
+                searchQuery,
+              });
+            }}
+          />
         </View>
 
         <View style={combineStyles(GlobalStyles, 'flex_row', 'jusify_between', 'margin_sm', 'margin_b_sm')}>
@@ -174,7 +213,7 @@ const ExploreScreen: React.FC = () => {
       
         <View style={styles.manufacturerContainer}>
           <FlatList
-            data={productItems}
+            data={filteredItems}
             renderItem={({item, index: i}) => {
               return (
                 <ProductCard
@@ -186,6 +225,10 @@ const ExploreScreen: React.FC = () => {
             keyExtractor={(item) => (item.product_id ?? '').toString()}
             contentContainerStyle={[combineStyles(GlobalStyles, 'gap_xl')]}
           />
+          {
+            loading ?
+            <ActivityIndicator /> : <></>
+          }
         </View>
 
         {/* <RelatedProductsWrapper 

@@ -11,16 +11,11 @@ import { GlobalStyles } from '@/styles';
 import CustomModal from '@/components/shared/custom-modal';
 import { router } from 'expo-router';
 import { cartItem, useGetCartItemsApi } from '@/hooks/api/user-cart/getCartItems';
-import { useGetCustomerProductsApi } from '@/hooks/api/user/getCustomerProducts';
 import { useGetProductSuggestionsApi } from '@/hooks/api/user/getProductSuggestions';
 
 const CartScreen: React.FC = () => {
   const getCartItemsApi = useGetCartItemsApi();
   const getCartItemsResp = getCartItemsApi.response;
-
-  const getProductsApi = useGetCustomerProductsApi();
-  const getProductsResp = getProductsApi.response;
-  // const cartItems = getProductsResp.data?.result || [];
   
   const getSuggestionsApi = useGetProductSuggestionsApi();
   const getSuggestionsResp = getSuggestionsApi.response;
@@ -41,7 +36,7 @@ const CartScreen: React.FC = () => {
   const removeItem = (itemIndex: number) => {
     const newItems = [...cartItems];
     newItems.splice(itemIndex, 1);
-    setCartItems(newItems);
+    setCartItems([...newItems]);
   }
 
   const renderCurrentStep = () => {
@@ -52,6 +47,7 @@ const CartScreen: React.FC = () => {
             totalAmount={totalAmount}
             cartItems={cartItems}
             relatedItems={relatedItems}
+            loading={getCartItemsResp.loading}
             moveNext={moveNext}
             removeItem={removeItem}
           />
@@ -74,8 +70,8 @@ const CartScreen: React.FC = () => {
   };
   const getTotalAmount = (items: cartItem[]) => {
     let newTotalAmount = 0;
-      cartItems.map((item) => {
-        newTotalAmount += (item.price ?? 0) * (item.quantity ?? 0);
+      items.map((item) => {
+        newTotalAmount += (item.product_details?.price ?? 0) * (item.quantity ?? 0);
       });
 
     return newTotalAmount;
@@ -95,7 +91,6 @@ const CartScreen: React.FC = () => {
 
   useEffect(() => {
     getCartItemsApi.trigger();
-    getProductsApi.trigger();
   }, []);
   useEffect(() => {
     if(getCartItemsResp.success){

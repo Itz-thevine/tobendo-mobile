@@ -1,25 +1,26 @@
 import React, { useEffect } from 'react';
-import { View, Text, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { combineStyles, width } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import { router } from 'expo-router';
 import ArtIcon from "react-native-vector-icons/AntDesign";
 import { useRemoveCartItemApi } from '@/hooks/api/user-cart/removeCartItem';
-import { customerProductItem } from '@/hooks/api/user/getCustomerProducts';
+import { cartItem } from '@/hooks/api/user-cart/getCartItems';
 
 type ProductCard3Props = {
-    cart_id?: string;
-    item: customerProductItem;
+    item: cartItem;
     onDelete?: () => void;
 };
 
 const ProductCard3 = (props: ProductCard3Props) => {
     const deleteApi = useRemoveCartItemApi();
     const deleteResp = deleteApi.response;
+    const loading = deleteResp.loading;
 
     const deleteItem = () => {
-        if(props.cart_id) deleteApi.trigger({
-            cart_id: props.cart_id,
+        console.log(props.item.cart_id)
+        if(props.item.cart_id) deleteApi.trigger({
+            cart_id: props.item.cart_id,
         });
     }
 
@@ -28,7 +29,7 @@ const ProductCard3 = (props: ProductCard3Props) => {
     }, [deleteResp.success]);
     return (
         <View style={[combineStyles(GlobalStyles, 'border_soft_blue', 'background_white', 'border_xs', 'rounded_xs', 'padding_xs', 'jusify_center', 'safeArea')]}>
-            <TouchableOpacity onPress={() => router.push(`/(customer)/product-details/${props.item.id}`)}>
+            <TouchableOpacity onPress={() => router.push(`/(customer)/product-details/${props.item.product_id}`)}>
                 <View style={[combineStyles(GlobalStyles, 'flex_row', 'items_center')]}>
                     {/* <View >
                         <Image
@@ -45,10 +46,10 @@ const ProductCard3 = (props: ProductCard3Props) => {
                             style={[{ width: 50, height: 30 }]}
                             resizeMode='cover'
                             />
-                            <Text style={combineStyles(GlobalStyles, 'margin_l_xs', 'font_medium')}>{'Total Energies'}</Text>
+                            <Text style={combineStyles(GlobalStyles, 'margin_l_xs', 'font_medium')}>{props.item.product_details?.mfrName}</Text>
                         </View>
 
-                        <Text style={[combineStyles(GlobalStyles, 'text_2xl', 'font_medium', 'line_lg', 'margin_t_xs'), {width: width*0.5}]}>{props.item.genericArticleDescription}</Text>
+                        <Text style={[combineStyles(GlobalStyles, 'text_2xl', 'font_medium', 'line_lg', 'margin_t_xs'), {width: width*0.5}]}>{props.item.product_details?.genericArticleDescription}</Text>
                         <Text style={combineStyles(GlobalStyles, 'text_lg', 'font_medium', 'line_lg', 'margin_t_xs', 'color_gray')}>{'Delivery: Sat 1 May'}</Text>
                     </View>
                 </View>
@@ -58,13 +59,17 @@ const ProductCard3 = (props: ProductCard3Props) => {
                 <View style={combineStyles(GlobalStyles, 'flex_row', 'items_center')}>
                     <Text style={combineStyles(GlobalStyles, 'text_2xl', 'color_gray')}>Total: </Text>
                     <Text style={combineStyles(GlobalStyles, 'text_3xl', 'margin_t_xs', 'margin_b_xs')}>{'$'}</Text>
-                    <Text style={combineStyles(GlobalStyles, 'text_3xl', 'margin_t_xs', 'margin_b_xs', 'font_bold')}>{props.item.price}</Text>
+                    <Text style={combineStyles(GlobalStyles, 'text_3xl', 'margin_t_xs', 'margin_b_xs', 'font_bold')}>{(props.item.product_details?.price ?? 0) * (props.item.quantity ?? 0)}</Text>
                 </View>
                 <View style={[combineStyles(GlobalStyles, 'flex_row', 'items_center' )]}>
                     <TouchableOpacity onPress={deleteItem}>
-                        <View style={[combineStyles(GlobalStyles, 'margin_r_sm', 'background_softer_blue', 'flex_row', 'items_center' , 'padding_xs', 'rounded_full')]}>
-                            <ArtIcon name='delete' size={20} color={'#A2112A'} onPress={deleteItem} />
-                        </View>
+                        {
+                            loading ?
+                            <ActivityIndicator /> :
+                            <View style={[combineStyles(GlobalStyles, 'margin_r_sm', 'background_softer_blue', 'flex_row', 'items_center' , 'padding_xs', 'rounded_full')]}>
+                                <ArtIcon name='delete' size={20} color={'#A2112A'} onPress={deleteItem} />
+                            </View>
+                        }
                     </TouchableOpacity>
                     {/* <TouchableOpacity style={combineStyles(GlobalStyles, 'background_royal_blue', 'padding_t_xs', 'padding_b_xs', 'rounded_full', 'items_center', 'padding_x_xs', 'flex_row')}>
                         <Image
