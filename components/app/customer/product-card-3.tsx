@@ -50,7 +50,7 @@ const ProductCard3 = (props: ProductCard3Props) => {
                         </View>
 
                         <Text style={[combineStyles(GlobalStyles, 'text_2xl', 'font_medium', 'line_lg', 'margin_t_xs'), {width: width*0.5}]}>{props.item.product_details?.genericArticleDescription}</Text>
-                        <Text style={combineStyles(GlobalStyles, 'text_lg', 'font_medium', 'line_lg', 'margin_t_xs', 'color_gray')}>{'Delivery: Sat 1 May'}</Text>
+                        <Text style={combineStyles(GlobalStyles, 'text_lg', 'font_medium', 'line_lg', 'margin_t_xs', 'color_gray')}>{props.item.product_details?.assemblyGroupName}</Text>
                     </View>
                 </View>
             </TouchableOpacity>
@@ -63,13 +63,13 @@ const ProductCard3 = (props: ProductCard3Props) => {
                 </View>
                 <View style={[combineStyles(GlobalStyles, 'flex_row', 'items_center' )]}>
                     <TouchableOpacity onPress={deleteItem}>
-                        {
-                            loading ?
-                            <ActivityIndicator /> :
-                            <View style={[combineStyles(GlobalStyles, 'margin_r_sm', 'background_softer_blue', 'flex_row', 'items_center' , 'padding_xs', 'rounded_full')]}>
+                        <View style={[combineStyles(GlobalStyles, 'margin_r_sm', 'background_softer_blue', 'flex_row', 'items_center' , 'padding_xs', 'rounded_full')]}>
+                            {
+                                loading ?
+                                <ActivityIndicator /> :
                                 <ArtIcon name='delete' size={20} color={'#A2112A'} onPress={deleteItem} />
-                            </View>
-                        }
+                            }
+                        </View>
                     </TouchableOpacity>
                     {/* <TouchableOpacity style={combineStyles(GlobalStyles, 'background_royal_blue', 'padding_t_xs', 'padding_b_xs', 'rounded_full', 'items_center', 'padding_x_xs', 'flex_row')}>
                         <Image

@@ -13,7 +13,7 @@ import { router } from 'expo-router';
 import { cartItem, useGetCartItemsApi } from '@/hooks/api/user-cart/getCartItems';
 import { useGetProductSuggestionsApi } from '@/hooks/api/user/getProductSuggestions';
 
-const CartScreen: React.FC = () => {
+const CartScreen = () => {
   const getCartItemsApi = useGetCartItemsApi();
   const getCartItemsResp = getCartItemsApi.response;
   

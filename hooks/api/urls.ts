@@ -3,6 +3,8 @@
 // export const __apiBaseUrl = `http://10.0.2.2:7500`;
 export const __apiBaseUrl = `http://44.201.129.126/api/v1`;
 export const __apiUrls = {
+    getAddresses: `${__apiBaseUrl}/address/`,
+
     createUser: `${__apiBaseUrl}/auth/users/`,
     getUser: `${__apiBaseUrl}/auth/me/`,
     resendOtp: `${__apiBaseUrl}/auth/resend-otp/`,

@@ -54,7 +54,10 @@ export const useCallApi = (props?: useCallApiProps) => {
             }
             const fetchResp = await fetch(url, fetchReqs);
             rawFetchResp = fetchResp;
-            const fetchData = await fetchResp.json();
+            
+            const fetchData = (
+                fetchResp.status !== 204 ? await fetchResp.json() : undefined
+            );
 
             if(fetchResp.ok){
                 newResponse.success = true;
