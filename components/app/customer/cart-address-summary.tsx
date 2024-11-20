@@ -121,7 +121,11 @@ const CartAddressSummary = (props: CartAddressSummaryProps) => {
             <Text style={combineStyles(GlobalStyles, 'text_2xl', 'font_bold')}>{`$${props.totalAmount}`}</Text>
         </View>
         <TouchableOpacity
-          style={[combineStyles(GlobalStyles, 'background_royal_blue', 'items_center', 'rounded_full', 'padding_y_sm', 'margin_t_xs')]} onPress={props.moveNext}
+          style={{
+            ...combineStyles(GlobalStyles, 'background_royal_blue', 'items_center', 'rounded_full', 'padding_y_sm', 'margin_t_xs'),
+            opacity: !props.selectedAddress?.address_id ? 0.6 : undefined,
+          }}
+          onPress={props.moveNext}
           disabled={!props.selectedAddress?.address_id}
         >
             <Text style={combineStyles(GlobalStyles, 'text_lg', 'color_white', 'font_medium')}>Next</Text>
