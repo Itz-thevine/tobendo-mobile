@@ -48,21 +48,19 @@ const CartSummary = (props: CartSummaryProps) => {
         {/* Related Products */}
         {
           props.relatedItems?.length ?
-          <>
-            <View style={combineStyles(GlobalStyles, 'margin_sm')}>
-              <Text style={combineStyles(GlobalStyles, 'text_2xl', 'margin_b_sm')}>You Might Also Like</Text>
-              <FlatList
-                data={props.relatedItems}
-                renderItem={({item}) => <ProductCard2 item={item} />}
-                keyExtractor={(item) => `${item.id}`}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={combineStyles(GlobalStyles, 'gap_sm')}
-              />
-            </View>
-            <View style={{ width: '100%', height: 200 }}></View>
-          </> : <></>
+          <View style={combineStyles(GlobalStyles, 'margin_sm')}>
+            <Text style={combineStyles(GlobalStyles, 'text_2xl', 'margin_b_sm')}>You Might Also Like</Text>
+            <FlatList
+              data={props.relatedItems}
+              renderItem={({item}) => <ProductCard2 item={item} />}
+              keyExtractor={(item) => `${item.id}`}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={combineStyles(GlobalStyles, 'gap_sm')}
+            />
+          </View> : <></>
         }
+        <View style={{width : '100%', height: 200}}></View>
       </ScrollView>
 
       <View style={combineStyles(GlobalStyles, 'absolute', 'background_white', 'bottom_0', 'right_0', 'left_0', 'padding_y_xs', 'padding_x_sm')}>

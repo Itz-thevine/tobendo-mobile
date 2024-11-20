@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, FlatList, ScrollView, SafeAreaView, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Image, FlatList, ScrollView, SafeAreaView, StyleSheet, ActivityIndicator } from 'react-native';
 import { combineStyles, width, height } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import MCIIcon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -12,12 +12,9 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useGetCustomerProductsApi } from '@/hooks/api/user/getCustomerProducts';
 import { userProductItem } from '@/hooks/api/user/getUserProducts';
 import { useGetProductSuggestionsApi } from '@/hooks/api/user/getProductSuggestions';
-import { useAuth } from '@/context/auth';
 import { useAddItemToCartApi } from '@/hooks/api/user-cart/addItemToCart';
 
 const ProductDetailsScreen: React.FC = () => {
-  const authHook = useAuth();
-
   const {id: productId} = useLocalSearchParams();
   const getProductsApi = useGetCustomerProductsApi();
   const getProductsResp = getProductsApi.response;
@@ -36,11 +33,8 @@ const ProductDetailsScreen: React.FC = () => {
 
   const addItem = () => {
       addItemApi.trigger({
-          user_id: authHook.user.id,
-          items: {
-              product_id: `${productId}`,
-              quantity: count,
-          },
+        product_id: `${productId}`,
+        quantity: count,
       });
   }
   
@@ -93,7 +87,7 @@ const ProductDetailsScreen: React.FC = () => {
 
             {/* Product Image */}
             <View style={combineStyles(GlobalStyles, 'background_white')}>
-              <Image source={require('@/assets/images/seller/image 5.png')} style={styles.productImage} resizeMode="contain" />
+              <Image source={require('@/assets/images/seller/image 7.png')} style={styles.productImage} resizeMode="contain" />
             </View>
 
             {/* Product Details */}
@@ -103,31 +97,32 @@ const ProductDetailsScreen: React.FC = () => {
                 <Text style={styles.productBrand}>{productItem?.assemblyGroupName}</Text>
               </View>
             <Text style={styles.productTitle}>{productItem?.itemDescription || productItem?.genericArticleDescription}</Text>
-            <Text style={combineStyles(GlobalStyles, 'color_gray')}>5 L - ref. 214178 - Engine oil</Text>
-            <Text style={combineStyles(GlobalStyles, 'color_gray', 'margin_b_sm')}>Delivery: Sat 1 May</Text>
-
-            <View style={combineStyles(GlobalStyles, 'margin_t_sm')}>
-              <View style={combineStyles(GlobalStyles,  'flex_row', 'jusify_between', 'margin_b_xs')}>
-                <Text style={styles.productDetailItem}>Point: Product Detail</Text>
-                <Text style={combineStyles(GlobalStyles, 'color_gray' )}>Details</Text>
-              </View>
-            </View>
-
-           <View style={combineStyles(GlobalStyles, 'items_center', 'margin_t_sm')}> 
-              <TouchableOpacity style={combineStyles(GlobalStyles, 'background_soft_blue', 'items_center', 'rounded_full', 'padding_x_sm', 'padding_y_xs' )} > 
-                  <Text style={combineStyles(GlobalStyles, 'text_lg')}>More</Text>
-              </TouchableOpacity>
-            </View>
-            </View>
+            <Text style={combineStyles(GlobalStyles, 'color_gray')}>{productItem?.mfrName}</Text>
+            <Text style={combineStyles(GlobalStyles, 'color_gray', 'margin_b_sm')}>{productItem?.assemblyGroupName}</Text>
 
             {/* Product Description */}
             {
               productItem?.itemDescription &&
-              <View style={combineStyles(GlobalStyles, 'padding_sm')}>
-                <Text style={combineStyles(GlobalStyles, 'text_2xl', 'margin_b_sm')}>Product Description</Text>
-                <Text style={combineStyles(GlobalStyles, 'line_lg')}>{productItem?.itemDescription}</Text>
-              </View>
+              <>
+                <View style={combineStyles(GlobalStyles, 'margin_t_sm')}>
+                  <View style={combineStyles(GlobalStyles,  'flex_row', 'jusify_between', 'margin_b_xs')}>
+                    <Text style={styles.productDetailItem}>Point: Product Detail</Text>
+                    <Text style={combineStyles(GlobalStyles, 'color_gray' )}>Details</Text>
+                  </View>
+                </View>
+                <View style={combineStyles(GlobalStyles, 'padding_sm')}>
+                  <Text style={combineStyles(GlobalStyles, 'text_2xl', 'margin_b_sm')}>Product Description</Text>
+                  <Text style={combineStyles(GlobalStyles, 'line_lg')}>{productItem?.itemDescription}</Text>
+                </View>
+              </>
             }
+
+            {/* <View style={combineStyles(GlobalStyles, 'items_center', 'margin_t_sm')}> 
+              <TouchableOpacity style={combineStyles(GlobalStyles, 'background_soft_blue', 'items_center', 'rounded_full', 'padding_x_sm', 'padding_y_xs' )} > 
+                  <Text style={combineStyles(GlobalStyles, 'text_lg')}>More</Text>
+              </TouchableOpacity>
+            </View> */}
+          </View>
 
             {/* Get in Touch */}
             <View style={[combineStyles(GlobalStyles, 'background_dark_blue', 'padding_sm', 'flex_row', 'jusify_between'), {paddingVertical: 50}]}>
@@ -168,7 +163,7 @@ const ProductDetailsScreen: React.FC = () => {
                     <Text style={combineStyles(GlobalStyles, 'text_3xl', 'margin_t_xs', 'margin_b_xs', 'font_bold')}>{productItem?.price}</Text>
                 </View>
                 <View style={[combineStyles(GlobalStyles)]}>
-                    <Counter count={count} setCount={setCount}/>
+                    <Counter count={count} setCount={(newCount) => setCount(newCount || 1)}/>
                 </View>
             </View>
             <View style={combineStyles(GlobalStyles, 'flex_row', 'jusify_between')}>
@@ -185,7 +180,11 @@ const ProductDetailsScreen: React.FC = () => {
                       addItem();
                     }}
                   >
-                    <Text style={combineStyles(GlobalStyles, 'text_lg', 'color_white', 'font_medium')}>Apply</Text>
+                    {
+                      addItemResp.loading ?
+                      <ActivityIndicator /> :
+                      <Text style={combineStyles(GlobalStyles, 'text_lg', 'color_white', 'font_medium')}>Apply</Text>
+                    }
                 </TouchableOpacity>
 
             </View>
