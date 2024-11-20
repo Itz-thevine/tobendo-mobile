@@ -96,11 +96,11 @@ const ExploreScreen: React.FC = () => {
                   <Text style={[combineStyles(GlobalStyles, 'color_gray'), {marginTop: 5}]}>From</Text>
                   <TextInput
                     style={combineStyles(GlobalStyles, 'text_sm', 'margin_l_xs')}
-                    // value={filters.minPrice?.toString()}
+                    value={`${filters.minPrice ?? ''}`}
                     onChangeText={(value) => {
                       setFilters({
                         ...filters,
-                        minPrice: parseInt(value),
+                        minPrice: value ? parseInt(value) : undefined,
                       });
                     }}
                   />
@@ -110,11 +110,11 @@ const ExploreScreen: React.FC = () => {
                   <Text style={[combineStyles(GlobalStyles, 'color_gray'),  {marginTop: 5}]}>to</Text>
                   <TextInput
                     style={combineStyles(GlobalStyles, 'margin_l_xs')}
-                    // value={filters.maxPrice?.toString()}
+                    value={`${filters.maxPrice ?? ''}`}
                     onChangeText={(value) => {
                       setFilters({
                         ...filters,
-                        maxPrice: parseInt(value),
+                        maxPrice: value ? parseInt(value) : undefined,
                       });
                     }}
                   />
