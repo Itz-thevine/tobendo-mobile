@@ -3,7 +3,7 @@ import { Image, SafeAreaView, Text, TouchableOpacity, View } from 'react-native'
 import CustomerAppHeader from '@/components/shared/customers-app-header';
 import ProgressBar from '@/components/shared/progress-bar';
 import CartSummary from '@/components/app/customer/cart-summary';
-import CartAddressSummary from '@/components/app/customer/cart-address-summary';
+import CartAddressSummary, { deliveryOption } from '@/components/app/customer/cart-address-summary';
 import PaymentMethod from '@/components/app/customer/cart-payment-summary';
 import CartConfirmation from '@/components/app/customer/cart-confirmation';
 import { combineStyles } from '@/lib';
@@ -30,6 +30,8 @@ const CartScreen = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<addressProps | undefined>(undefined);
+  const [selectedDeliveryOption, setSelectedDeliveryOption] = useState<deliveryOption | undefined>(undefined);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | undefined>(undefined);
   const steps = ['Cart', 'Delivery', 'Payment', 'Confirm'];
   
   const moveNext = () => {
@@ -62,15 +64,23 @@ const CartScreen = () => {
           totalAmount={totalAmount}
           addressList={getAddressesResp.data}
           selectedAddress={selectedAddress}
+          selectedDeliveryOption={selectedDeliveryOption}
+          onSelectDeliveryOption={setSelectedDeliveryOption}
           onSelectAddress={setSelectedAddress}
           moveNext={moveNext}
         />;
       case 2:
-        return <PaymentMethod totalAmount={totalAmount} moveNext={moveNext} />;
+        return <PaymentMethod
+          totalAmount={totalAmount}
+          moveNext={moveNext}
+          onPaymentMethodChange={setSelectedPaymentMethod}
+        />;
       case 3:
         return <CartConfirmation
           cartItems={cartItems}
           totalAmount={totalAmount}
+          selectedAddress={selectedAddress}
+          selectedDeliveryOption={selectedDeliveryOption}
           moveNext={() => setIsConfirmationModalOpen(true)}
           updateItem={updateItem}
           removeItem={removeItem}

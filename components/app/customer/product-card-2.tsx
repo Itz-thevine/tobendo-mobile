@@ -1,19 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { combineStyles } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import { userProductItem } from '@/hooks/api/user/getUserProducts';
 import { useAddItemToCartApi } from '@/hooks/api/user-cart/addItemToCart';
-import { useAuth } from '@/context/auth';
 
 type InventoryItemCardProps = {
   item: userProductItem;
 };
 
 const ProductCard2: React.FC<InventoryItemCardProps> = ({ item }) => {
-  const authHook = useAuth();
   const addItemApi = useAddItemToCartApi();
   const addItemResp = addItemApi.response;
+  const loading = addItemResp.loading;
   
   const [itemAdded, setItemAdded] = useState(false);
   
@@ -22,11 +21,8 @@ const ProductCard2: React.FC<InventoryItemCardProps> = ({ item }) => {
 
   const addItem = () => {
       addItemApi.trigger({
-          user_id: authHook.user.id,
-          items: {
-              product_id: `${productId}`,
-              quantity: 1,
-          },
+        product_id: `${productId}`,
+        quantity: 1,
       });
   }
   useEffect(() => {
@@ -52,17 +48,27 @@ const ProductCard2: React.FC<InventoryItemCardProps> = ({ item }) => {
           <Text style={combineStyles(GlobalStyles, 'text_3xl', 'margin_t_xs', 'margin_b_xs')}>{'$'}</Text>
           <Text style={combineStyles(GlobalStyles, 'text_3xl', 'margin_t_xs', 'margin_b_xs', 'font_bold')}>{item.price}</Text>
         </View>
-        <TouchableOpacity style={[combineStyles(GlobalStyles, 'background_royal_blue', 'padding_t_xs', 'padding_b_xs', 'rounded_full', 'items_center', 'padding_x_xs', 'flex_row', 'jusify_center')]}>
+        <TouchableOpacity
+          style={{
+            ...combineStyles(GlobalStyles, 'background_royal_blue', 'padding_t_xs', 'padding_b_xs', 'rounded_full', 'items_center', 'padding_x_xs', 'flex_row', 'jusify_center'),
+            ...{opacity: itemAdded ? 0.6 : undefined},
+          }}
+          onPress={() => {
+            if(!itemAdded) addItem();
+          }}
+        >
             <Image
                 source={require('@/assets/images/Group 28_white.png')}
                 style={[{ height: 16 }]}
                 resizeMode='contain'
             />
-            <Text style={combineStyles(GlobalStyles, 'text_lg', 'margin_l_xs', 'margin_r_xs', 'color_white')}
-              onPress={() => {
-                if(!itemAdded) addItem();
-              }}
-            >{itemAdded ? 'Added' : 'Add To Cart'}</Text>
+            {
+                loading ?
+                <ActivityIndicator style={{marginLeft: 10}} /> :
+                <Text style={combineStyles(GlobalStyles, 'text_lg', 'margin_l_xs', 'margin_r_xs', 'color_white')}>
+                  {itemAdded ? 'Added' : 'Add To Cart'}
+                </Text>
+            }
         </TouchableOpacity>
       </View>
     </View>

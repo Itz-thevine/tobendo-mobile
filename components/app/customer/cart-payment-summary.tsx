@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { combineStyles } from '@/lib'; // Assuming this is a utility function for combining styles
 import { GlobalStyles } from '@/styles'; // Assuming this is your global styles file
@@ -6,11 +6,17 @@ import MCIIcon from 'react-native-vector-icons/MaterialCommunityIcons'; // Make 
 
 interface CartPaymentMethodProps {
   totalAmount: number;
+  
   moveNext: () => void;
+  onPaymentMethodChange: (method: string) => void;
 }
 
 const PaymentMethod = (props: CartPaymentMethodProps) => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('Card');
+
+  useEffect(() => {
+    props.onPaymentMethodChange(selectedPaymentMethod);
+  }, [selectedPaymentMethod]);
 
   return (
     <View style={combineStyles(GlobalStyles, 'padding_sm', 'background_softer_blue', 'safeArea')}>
@@ -31,9 +37,9 @@ const PaymentMethod = (props: CartPaymentMethodProps) => {
         </View>
         {selectedPaymentMethod === 'Card' && <MCIIcon name="check-circle" size={24} color="#007bff" />}
       </TouchableOpacity>
-      <TouchableOpacity style={combineStyles(GlobalStyles, 'rounded_full', 'background_soft_blue', 'padding_sm', 'items_center', 'margin_t_sm', 'margin_b_sm')}>
-            <Text style={combineStyles(GlobalStyles, 'text_lg')}>Add New Address</Text>
-        </TouchableOpacity>
+      {/* <TouchableOpacity style={combineStyles(GlobalStyles, 'rounded_full', 'background_soft_blue', 'padding_sm', 'items_center', 'margin_t_sm', 'margin_b_sm')}>
+        <Text style={combineStyles(GlobalStyles, 'text_lg')}>Add New Address</Text>
+      </TouchableOpacity> */}
 
       {/* Other Payment Methods */}
       <TouchableOpacity

@@ -1,18 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList, StyleSheet, Image, ScrollView } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, TouchableOpacity, FlatList, StyleSheet, Image, ScrollView, ActivityIndicator } from 'react-native';
 import { combineStyles } from '@/lib'; // Assuming this is a utility function for combining styles
 import { GlobalStyles } from '@/styles'; // Assuming this is your global styles file
-import ArtIcon from 'react-native-vector-icons/AntDesign';
-import Counter from '@/components/shared/counter';
 import { useCheckoutCartApi } from '@/hooks/api/user-cart/checkoutCart';
 import { useAuth } from '@/context/auth';
 import { cartItem } from '@/hooks/api/user-cart/getCartItems';
-import { useRemoveCartItemApi } from '@/hooks/api/user-cart/removeCartItem';
+import ProductCard5 from './product-card-5';
+import { addressProps } from '@/hooks/api/address/getAddresses';
+import { deliveryOption } from './cart-address-summary';
 
 
 interface ConfirmPurchaseProps {
   cartItems: cartItem[];
   totalAmount: number;
+  selectedAddress?: addressProps;
+  selectedDeliveryOption?: deliveryOption;
   moveNext: () => void;
   updateItem?: (itemIndex: number, itemProps: Partial<cartItem>) => void;
   removeItem?: (itemIndex: number) => void;
@@ -23,24 +25,16 @@ const ConfirmPurchaseScreen = (props: ConfirmPurchaseProps) => {
 
   const checkoutApi = useCheckoutCartApi();
   const checkoutResp = checkoutApi.response;
-  const deleteApi = useRemoveCartItemApi();
-  const deleteResp = deleteApi.response;
-
-  const [itemIndexToRemove, setItemIndexToRemove] = useState<number | undefined>(undefined);
-
-  const deleteItem = (itemIndex: number, cartId?: string) => {
-    if(cartId){
-      deleteApi.trigger({
-          cart_id: cartId,
-      });
-      setItemIndexToRemove(itemIndex);
-    }
-  }
+  const loading = checkoutResp.loading;
 
   const checkout = () => {
     if(authHook.user?.id) checkoutApi.trigger({
       user_id: authHook.user?.id,
-      items: props.cartItems,
+      items: props.cartItems.map((item) => ({
+        price: item.product_details?.price ?? 0,
+        quantity: item.quantity ?? 0,
+        product_id: item.product_id ?? '',
+      })),
       shipping_address: '',
       payment_method: '',
     });
@@ -55,13 +49,6 @@ const ConfirmPurchaseScreen = (props: ConfirmPurchaseProps) => {
       props.moveNext();
     }
   }, [checkoutResp.success]);
-  useEffect(() => {
-      if(deleteResp.success){
-        if(typeof itemIndexToRemove === 'number' && props.removeItem){
-          props.removeItem(itemIndexToRemove);
-        }
-      }
-  }, [deleteResp.success]);
 
   return (
     <View style={combineStyles(GlobalStyles, 'background_soft_blue', 'safeArea')}>
@@ -72,41 +59,16 @@ const ConfirmPurchaseScreen = (props: ConfirmPurchaseProps) => {
           keyExtractor={(item) => `${item.cart_id}_${item.product_id}`}
           contentContainerStyle={combineStyles(GlobalStyles, 'gap_sm', )}
           renderItem={({item, index}) => (
-            <View key={index} style={combineStyles(GlobalStyles, 'flex_row', 'margin_b_sm', 'items_center')}>
-              <View style={styles.imageContainer}>
-              <Image
-                source={require('@/assets/images/seller/image 5.png')}
-                style={[GlobalStyles.rounded_xs, {width: 100, height: 100 }]}
-                resizeMode='contain'
-              />
-                {/* <Image src={item.image} style={styles.productImage} alt={item.name} /> */}
-              </View>
-              <View style={combineStyles(GlobalStyles, 'safeArea', 'margin_l_sm')}>
-                <Text style={combineStyles(GlobalStyles, 'font_bold')}>{item.genericArticleDescription}</Text>
-                <Text style={combineStyles(GlobalStyles, 'color_gray', 'margin_t_xs')}>
-                  5 L - ref. 214178 - Engine oil
-                </Text>
-                <View style={combineStyles(GlobalStyles, 'flex_row', 'gap_sm', 'margin_t_sm')}>
-                  <View style={[combineStyles(GlobalStyles), {width : 85}]}>
-                    <Counter count={item.quantity ?? 0} setCount={(newCount) => {
-                      if(props.updateItem) props.updateItem(index, {quantity: newCount});
-                    }} />
-                  </View>
-                  <TouchableOpacity onPress={() => {
-                    deleteItem(index, item.cart_id);
-                  }}>
-                    <View style={[combineStyles(GlobalStyles, 'margin_r_sm', 'background_softer_blue', 'flex_row', 'items_center' , 'padding_xs', 'rounded_full')]}>
-                        <ArtIcon name='delete' size={20} color={'#A2112A'} />
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              </View>
-              <View style={combineStyles(GlobalStyles, 'flex_row', 'items_center')}>
-                <Text style={combineStyles(GlobalStyles, 'margin_t_xs', 'text_lg', 'font_bold')}>
-                  ${item.price}
-                </Text>
-              </View>
-            </View>
+            <ProductCard5
+              key={`${index}_${item.product_id}`}
+              item={item}
+              onDelete={() => {
+                if(props.removeItem) props.removeItem(index);
+              }}
+              updateItem={(itemProps) => {
+                if(props.updateItem) props.updateItem(index, itemProps);
+              }}
+            />
             )}
         />
 
@@ -130,9 +92,10 @@ const ConfirmPurchaseScreen = (props: ConfirmPurchaseProps) => {
             <Text style={combineStyles(GlobalStyles, 'margin_b_xs', 'text_lg')}>Delivered to</Text>
             <View style={combineStyles(GlobalStyles, 'background_white', 'padding_sm', 'rounded_xs')}>
                 <View style={combineStyles(GlobalStyles, 'flex_row', 'jusify_between')}>
-                    <View style={combineStyles(GlobalStyles, 'flex_row', 'items_center')}>
-                        
-                        <Text style={combineStyles(GlobalStyles, 'text_lg')}>Address Line 1, </Text>
+                    <View>
+                      <Text style={combineStyles(GlobalStyles, 'text_lg')}>{props.selectedAddress?.address_line_1}</Text>
+                      <Text style={combineStyles(GlobalStyles, 'margin_t_sm', 'color_gray')}>{props.selectedAddress?.address_line_2}</Text>
+                      <Text style={combineStyles(GlobalStyles, 'margin_t_sm', 'text_lg')}>{props.selectedAddress?.city}</Text>
                     </View>
                     <TouchableOpacity>
                         <Image
@@ -143,8 +106,6 @@ const ConfirmPurchaseScreen = (props: ConfirmPurchaseProps) => {
                     </TouchableOpacity>
                     {/* <Icon name="edit" size={20} color="#888" /> */}
                 </View>
-                <Text style={combineStyles(GlobalStyles, 'margin_t_sm', 'color_gray')}>Address Line 2,</Text>
-                <Text style={combineStyles(GlobalStyles, 'margin_t_sm', 'text_lg')}> Address Line 3.</Text>
             </View>
         </View>
        
@@ -154,7 +115,7 @@ const ConfirmPurchaseScreen = (props: ConfirmPurchaseProps) => {
                 <View style={combineStyles(GlobalStyles, 'flex_row', 'jusify_between')}>
                     <View style={combineStyles(GlobalStyles, 'flex_row', 'items_center')}>
                         
-                        <Text style={combineStyles(GlobalStyles, 'text_lg')}>ExpressUP</Text>
+                        <Text style={combineStyles(GlobalStyles, 'text_lg')}>{props.selectedDeliveryOption?.label}</Text>
                     </View>
                     <TouchableOpacity>
                         <Image
@@ -165,7 +126,7 @@ const ConfirmPurchaseScreen = (props: ConfirmPurchaseProps) => {
                     </TouchableOpacity>
                     {/* <Icon name="edit" size={20} color="#888" /> */}
                 </View>
-                <Text style={combineStyles(GlobalStyles, 'margin_t_sm', 'color_gray')}>Tomorrow</Text>
+                <Text style={combineStyles(GlobalStyles, 'margin_t_sm', 'color_gray')}>{props.selectedDeliveryOption?.date}</Text>
             </View>
         </View>
 
@@ -174,8 +135,19 @@ const ConfirmPurchaseScreen = (props: ConfirmPurchaseProps) => {
 
       {/* Confirm Purchase Button */}
       <View style={combineStyles(GlobalStyles, 'background_white', 'padding_sm')}>
-        <TouchableOpacity style={combineStyles(GlobalStyles, 'background_royal_blue', 'items_center', 'rounded_full', 'padding_y_sm', 'margin_t_xs')} onPress={checkout}>
-          <Text style={combineStyles(GlobalStyles, 'text_lg', 'color_white', 'font_medium')}>Confirm Purchase</Text>
+        <TouchableOpacity
+          disabled={!props.cartItems.length || loading}
+          style={{
+            ...combineStyles(GlobalStyles, 'background_royal_blue', 'items_center', 'rounded_full', 'padding_y_sm', 'margin_t_xs'),
+            opacity: !props.cartItems.length ? 0.6 : undefined,
+          }}
+          onPress={checkout}
+        >
+          {
+            loading ?
+            <ActivityIndicator /> :
+            <Text style={combineStyles(GlobalStyles, 'text_lg', 'color_white', 'font_medium')}>Confirm Purchase</Text>
+          }
         </TouchableOpacity>
       </View>
     </View>

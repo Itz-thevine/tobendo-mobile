@@ -18,7 +18,6 @@ const ProductCard3 = (props: ProductCard3Props) => {
     const loading = deleteResp.loading;
 
     const deleteItem = () => {
-        console.log(props.item.cart_id)
         if(props.item.cart_id) deleteApi.trigger({
             cart_id: props.item.cart_id,
         });

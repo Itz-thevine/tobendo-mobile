@@ -1,13 +1,16 @@
 import { __apiUrls } from "../urls";
 import { useApi } from "../useApi";
 import { useCallApiProps } from "../useCallApi";
-import { cartItem } from "./getCartItems";
 
 type triggerProps = {
     user_id: string;
     payment_method: string;
     shipping_address: string;
-    items: cartItem[];
+    items: {
+        price: number;
+        product_id: string;
+        quantity: number;
+    }[];
 }
 
 type dataProps = {
