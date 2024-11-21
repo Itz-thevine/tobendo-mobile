@@ -6,19 +6,28 @@ type triggerProps = {
     
 }
 type dataItem = {
-    id?: string;
-    shipping_address?: string;
+    created_at?: string,
+    delivery_option?: {
+      estimated_date?: string;
+      fee?: number;
+      type?: string;
+    };
     items?: {
         price?: number;
         product_id?: string;
         quantity?: number;
     }[];
-    delivery_option?: {
-        estimated_date?: string;
-        fee?: number;
-        type?: string;
+    order_id?: string;
+    payment_method?: {
+      details?: string;
+      method?: string;
     };
+    placed_at?: string;
+    shipping_address?: string;
     status?: string;
+    total_price?: number;
+    updated_at?: string;
+    user_id?: number;
 }
 type dataProps = dataItem[]
 export const useGetCustomerOrdersApi = (props?: useCallApiProps) => {
