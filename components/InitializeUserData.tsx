@@ -3,7 +3,10 @@ import { useAuth } from '@/context/auth';
 import { useGetCompanyDetailsApi } from '@/hooks/api/user/getCompanyDetails';
 import { useGetUserApi } from '@/hooks/api/user/getUser';
 
-const InitializeUserData = () => {
+type InitializeUserDataProps = {
+  onAuthed?: (authed: boolean) => void;
+}
+const InitializeUserData = (props: InitializeUserDataProps) => {
   const authHook = useAuth();
 
   const getUserApi = useGetUserApi();
@@ -17,10 +20,18 @@ const InitializeUserData = () => {
       getUserApi.trigger();
       getCompanyApi.trigger();
     }
+    else {
+      if(props.onAuthed) props.onAuthed(false);
+    }
   }, [authHook.JWTtoken]);
   useEffect(() => {
-    if(getUserResp.loading && getUserResp.success){
-      authHook.login(getUserResp.data);
+    if(getUserResp.loading){
+      let authed = false;
+      if(getUserResp.success){
+        authHook.login(getUserResp.data);
+        authed = true;
+      }
+      if(props.onAuthed) props.onAuthed(authed);
     }
   }, [getUserResp.loading]);
   useEffect(() => {

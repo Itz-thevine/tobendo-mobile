@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet, Image, ScrollView, ActivityIndicator } from 'react-native';
 import { combineStyles } from '@/lib'; // Assuming this is a utility function for combining styles
 import { GlobalStyles } from '@/styles'; // Assuming this is your global styles file
@@ -8,6 +8,7 @@ import { cartItem } from '@/hooks/api/user-cart/getCartItems';
 import ProductCard5 from './product-card-5';
 import { addressProps } from '@/hooks/api/address/getAddresses';
 import { deliveryOption } from './cart-address-summary';
+import ResponseModal, { responseModal } from '@/components/ResponseModal';
 
 
 interface ConfirmPurchaseProps {
@@ -27,8 +28,13 @@ const ConfirmPurchaseScreen = (props: ConfirmPurchaseProps) => {
   const checkoutResp = checkoutApi.response;
   const loading = checkoutResp.loading;
 
+  const [modal, setModal] = useState<responseModal>({
+    visible: false,
+    message: undefined as string | undefined,
+  });
+
   const checkout = () => {
-    if(authHook.user?.id) checkoutApi.trigger({
+    if(authHook.user?.user_id) checkoutApi.trigger({
       user_id: authHook.user?.id,
       items: props.cartItems.map((item) => ({
         price: item.product_details?.price ?? 0,
@@ -45,11 +51,22 @@ const ConfirmPurchaseScreen = (props: ConfirmPurchaseProps) => {
   const total = props.totalAmount + tax + deliveryFee;
 
   useEffect(() => {
-    if(checkoutResp.success){
-      props.moveNext();
+    if(checkoutResp.loading === false){
+      if(checkoutResp.success){
+        props.moveNext();
+      }
+      else if(checkoutResp.success === false){
+        setModal({
+          ...modal,
+          visible: true,
+          message: checkoutResp.error,
+          success: false,
+        });
+        console.log('------checkout', checkoutResp);
+      }
     }
-  }, [checkoutResp.success]);
-
+  }, [checkoutResp.loading]);
+  
   return (
     <View style={combineStyles(GlobalStyles, 'background_soft_blue', 'safeArea')}>
       {/* Cart Items */}
@@ -136,7 +153,7 @@ const ConfirmPurchaseScreen = (props: ConfirmPurchaseProps) => {
       {/* Confirm Purchase Button */}
       <View style={combineStyles(GlobalStyles, 'background_white', 'padding_sm')}>
         <TouchableOpacity
-          disabled={!props.cartItems.length || loading}
+          // disabled={!props.cartItems.length || loading}
           style={{
             ...combineStyles(GlobalStyles, 'background_royal_blue', 'items_center', 'rounded_full', 'padding_y_sm', 'margin_t_xs'),
             opacity: !props.cartItems.length ? 0.6 : undefined,
@@ -150,6 +167,15 @@ const ConfirmPurchaseScreen = (props: ConfirmPurchaseProps) => {
           }
         </TouchableOpacity>
       </View>
+      <ResponseModal
+        modal={modal}
+        onClose={() => {
+          setModal({
+            ...modal,
+            visible: false,
+          });
+        }}
+      />
     </View>
   );
 };
