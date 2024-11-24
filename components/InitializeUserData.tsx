@@ -29,7 +29,7 @@ const InitializeUserData = () => {
       authHook.setIsSeller(isSeller);
     }
   }, [getCompanyResp.loading]);
-  console.log(authHook.JWTtoken, authHook.user)
+  // console.log('----initialize-user-data', authHook.JWTtoken, authHook.user)
   return (
     <></>
   );

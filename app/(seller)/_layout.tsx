@@ -14,7 +14,8 @@ const RootLayout: React.FC = () => {
   const authHook = useAuth();
   
   useEffect(() => {
-    if(!authHook.isSeller) router.push('/(seller)/onboarding-seller');
+    if(!authHook.user) router.push('/(auth)/signin');
+    else if(!authHook.isSeller) router.push('/(seller)/onboarding-seller');
   }, []);
   
   return (
