@@ -15,6 +15,7 @@ import AddBrandToArticle from '@/components/app/listProducts/addBrands';
 import * as FileSystem from 'expo-file-system';
 import { createUserProductTriggerProps, useCreateUserProductsApi } from '@/hooks/api/user/createUserProduct';
 import { useGetPartSuggestionDetailsApi } from '@/hooks/api/vehicle/getPartSuggestionDetails';
+import ResponseModal, { responseModal } from '@/components/ResponseModal';
 
 
 const { width } = Dimensions.get('window');
@@ -46,7 +47,8 @@ const ProductListing = () => {
   const [additionalImages, setAdditionalImages] = useState<ImageDetails[]>([]);
   
   const [agreeToTAC, setAgreeToTAC] = useState(false)
-  const [isAddInventoryModal, setIsAddInventoryModal] = useState(false)
+  const [isAddInventoryModal, setIsAddInventoryModal] = useState(false);
+  const [modal, setModal] = useState<responseModal>({});
   const [selectedCategories, setSelectedCategories] = useState<any[]>([]);
   const [selectedCompatibilities, setCompatibilities] = useState<any[]>([]);
 
@@ -81,22 +83,26 @@ const ProductListing = () => {
 
   const handleSubmit = async () => {
     if (articles.length === 0) {
-      console.error("No product data available");
+      setModal({
+        success: false,
+        message: "No product data available",
+        visible: true,
+      });
       return;
     }
   
     let mainImageBase64 = null;
     if (mainImage) {
-      mainImageBase64 = await convertToBase64(mainImage.uri);
+      // mainImageBase64 = await convertToBase64(mainImage.uri);
     }
   
     let additionalImagesBase64: any[] = [];
     if (additionalImages.length > 0) {
-      additionalImagesBase64 = await Promise.all(
-        additionalImages.map(async (image) => {
-          return await convertToBase64(image.uri);
-        })
-      );
+      // additionalImagesBase64 = await Promise.all(
+      //   additionalImages.map(async (image) => {
+      //     return await convertToBase64(image.uri);
+      //   })
+      // );
     }
   
     const article = articles[0];
@@ -124,24 +130,6 @@ const ProductListing = () => {
     createApi.trigger(newArticle);
   };
   
-  //   if (productData.articles?.length > 0) {
-  //     const article = productData.articles[0];
-            
-  //     if (article.images?.length > 0) {
-  //       setMainImage({
-  //         uri: article.images[0].imageURL400, 
-  //         width: 400,
-  //         height: 400,
-  //         type: "image/jpeg"
-  //       });
-  //     }
-
-  //     // Set the item title from the backend if available
-  //     if (article.genericArticles?.length > 0) {
-  //       setTitle(article.genericArticles[0].genericArticleDescription);
-  //     }
-  //   }
-  // }, [productData]);
   useEffect(() => {
     getPartDetailsApi.trigger({
       legacy_article_ids: parseInt(id as string),
@@ -179,11 +167,16 @@ const ProductListing = () => {
   useEffect(() => {
     if(createResp.loading === false){
       if(createResp.success){
-        console.log("Request succeeded:", createResp.data);
+        console.log('---created inventory', createResp)
         setIsAddInventoryModal(true);
       }
       else {
-        console.log('-----error', createResp.errorDetail)
+        console.log('---shit', createResp)
+        setModal({
+          success: false,
+          visible: true,
+          message: createResp.error,
+        });
       }
     }
   }, [createResp.loading]);
@@ -222,6 +215,15 @@ const ProductListing = () => {
           
         </View>
       </CustomModal>
+      <ResponseModal
+        modal={modal}
+        onClose={() => {
+          setModal({
+            ...modal,
+            visible: false,
+          });
+        }}
+      />
 
       <View style={{
         position: 'relative'
@@ -337,7 +339,7 @@ const ProductListing = () => {
         <View style={[combineStyles(GlobalStyles, 'background_white', 'padding_x_sm', 'padding_y_xs', 'fixed'), {top : -height * 0.23, width: width}]}>
         <TouchableOpacity 
           style={combineStyles(GlobalStyles, 'background_royal_blue', 'items_center', 'rounded_full', 'padding_y_sm')} 
-          onPress={() => handleSubmit()}
+          onPress={async () => await handleSubmit()}
         >
           {
             createLoading ? (

@@ -62,7 +62,6 @@ const ConfirmPurchaseScreen = (props: ConfirmPurchaseProps) => {
           message: checkoutResp.error,
           success: false,
         });
-        console.log('------checkout', checkoutResp);
       }
     }
   }, [checkoutResp.loading]);

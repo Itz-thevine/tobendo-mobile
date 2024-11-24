@@ -14,7 +14,11 @@ type ProductSuggestionItemProps = {
 };
 
 const ProductSuggestionItem: React.FC<any> = ({ item, setIsVisible }) => {
-    const productImage = item?.images?.big ? {uri : item.images.big} : require('@/assets/images/no-image.jpg');    
+    let productImage;
+    if (Array.isArray(item.images) && item.images[0]?.imageURL400) {
+        productImage = item.images[0]?.imageURL400;
+    }
+
     return (
         <TouchableOpacity 
             onPress={() => {
@@ -27,7 +31,8 @@ const ProductSuggestionItem: React.FC<any> = ({ item, setIsVisible }) => {
             >
                 {/* Product Image */}
                 <Image
-                    source={productImage}
+                    source={productImage || require('@/assets/images/no-image.jpg')}
+                    // source={require('../../../assets/images/seller/image 8.png')}
                     style={{ width: '30%', height: 120 }}
                     resizeMode='cover'
                 />
