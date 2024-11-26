@@ -13,11 +13,6 @@ export const useInitializeIsSeller = (props?: useInitializeIsSellerProps) => {
     const getCompanyResp = getCompanyApi.response;
 
     useEffect(() => {
-      if(localUser?.data?.access_token){
-        getCompanyApi.trigger();
-      }
-    }, [localUser?.data?.access_token]);
-    useEffect(() => {
       if(getCompanyResp.loading === false){
         let isSeller = false;
         if(getCompanyResp.success){
@@ -34,5 +29,8 @@ export const useInitializeIsSeller = (props?: useInitializeIsSellerProps) => {
     return {
       initialized,
       loading: getCompanyResp.loading,
+      initialize: () => {
+        getCompanyApi.trigger();
+      },
     };
 };

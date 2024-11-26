@@ -1,9 +1,10 @@
+import { useInitializeLocalUser } from '@/hooks/useInitializeLocalUser';
 import { Stack } from 'expo-router';
 import React from 'react';
 import 'react-native-reanimated';
 
 const AppSlot = () => {
-    // useInitializeLocalUser();
+    useInitializeLocalUser();
     // console.log(useLocalUser()?.data?.isSeller)
 
     return (

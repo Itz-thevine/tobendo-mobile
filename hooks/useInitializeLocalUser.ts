@@ -16,9 +16,9 @@ export const useInitializeLocalUser = (props?: useInitializeLocalUserProps) => {
     const getCompanyResp = getCompanyApi.response;
     
     useEffect(() => {
-        console.log('---ran')
+        // console.log('---ran')
       if(localUser?.data?.access_token){
-        console.log('---can get things');
+        // console.log('---can get things');
         getUserApi.trigger();
         getCompanyApi.trigger();
       }
@@ -41,7 +41,7 @@ export const useInitializeLocalUser = (props?: useInitializeLocalUserProps) => {
     }, [getUserResp.loading]);
     useEffect(() => {
       if(getCompanyResp.loading && getCompanyResp.success){
-        console.log('-----tell me seller')
+        // console.log('-----tell me seller')
         localUser?.update({
           isSeller: getCompanyResp.data?.is_seller,
         });

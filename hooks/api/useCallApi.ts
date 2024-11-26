@@ -74,7 +74,7 @@ export const useCallApi = (props?: useCallApiProps) => {
                 newResponse.error = errorMsg ?? 'something went wrong';
                 newResponse.errorDetail = fetchData?.detail;
 
-                console.log('---useCallApi--error---', fetchData?.detail)
+                console.log('---useCallApi--error---', call_props, fetchData?.detail)
             }
             
             newResponse.loading = false;

@@ -42,6 +42,7 @@ const ForgotPasswordScreen = () => {
   useEffect(() => {
     if(sendOtpResp.loading === false){
       if(sendOtpResp.success){
+        // console.log('----forgotPass', sendOtpResp)
         localUser?.update({
           access_token: sendOtpResp.data?.access_token,
           email,

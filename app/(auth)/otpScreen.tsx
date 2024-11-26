@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ActivityIndicator, Modal } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,6 +7,8 @@ import { useVerifyUserOtpApi } from '@/hooks/api/user/verifyUserOtp';
 import OtpTimer from '@/components/OtpTimer';
 import { useSendUserOtpApi } from '@/hooks/api/user/sendUserOtp';
 import { useLocalUser } from '@/context/local-user/useLocalUser';
+import { useInitializeIsSeller } from '@/hooks/useInitiallizeIsSeller';
+import ResponseModal, { responseModal } from '@/components/ResponseModal';
 
 type FormValues = {
   otp: string;
@@ -16,25 +18,26 @@ const OTPVerificationScreen: React.FC = () => {
   const localUser = useLocalUser();
   const email = localUser?.data?.email;
   const otpType = localUser?.authData.otpType ?? 'email_verification';
+  
+  const isSellerHook = useInitializeIsSeller();
+  const [canInitialize, setCanInitialize] = useState(false);
 
   const verifyApi = useVerifyUserOtpApi();
   const verifyResp = verifyApi.response;
   const verifyLoading = verifyResp.loading;
-  const isSuccess = verifyResp.success;
   
   const sendOtpApi = useSendUserOtpApi();
   const sendOtpResp = sendOtpApi.response;
 
   const resendOtpLoading = sendOtpResp.loading;
 
-  const { control, handleSubmit, formState: { errors }, watch, setValue } = useForm<FormValues>({
+  const { handleSubmit, formState: { errors }, watch, setValue } = useForm<FormValues>({
     defaultValues: {
       otp: '',
     }
   });
 
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalMessage, setModalMessage] = useState('');
+  const [modal, setModal] = useState<responseModal>({});
   const [defaultCountdown, setDefaultCountdown] = useState({
     value: 60,
     key: '',
@@ -45,7 +48,7 @@ const OTPVerificationScreen: React.FC = () => {
 
   const router = useRouter();
 
-  const onSubmit: SubmitHandler<FormValues> = async data => {
+  const onSubmit: SubmitHandler<FormValues> = data => {
     if(email) verifyApi.trigger({
         email,
         otp_type: otpType,
@@ -53,7 +56,7 @@ const OTPVerificationScreen: React.FC = () => {
     });
   };
 
-  const handleResendOTP = async () => {
+  const handleResendOTP = () => {
     if(email) sendOtpApi.trigger({
       email,
       otp_type: otpType,
@@ -73,25 +76,24 @@ const OTPVerificationScreen: React.FC = () => {
       handleSubmit(onSubmit)();
     }
   };
-
-  useEffect(() => {
-    if(verifyResp.loading === false){
-      setModalVisible(true);
-      if(verifyResp.success){
-        setModalMessage('OTP verified successfully!');
-        if(localUser?.authData.continueRoute && localUser?.authData.continueRoute) localUser?.updateAuthData({continueRoute: undefined});
-        router.push(localUser?.authData.continueRoute ? localUser?.authData.continueRoute : '/(seller)/onboarding-seller');
-        // router.push('/(tabs)/home');
-      }
-      else {
-        setModalMessage(`OTP verification failed: ${verifyResp.error || 'Unknown error'}`)
-      }
-    }
-    else {
-      if(modalMessage) setModalMessage('');
-      if(modalVisible) setModalVisible(false);
-    }
-  }, [verifyResp.loading]);
+  const handleCloseModal = () => {
+    setModal({
+      ...modal,
+      visible: false,
+    });
+    if(verifyResp.success){
+      if(localUser?.authData.continueRoute && localUser?.authData.continueRoute) localUser?.updateAuthData({continueRoute: undefined});
+      router.push(localUser?.authData.continueRoute ? localUser?.authData.continueRoute : '/(seller)/onboarding-seller');
+    };
+  }
+  const onIsSellerInitialized = () => {
+    setModal({
+      ...modal,
+      visible: true,
+      message: 'OTP verified successfully!',
+      success: true,
+    });
+  }
 
   useEffect(() => {
     if(sendOtpResp.loading === false){
@@ -105,11 +107,46 @@ const OTPVerificationScreen: React.FC = () => {
         });
       }
       else {
-        setModalVisible(true);
-        setModalMessage(`OTP resend failed: ${sendOtpResp.error || 'Unknown error'}`)
+        setModal({
+          ...modal,
+          visible: true,
+          success: false,
+          message: `OTP resend failed: ${sendOtpResp.error || 'Unknown error'}`,
+        });
       }
     }
   }, [sendOtpResp.loading]);
+  useEffect(() => {
+    const newModal = {...modal};
+
+    if(verifyResp.loading === false){
+      // console.log('----otpScreen', verifyResp);
+      if(verifyResp.success){
+        newModal.visible = false;
+        setCanInitialize(true);
+      }
+      else {
+        newModal.visible = true;
+        newModal.message = `OTP verification failed: ${verifyResp.error || 'Unknown error'}`;
+      }
+    }
+    else {
+      newModal.message = undefined;
+      newModal.visible = false;
+    }
+
+    setModal({...newModal});
+  }, [verifyResp.loading]);
+  useEffect(() => {
+    if(canInitialize && localUser?.data?.access_token){
+      isSellerHook.initialize();
+    }
+  }, [canInitialize]);
+  useEffect(() => {
+    if(isSellerHook.initialized){
+      onIsSellerInitialized();
+    }
+  }, [isSellerHook.initialized]);
 
   return (
     <View style={styles.container}>
@@ -153,28 +190,11 @@ const OTPVerificationScreen: React.FC = () => {
           {verifyLoading ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.verifyButtonText}>Verify</Text>}
         </TouchableOpacity>
       </View>
-
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Ionicons
-              name={isSuccess ? "checkmark-circle" : "close-circle"}
-              size={50}
-              color={isSuccess ? "green" : "red"}
-              style={styles.modalIcon}
-            />
-            <Text>{modalMessage}</Text>
-            <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+      
+      <ResponseModal
+        modal={modal}
+        onClose={handleCloseModal}
+      />
     </View>
   );
 };

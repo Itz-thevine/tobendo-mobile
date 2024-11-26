@@ -21,12 +21,12 @@ type FormValues = {
 
 const SignInScreen: React.FC = () => {
   const localUser = useLocalUser();
-
-  const iniSeller = useInitializeIsSeller();
+  const isSellerHook = useInitializeIsSeller();
+  const [canInitialize, setCanInitialize] = useState(false);
 
   const signInApi = useSignInApi();
   const signInResp = signInApi.response;
-  const loading = iniSeller.loading ?? signInResp.loading;
+  const loading = isSellerHook.loading ?? signInResp.loading;
 
   const { control, handleSubmit, setValue, formState: { errors } } = useForm<FormValues>({
     defaultValues: {
@@ -91,6 +91,7 @@ const SignInScreen: React.FC = () => {
       ...modal,
       visible: true,
       message: 'Sign in successful!',
+      success: true,
     });
   }
 
@@ -109,9 +110,7 @@ const SignInScreen: React.FC = () => {
           ),
           access_token: data?.access_token,
         });
-        if(iniSeller.initialized){
-          onIsSellerInitialized();
-        }
+        setCanInitialize(true);
       }
       else {
         newModal.visible = true;
@@ -126,10 +125,15 @@ const SignInScreen: React.FC = () => {
     setModal({...newModal});
   }, [signInResp.loading]);
   useEffect(() => {
-    if(iniSeller.initialized){
+    if(canInitialize && localUser?.data?.access_token){
+      isSellerHook.initialize();
+    }
+  }, [canInitialize]);
+  useEffect(() => {
+    if(isSellerHook.initialized){
       onIsSellerInitialized();
     }
-  }, [iniSeller.initialized]);
+  }, [isSellerHook.initialized]);
 
   return (
     <View style={styles.container}>
@@ -258,28 +262,7 @@ const SignInScreen: React.FC = () => {
           <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
         </TouchableOpacity>
       </View>
-
-      {/* <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={handleCloseModal}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Ionicons
-              name={isSuccess ? "checkmark-circle" : "close-circle"}
-              size={50}
-              color={isSuccess ? "green" : "red"}
-              style={styles.modalIcon}
-            />
-            <Text>{modalMessage}</Text>
-            <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal> */}
+      
       <ResponseModal
         modal={modal}
         onClose={handleCloseModal}
