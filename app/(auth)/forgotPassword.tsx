@@ -3,14 +3,16 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, ActivityIndicator, Modal } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
-import { useAuth } from '@/context/auth';
 import { useSendUserOtpApi } from '@/hooks/api/user/sendUserOtp';
+import { useLocalUser } from '@/context/local-user/useLocalUser';
 
 type FormValues = {
   email: string;
 };
 
 const ForgotPasswordScreen = () => {
+  const localUser = useLocalUser();
+
   const sendOtpApi = useSendUserOtpApi();
   const sendOtpResp = sendOtpApi.response;
   const loading = sendOtpResp.loading;
@@ -24,7 +26,6 @@ const ForgotPasswordScreen = () => {
       email: '',
     }
   });
-  const authHook = useAuth()
 
   const toggleInputMethod = () => {
     setUsePhone(!usePhone);
@@ -41,13 +42,16 @@ const ForgotPasswordScreen = () => {
   useEffect(() => {
     if(sendOtpResp.loading === false){
       if(sendOtpResp.success){
-        authHook.SetJWTtoken(sendOtpResp.data?.access_token);
-        authHook.SetOTP(sendOtpResp.data?.code);
-        authHook.SetEmail(email)
-        if(authHook.continue?.set) authHook.continue.set({
-          route: '/(auth)/resetPassword',
-          otpType: 'forgot_password',
+        localUser?.update({
+          access_token: sendOtpResp.data?.access_token,
+          email,
         });
+        localUser?.updateAuthData({
+          otp: sendOtpResp.data?.code,
+          otpType: 'forgot_password',
+          continueRoute: '/(auth)/resetPassword',
+        });
+        
         router.push('/(auth)/otpScreen');
       }
       else {

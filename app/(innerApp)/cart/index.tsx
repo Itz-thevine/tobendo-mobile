@@ -3,8 +3,7 @@ import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Dimensions
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRouter } from 'expo-router';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
-import { DynamicObject } from '@/types';
-import { useAuth } from '@/context/auth';
+import { useLocalUser } from '@/context/local-user/useLocalUser';
 
 const { width } = Dimensions.get('window');
 
@@ -19,17 +18,16 @@ type CartItem = {
 
 
 const CartPage: React.FC = () => {
+  const localUser = useLocalUser();
   const navigation = useNavigation();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-
-  const {user} = useAuth()
   const router = useRouter()
 
 
   const fetchCartItems = async () => {
     const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/cart/`, {
       headers: {
-        'Authorization': `Bearer ${user.access_token}`
+        'Authorization': `Bearer ${localUser?.data?.access_token}`
       }
     });
     return res.json();

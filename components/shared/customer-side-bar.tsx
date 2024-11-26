@@ -8,13 +8,13 @@ import { GlobalStyles } from '@/styles';
 import { router } from 'expo-router';
 import AccordionMenuItem from './accordion-menu-item';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useAuth } from '@/context/auth';
+import { useLocalUser } from '@/context/local-user/useLocalUser';
 
 const screenWidth = Dimensions.get('window').width;
 
 const Sidebar: React.FC<{ isVisible: boolean, onClose: () => void }> = ({ isVisible, onClose }) => {
+  const localUser = useLocalUser();
   const sidebarAnim = useRef(new Animated.Value(-screenWidth)).current;
-  const authHook = useAuth();
   
   useEffect(() => {
     Animated.timing(sidebarAnim, {
@@ -57,10 +57,10 @@ const Sidebar: React.FC<{ isVisible: boolean, onClose: () => void }> = ({ isVisi
         </View>
 
         {
-          authHook.user?.email &&
+          localUser?.data?.email &&
           <View style={[combineStyles(GlobalStyles, 'padding_l_sm', 'padding_r_sm'), styles.emailContainer]}>
             <TouchableOpacity onPress={() => router.push('/profile')}>
-              <Text style={styles.email}>{authHook.user?.email}</Text>
+              <Text style={styles.email}>{localUser?.data?.email}</Text>
             </TouchableOpacity>
             <EntypoIcon name="chevron-right" size={24} color="white" />
           </View>
@@ -125,8 +125,8 @@ const Sidebar: React.FC<{ isVisible: boolean, onClose: () => void }> = ({ isVisi
           <MenuItem title="Switch to Seller" onPress={() => {
             AsyncStorage.setItem('currentMode', 'seller');
             router.push(
-              authHook.user ? (
-                authHook.isSeller ? '/(seller)/seller' : '/(seller)/onboarding-seller'
+              localUser?.data ? (
+                localUser.data.isSeller ? '/(seller)/seller' : '/(seller)/onboarding-seller'
               ) : '/(auth)/signin'
             )
             // router.push('/bank-details')

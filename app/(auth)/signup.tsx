@@ -8,8 +8,8 @@ import { height, width } from '@/lib';
 import { countries } from '@/lib/countries';
 import { CountryCode } from 'libphonenumber-js';
 import { useCreateUserApi } from '@/hooks/api/user/createUser';
-import { useAuth } from '@/context/auth';
 import { useSendUserOtpApi } from '@/hooks/api/user/sendUserOtp';
+import { useLocalUser } from '@/context/local-user/useLocalUser';
 
 type FormValues = {
   email: string;
@@ -19,7 +19,8 @@ type FormValues = {
 };
 
 const SignUpScreen: React.FC = () => {
-  const authHook = useAuth();
+  const localUser = useLocalUser();
+  
   const { control, handleSubmit, formState: { errors } } = useForm<FormValues>({
     defaultValues: {
       email: '',
@@ -57,7 +58,7 @@ const SignUpScreen: React.FC = () => {
         setModalMessage('Sign up successful!');
 
         const email = createResp.data?.email;
-        authHook.login(createResp.data);
+        // authHook.login(createResp.data);
         if(email){
           setEmail(email);
 
@@ -81,13 +82,14 @@ const SignUpScreen: React.FC = () => {
   useEffect(() => {
     if(sendOtpResp.loading === false){
       if(sendOtpResp.success){
-        authHook.SetEmail(email);
-        authHook.SetJWTtoken(sendOtpResp.data?.access_token);
-        authHook.SetOTP(sendOtpResp.data?.code);
-        if(authHook.continue?.set) authHook.continue.set({
+        localUser?.update({
+          email,
+          access_token: sendOtpResp.data?.access_token,
+        });
+        localUser?.updateAuthData({
+          otp: sendOtpResp.data?.code,
           otpType: 'email_verification',
         });
-        console.log(sendOtpResp.data?.code)
         router.push('/(auth)/otpScreen');
       }
       else {

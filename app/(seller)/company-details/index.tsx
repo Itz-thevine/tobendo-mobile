@@ -8,12 +8,12 @@ import { router } from 'expo-router';
 import AppHeader from '@/components/shared/app-header';
 import { useAddCompanyDetailsApi } from '@/hooks/api/user/addCompanyDetails';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '@/context/auth';
+import { useLocalUser } from '@/context/local-user/useLocalUser';
 
 const CompanyDetailsScreen = () => {
+  const localUser = useLocalUser();
   const companyApi = useAddCompanyDetailsApi();
   const companyResp = companyApi.response;
-  const authHook = useAuth();
 
   const [form, setForm] = useState({
     name: '',
@@ -44,7 +44,9 @@ const CompanyDetailsScreen = () => {
   useEffect(() => {
     if(companyResp.loading === false){
       if(companyResp.success){
-        authHook.setIsSeller(companyResp.data?.is_seller);
+        localUser?.update({
+          isSeller: companyResp.data?.is_seller,
+        });
         router.push('/bank-details');
       }
       else {

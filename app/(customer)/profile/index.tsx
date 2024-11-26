@@ -1,7 +1,7 @@
 import CustomModal from '@/components/shared/custom-modal';
 import CustomerAppHeader from '@/components/shared/customers-app-header';
-import { useAuth } from '@/context/auth';
-import { combineStyles, height } from '@/lib';
+import { useLocalUser } from '@/context/local-user/useLocalUser';
+import { combineStyles } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
@@ -11,20 +11,21 @@ import { View, Text, StyleSheet, TouchableOpacity, Dimensions, SafeAreaView, Ima
 const screenWidth = Dimensions.get('window').width;
 
 const WithdrawScreen: React.FC = () => {
-  const authHook = useAuth();
-    const [isModalOpen, setIsModalOpen] = useState(false)
-    const [agreeToTAC, setAgreeToTAC] = useState(false)
+  const localUser = useLocalUser();
+
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [agreeToTAC, setAgreeToTAC] = useState(false)
 
   const handleSignOut = () => {
-    authHook.logout();
-    router.push('/(customer)')
+    localUser?.unset();
+    router.push('/(auth)/signin');
   }
   return (
     <SafeAreaView style={combineStyles(GlobalStyles, 'safeArea')}>
       <CustomModal
         isVisible={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        height={height}
+        // height={height}
         contentBackground={'transparent'}
         hasCloseBtn={false}
       >

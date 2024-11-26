@@ -1,6 +1,6 @@
 
-import { useAuth } from "@/context/auth";
 import { apiRequestHeaders, apiRequestMethod, useCallApi, useCallApiProps } from "./useCallApi";
+import { useLocalUser } from "@/context/local-user/useLocalUser";
 
 interface tsCallProps {
     formObject?: object;
@@ -11,7 +11,7 @@ interface tsCallProps {
 }
 export const useApi = (props?: useCallApiProps) => {
     const api = useCallApi(props);
-    const authHook = useAuth();
+    const localUser = useLocalUser();
     
     const handle = {
         call: (call_props: tsCallProps) => {
@@ -73,7 +73,7 @@ export const useApi = (props?: useCallApiProps) => {
                     'Content-Type': contentType,
                     'Accept': contentType,
                     // 'Access-Control-Allow-Origin': '*',
-                    'Authorization': `Bearer ${authHook.JWTtoken || authHook.user?.access_token}`,
+                    'Authorization': `Bearer ${localUser?.data?.access_token}`,
                     ...call_props.headers
                 },
             });

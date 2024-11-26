@@ -1,15 +1,14 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useCallback, useEffect } from 'react';
 import { View, Image, ActivityIndicator, StyleSheet, Text } from 'react-native';
 import 'react-native-reanimated';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { AuthProvider } from '@/context/auth';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import ReactQueryProviders from '@/lib/react-query/provider';
-import InitializeUserData from '@/components/InitializeUserData';
+import { LocalUserProvider } from '@/context/local-user/LocalUserProvider';
+import AppSlot from '@/components/app/AppSlot';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -49,18 +48,9 @@ const RootLayout: React.FC = () => {
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <ReactQueryProviders>
         <GestureHandlerRootView>
-          <AuthProvider>
-            <InitializeUserData />
-            <Stack initialRouteName='(onboard)'>
-              <Stack.Screen name="(onboard)" options={{ headerShown: false }} />
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="(innerApp)" options={{ headerShown: false }} />
-              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-              <Stack.Screen name="(seller)" options={{ headerShown: false }} />
-              <Stack.Screen name="(customer)" options={{ headerShown: false }} />
-              <Stack.Screen name="+not-found" />
-            </Stack>
-          </AuthProvider>
+          <LocalUserProvider>
+            <AppSlot />
+          </LocalUserProvider>
         </GestureHandlerRootView>
       </ReactQueryProviders>
     </ThemeProvider>

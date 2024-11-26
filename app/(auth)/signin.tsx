@@ -1,16 +1,18 @@
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, ActivityIndicator, Modal, Platform } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, ActivityIndicator, Platform } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { Ionicons } from '@expo/vector-icons';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
-import { useAuth } from '@/context/auth';
 import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { parsePhoneNumberFromString, CountryCode, getCountryCallingCode } from 'libphonenumber-js';
 import { height, width } from '@/lib';
 import { countries } from '@/lib/countries'; // Ensure this path is correct
 import { useSignInApi } from '@/hooks/api/user/signIn';
+import { useLocalUser } from '@/context/local-user/useLocalUser';
+import ResponseModal, { responseModal } from '@/components/ResponseModal';
+import { useInitializeIsSeller } from '@/hooks/useInitiallizeIsSeller';
 
 type FormValues = {
   emailOrPhone: string;
@@ -18,10 +20,13 @@ type FormValues = {
 };
 
 const SignInScreen: React.FC = () => {
+  const localUser = useLocalUser();
+
+  const iniSeller = useInitializeIsSeller();
+
   const signInApi = useSignInApi();
   const signInResp = signInApi.response;
-  const loading = signInResp.loading;
-  const isSuccess = signInResp.success;
+  const loading = iniSeller.loading ?? signInResp.loading;
 
   const { control, handleSubmit, setValue, formState: { errors } } = useForm<FormValues>({
     defaultValues: {
@@ -30,10 +35,8 @@ const SignInScreen: React.FC = () => {
     }
   });
 
-  const authHook = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalMessage, setModalMessage] = useState('');
+  const [modal, setModal] = useState<responseModal>({});
   const [countryCode, setCountryCode] = useState<CountryCode>('US'); // Default to US
   const [rememberPassword, setRememberPassword] = useState(false);
   const [loginMethod, setLoginMethod] = useState<'email' | 'phone'>('email'); // State to track the selected login method
@@ -76,43 +79,57 @@ const SignInScreen: React.FC = () => {
       password: data.password,
     });
   };
+  const handleCloseModal = () => {
+    setModal({
+      ...modal,
+      visible: false,
+    });
+    if(signInResp.success) router.push('/(customer)');
+  }
+  const onIsSellerInitialized = () => {
+    setModal({
+      ...modal,
+      visible: true,
+      message: 'Sign in successful!',
+    });
+  }
 
   useEffect(() => {
+    const newModal = {...modal};
+    
     if(signInResp.loading === false){
-      setModalVisible(true);
-      if(signInResp.success){
-        const data = signInResp.data;
-        if(loginMethod === 'email') authHook.SetEmail(form.emailOrPhone);
-        authHook.login(data);  // Update the auth context
-        authHook.SetJWTtoken(data?.access_token);
-        setModalMessage('Sign in successful!');
-        router.push('/(seller)/seller');
+      newModal.success = signInResp.success;
 
-        if (rememberPassword) {
-          async () => {
-            // Save credentials to AsyncStorage
-            await AsyncStorage.setItem('emailOrPhone', form.emailOrPhone);
-            await AsyncStorage.setItem('password', form.password);
-            await AsyncStorage.setItem('countryCode', countryCode);
-          }
-        } else {
-          async () => {
-            // Clear saved credentials
-            await AsyncStorage.removeItem('emailOrPhone');
-            await AsyncStorage.removeItem('password');
-            await AsyncStorage.removeItem('countryCode');
-          }
+      if(signInResp.success){
+        newModal.visible = false;
+        const data = signInResp.data;
+        localUser?.update({
+          ...(
+            loginMethod === 'email' ? {email: form.emailOrPhone} : {}
+          ),
+          access_token: data?.access_token,
+        });
+        if(iniSeller.initialized){
+          onIsSellerInitialized();
         }
       }
       else {
-        setModalMessage(`Sign in failed: ${signInResp.error || 'Unknown error'}`);
+        newModal.visible = true;
+        newModal.message = `Sign in failed: ${signInResp.error || 'Unknown error'}`;
       }
     }
     else {
-      if(modalMessage) setModalMessage('');
-      if(modalVisible) setModalVisible(false);
+      newModal.message = undefined;
+      newModal.visible = false;
     }
+
+    setModal({...newModal});
   }, [signInResp.loading]);
+  useEffect(() => {
+    if(iniSeller.initialized){
+      onIsSellerInitialized();
+    }
+  }, [iniSeller.initialized]);
 
   return (
     <View style={styles.container}>
@@ -242,11 +259,11 @@ const SignInScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      <Modal
+      {/* <Modal
         animationType="slide"
         transparent={true}
         visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
+        onRequestClose={handleCloseModal}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -262,7 +279,11 @@ const SignInScreen: React.FC = () => {
             </TouchableOpacity>
           </View>
         </View>
-      </Modal>
+      </Modal> */}
+      <ResponseModal
+        modal={modal}
+        onClose={handleCloseModal}
+      />
     </View>
   );
 };

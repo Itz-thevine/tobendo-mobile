@@ -1,13 +1,13 @@
-import { Tabs, router } from 'expo-router';
+import { Href, Tabs, router } from 'expo-router';
 import React from 'react';
 
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useAuth } from '@/context/auth';
 import { Ionicons } from '@expo/vector-icons';
-import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useLocalUser } from '@/context/local-user/useLocalUser';
 
 const TabBarButton: React.FC<BottomTabBarButtonProps & { name: string, label?: string }> = ({ onPress, name, accessibilityState, label }) => {
   const focused = accessibilityState?.selected;
@@ -22,13 +22,13 @@ const TabBarButton: React.FC<BottomTabBarButtonProps & { name: string, label?: s
 };
 
 export default function TabLayout() {
+  const localUser = useLocalUser();
   const colorScheme = useColorScheme();
-  const { user } = useAuth();
 
-  const handlePress = (screen: string) => {
+  const handlePress = (screen: Href) => {
     // if (false) {
-    if (!user?.access_token) {
-      router.push("(auth)/signin");
+    if (!localUser?.data?.access_token) {
+      router.push("/(auth)/signin");
     } else {
       router.push(screen);
     }
@@ -75,7 +75,7 @@ export default function TabLayout() {
         options={{
           title: 'Explore',
           tabBarButton: (props) => (
-            <TabBarButton {...props} onPress={() => router.push("explore")} name={'search'}  label='Explore'/>
+            <TabBarButton {...props} onPress={() => router.push("/explore")} name={'search'}  label='Explore'/>
           ),
         }}
       />
@@ -86,7 +86,7 @@ export default function TabLayout() {
           tabBarButton: (props) => (
             <TabBarButton
               {...props}
-              onPress={() => handlePress("message")}
+              onPress={() => handlePress("/message")}
               name={'chatbubbles'}
               label='Messages'
             />
@@ -100,7 +100,7 @@ export default function TabLayout() {
           tabBarButton: (props) => (
             <TabBarButton
               {...props}
-              onPress={() => handlePress("orders")}
+              onPress={() => handlePress("/orders")}
               name={'list'}
               label='Orders'
             />
@@ -114,7 +114,7 @@ export default function TabLayout() {
           tabBarButton: (props) => (
             <TabBarButton
               {...props}
-              onPress={() => handlePress("profile")}
+              onPress={() => handlePress("/profile")}
               name={'person'}
               label='Profile'
             />

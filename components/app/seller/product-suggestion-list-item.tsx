@@ -16,7 +16,7 @@ type ProductSuggestionItemProps = {
 const ProductSuggestionItem: React.FC<any> = ({ item, setIsVisible }) => {
     const productImage = item?.images?.big ? {uri : item.images.big} : require('@/assets/images/no-image.jpg');    
     return (
-        <TouchableOpacity 
+        <TouchableOpacity
             onPress={() => {
                 router.push(`/(seller)/add-new-inventory/${item.legacyArticleId}}`);
                 setIsVisible(false);

@@ -2,12 +2,12 @@ import React, { useCallback, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Switch, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useAuth } from '@/context/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ScrollView } from 'react-native-gesture-handler';
+import { useLocalUser } from '@/context/local-user/useLocalUser';
 
 const ProfileScreen = () => {
-  const { login } = useAuth();
+  const localUser = useLocalUser();
   const [isSeller, setIsSeller] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -26,8 +26,8 @@ const ProfileScreen = () => {
   }, []);
 
   const logout = () => {
-    login("");
-    router.push('(tabs)/home');
+    localUser?.unset();
+    router.push('/(tabs)/home');
   };
 
   const handleLogoutPress = () => {

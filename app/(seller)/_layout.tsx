@@ -4,18 +4,18 @@ import * as SplashScreen from 'expo-splash-screen';
 import React, { useEffect } from 'react';
 import 'react-native-reanimated';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useAuth } from '@/context/auth';
+import { useLocalUser } from '@/context/local-user/useLocalUser';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 const RootLayout: React.FC = () => {
+  const localUser = useLocalUser();
   const colorScheme = useColorScheme();
-  const authHook = useAuth();
   
   useEffect(() => {
-    if(!authHook.user) router.push('/(auth)/signin');
-    else if(!authHook.isSeller) router.push('/(seller)/onboarding-seller');
+    if(!localUser?.data) router.push('/(auth)/signin');
+    else if(!localUser.data.isSeller) router.push('/(seller)/onboarding-seller');
   }, []);
   
   return (

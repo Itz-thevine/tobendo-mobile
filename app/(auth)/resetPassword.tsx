@@ -3,8 +3,8 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity, ActivityIndicator,
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { router } from 'expo-router';
-import { useAuth } from '@/context/auth';
 import { useResetPasswordApi } from '@/hooks/api/user/resetPassword';
+import { useLocalUser } from '@/context/local-user/useLocalUser';
 
 type FormValues = {
   new_password: string;
@@ -12,12 +12,12 @@ type FormValues = {
 };
 
 const ResetPasswordScreen: React.FC = () => {
+  const localUser = useLocalUser();
+
   const resetApi = useResetPasswordApi();
   const resetResp = resetApi.response;
   const loading = resetResp.loading;
   const isSuccess = resetResp.success;
-
-  const authHook = useAuth()
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormValues>({
     defaultValues: {
@@ -35,8 +35,8 @@ const ResetPasswordScreen: React.FC = () => {
     if (data.new_password === data.confirm_password) {
       resetApi.trigger({
         new_password: data.new_password,
-        email: authHook.email,
-        otp_code: authHook.otp,
+        email: localUser?.data?.email ?? '',
+        otp_code: localUser?.authData.otp ?? '',
       });
     }
     else {

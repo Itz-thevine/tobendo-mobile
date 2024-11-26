@@ -12,7 +12,6 @@ import { MarqueeImages } from '@/static';
 import Marquee from '@/components/shared/marquee';
 import CustomModal from '@/components/shared/custom-modal';
 import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useGetVehicleMakesApi, vehicleMake } from '@/hooks/api/vehicle/getMakes';
 import { useGetVehicleModelsApi, vehicleModel } from '@/hooks/api/vehicle/getModels';
 import { useGetVehicleEnginesApi, vehicleEngine } from '@/hooks/api/vehicle/getEngines';
@@ -40,13 +39,6 @@ const CustomerScreen: React.FC = () => {
 
   const router = useRouter()
   useEffect(() => {
-    const modeCheck = async () => {
-      if (await AsyncStorage.getItem('currentMode') === 'seller') {
-          router.push('/(seller)/seller')
-      }
-    }
-
-    modeCheck()
     getMakesApi.trigger();
   }, [])
   useEffect(() => {

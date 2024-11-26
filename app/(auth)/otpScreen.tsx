@@ -2,19 +2,20 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, ActivityIndicator, Modal } from 'react-native';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { useRouter } from 'expo-router';
-import { useAuth } from '@/context/auth';
 import { Ionicons } from '@expo/vector-icons';
 import { useVerifyUserOtpApi } from '@/hooks/api/user/verifyUserOtp';
 import OtpTimer from '@/components/OtpTimer';
 import { useSendUserOtpApi } from '@/hooks/api/user/sendUserOtp';
+import { useLocalUser } from '@/context/local-user/useLocalUser';
 
 type FormValues = {
   otp: string;
 };
 
 const OTPVerificationScreen: React.FC = () => {
-  const authHook = useAuth();
-  const otpType = authHook.continue?.otpType ?? 'email_verification';
+  const localUser = useLocalUser();
+  const email = localUser?.data?.email;
+  const otpType = localUser?.authData.otpType ?? 'email_verification';
 
   const verifyApi = useVerifyUserOtpApi();
   const verifyResp = verifyApi.response;
@@ -45,16 +46,16 @@ const OTPVerificationScreen: React.FC = () => {
   const router = useRouter();
 
   const onSubmit: SubmitHandler<FormValues> = async data => {
-    verifyApi.trigger({
-        email: authHook.email,
+    if(email) verifyApi.trigger({
+        email,
         otp_type: otpType,
         otp_code: data.otp,
     });
   };
 
   const handleResendOTP = async () => {
-    sendOtpApi.trigger({
-      email: authHook.email,
+    if(email) sendOtpApi.trigger({
+      email,
       otp_type: otpType,
     });
   };
@@ -78,8 +79,8 @@ const OTPVerificationScreen: React.FC = () => {
       setModalVisible(true);
       if(verifyResp.success){
         setModalMessage('OTP verified successfully!');
-        if(authHook.continue?.route && authHook.continue.set) authHook.continue.set(undefined);
-        router.push(authHook.continue?.route ? authHook.continue.route : '/(seller)/onboarding-seller');
+        if(localUser?.authData.continueRoute && localUser?.authData.continueRoute) localUser?.updateAuthData({continueRoute: undefined});
+        router.push(localUser?.authData.continueRoute ? localUser?.authData.continueRoute : '/(seller)/onboarding-seller');
         // router.push('/(tabs)/home');
       }
       else {
@@ -96,8 +97,12 @@ const OTPVerificationScreen: React.FC = () => {
     if(sendOtpResp.loading === false){
       if(sendOtpResp.success){
         setDefaultCountdown({value: 60, key: `${Date.now()}`}); // Reset the countdown timer
-        authHook.SetJWTtoken(sendOtpResp.data?.access_token);
-        authHook.SetOTP(sendOtpResp.data?.code);
+        localUser?.update({
+          access_token: sendOtpResp.data?.access_token,
+        });
+        localUser?.updateAuthData({
+          otp: sendOtpResp.data?.code,
+        });
       }
       else {
         setModalVisible(true);
@@ -118,7 +123,7 @@ const OTPVerificationScreen: React.FC = () => {
       <View style={styles.content}>
         <Text style={styles.title}>Please enter code</Text>
         <Text style={styles.subtitle}>A verification code has been sent to your email</Text>
-        <Text style={styles.email}>{authHook.email}</Text>
+        <Text style={styles.email}>{email}</Text>
 
         <View style={styles.otpContainer}>
           {Array(6).fill(0).map((_, index) => (

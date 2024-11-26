@@ -3,12 +3,12 @@ import { View, Text, TouchableOpacity, FlatList, StyleSheet, Image, ScrollView, 
 import { combineStyles } from '@/lib'; // Assuming this is a utility function for combining styles
 import { GlobalStyles } from '@/styles'; // Assuming this is your global styles file
 import { useCheckoutCartApi } from '@/hooks/api/user-cart/checkoutCart';
-import { useAuth } from '@/context/auth';
 import { cartItem } from '@/hooks/api/user-cart/getCartItems';
 import ProductCard5 from './product-card-5';
 import { addressProps } from '@/hooks/api/address/getAddresses';
 import { deliveryOption } from './cart-address-summary';
 import ResponseModal, { responseModal } from '@/components/ResponseModal';
+import { useLocalUser } from '@/context/local-user/useLocalUser';
 
 
 interface ConfirmPurchaseProps {
@@ -22,7 +22,7 @@ interface ConfirmPurchaseProps {
 }
 
 const ConfirmPurchaseScreen = (props: ConfirmPurchaseProps) => {
-  const authHook = useAuth();
+  const localUser = useLocalUser();
 
   const checkoutApi = useCheckoutCartApi();
   const checkoutResp = checkoutApi.response;
@@ -34,8 +34,8 @@ const ConfirmPurchaseScreen = (props: ConfirmPurchaseProps) => {
   });
 
   const checkout = () => {
-    if(authHook.user?.user_id) checkoutApi.trigger({
-      user_id: authHook.user?.id,
+    if(localUser?.data?.user_id) checkoutApi.trigger({
+      user_id: localUser.data.user_id,
       items: props.cartItems.map((item) => ({
         price: item.product_details?.price ?? 0,
         quantity: item.quantity ?? 0,
