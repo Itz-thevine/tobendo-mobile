@@ -17,7 +17,7 @@ const ResponseModal = (props: ResponseModalProps) => {
     <Modal
       animationType="slide"
       transparent={true}
-      visible={props.modal.visible}
+      visible={props.modal.visible ? true : false}
       onRequestClose={props.onClose}
     >
       <View style={styles.modalOverlay}>

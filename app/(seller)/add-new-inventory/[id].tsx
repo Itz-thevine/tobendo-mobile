@@ -10,12 +10,13 @@ import CharacterCounterInput from '@/components/character-counter-Input';
 import Icon from 'react-native-vector-icons/Ionicons';
 import CustomModal from '@/components/shared/custom-modal';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useProducts } from '@/hooks/app/useProducts';
 import CompatibilityCompV2 from '@/components/app/listProducts/compatibility/compatibilty-v2';
 import AddBrandToArticle from '@/components/app/listProducts/addBrands';
 import * as FileSystem from 'expo-file-system';
-import { createUserProductTriggerProps, useCreateUserProductsApi } from '@/hooks/api/user/createUserProduct';
-import { useGetPartSuggestionDetailsApi } from '@/hooks/api/vehicle/getPartSuggestionDetails';
-import ResponseModal, { responseModal } from '@/components/ResponseModal';
+import { useCreateArticle } from '@/hooks/app/useAddArticle';
+import { AxiosError } from 'axios';
+import processError from '@/lib/error';
 
 
 const { width } = Dimensions.get('window');
@@ -29,30 +30,34 @@ interface ImageDetails {
 
 
 const ProductListing = () => {
-  const getPartDetailsApi = useGetPartSuggestionDetailsApi();
-  const getPartDetailsResp = getPartDetailsApi.response;
-  const detailsLoading = getPartDetailsResp.loading;
-  const articles = getPartDetailsResp.data?.articles || [];
-
-  const createApi = useCreateUserProductsApi();
-  const createResp = createApi.response;
-  const createLoading = createResp.loading;
-
   const [title, setTitle] = useState('');
-  // const [brand, setBrand] = useState('');
-  // const [description, setDescription] = useState('');
+  const [brand, setBrand] = useState('');
+  const [description, setDescription] = useState('');
   const [quantity, setQuantity] = useState('');
   const [price, setPrice] = useState('');
   const [mainImage, setMainImage] = useState<ImageDetails | null>(null);
   const [additionalImages, setAdditionalImages] = useState<ImageDetails[]>([]);
-  
+  const [isButtonEnabled, setIsButtonEnabled] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [agreeToTAC, setAgreeToTAC] = useState(false)
-  const [isAddInventoryModal, setIsAddInventoryModal] = useState(false);
-  const [modal, setModal] = useState<responseModal>({});
+  const [isAddInventoryModal, setIsAddInventoryModal] = useState(false)
   const [selectedCategories, setSelectedCategories] = useState<any[]>([]);
   const [selectedCompatibilities, setCompatibilities] = useState<any[]>([]);
 
+
+  const { mutate, isPending } = useCreateArticle()
+
   const { id } = useLocalSearchParams();
+  const { data: productData = {}, isLoading, isError } = useProducts({
+    legacy_article_ids: parseInt(id as string),
+    search_query:'',
+    page: 1,
+    per_page: 1,
+    lang: 'en',
+    include_all: true,
+    search_type: '99',
+  }); 
+
   const pickImage = async (setImage: (image: ImageDetails) => void) => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -76,110 +81,100 @@ const ProductListing = () => {
     setAdditionalImages([...additionalImages, image]);
   };
 
+  // console.log('productData', productData?.articles[0]?.articleNumber)
+
+
   const convertToBase64 = async (uri: string) => {
     const base64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
     return base64;
   };
 
   const handleSubmit = async () => {
-    if (articles.length === 0) {
-      setModal({
-        success: false,
-        message: "No product data available",
-        visible: true,
-      });
+    if (!productData || !productData.articles || productData.articles.length === 0) {
+      console.error("No product data available");
       return;
     }
   
     let mainImageBase64 = null;
     if (mainImage) {
-      // mainImageBase64 = await convertToBase64(mainImage.uri);
+      mainImageBase64 = await convertToBase64(mainImage.uri);
     }
   
     let additionalImagesBase64: any[] = [];
     if (additionalImages.length > 0) {
-      // additionalImagesBase64 = await Promise.all(
-      //   additionalImages.map(async (image) => {
-      //     return await convertToBase64(image.uri);
-      //   })
-      // );
+      additionalImagesBase64 = await Promise.all(
+        additionalImages.map(async (image) => {
+          return await convertToBase64(image.uri);
+        })
+      );
     }
   
-    const article = articles[0];
-    const newArticle: createUserProductTriggerProps = {
-      ...article,
-      linkageTargetTypes: article.linkageTargetTypes ?? [`I don't know what to pass here`],
-      legacyArticleId: article.legacyArticleId ?? `like what the fuck`,
-      articleNumber: Number((article?.articleNumber ?? 0).toString().replace(/[^0-9]/g, '')),
+    const article = {
+      articleNumber: productData.articles[0].articleNumber,
+      dataSupplierId: productData.articles[0].dataSupplierId,
+      mfrName: productData.articles[0].mfrName,
       genericArticleDescription: title,
       itemDescription: "",
       detailDescription: {},
+      legacyArticleId: productData.articles[0].genericArticles[0].legacyArticleId,
       assemblyGroupNodeId:
-        selectedCategories.length > 0 ? selectedCategories[selectedCategories?.length - 1].assemblyGroupNodeId : 0,
+        selectedCategories.length > 0 ? selectedCategories[selectedCategories?.length - 1].assemblyGroupNodeId : null,
       assemblyGroupName:
-        selectedCategories.length > 0 ? selectedCategories[selectedCategories?.length - 1].assemblyGroupName : '0',
+        selectedCategories.length > 0 ? selectedCategories[selectedCategories?.length - 1].assemblyGroupName : null,
+      linkageTargetTypes: productData.articles[0].genericArticles[0].linkageTargetTypes,
       condition: "new",
       currency: "usd",
-      count: quantity ? Number(quantity) : 0,
-      price: price ? Number(price) : 0,
-      images: [mainImageBase64 ?? '', ...additionalImagesBase64],
+      count: quantity,
+      price: price,
+      gtins: productData.articles[0].gtins,
+      tradeNumbers: productData.articles[0].tradeNumbers,
+      oemNumbers: productData.articles[0].oemNumbers,
+      images: [mainImageBase64, ...additionalImagesBase64],
       car_ids: selectedCompatibilities.map((car) => car.carId),
+      criteria: productData.articles[0].articleCriteria,
     };
   
     // Call the mutation
-    createApi.trigger(newArticle);
+    mutate(
+      { article },
+      {
+        onSuccess: (value) => {
+          console.log("Request succeeded:", value);
+          setIsAddInventoryModal(true);
+          setIsSubmitting(false);
+        },
+        onError: (error) => {
+          console.log("Request failed:", error);
+          if (error instanceof AxiosError) {
+            processError(error);
+          }
+          setIsSubmitting(false); // Stop loading state on error
+        },
+      }
+    );
   };
   
-  useEffect(() => {
-    getPartDetailsApi.trigger({
-      legacy_article_ids: parseInt(id as string),
-      search_query:'',
-      page: 1,
-      per_page: 1,
-      lang: 'en',
-      include_all: true,
-      search_type: 99,
-    });
-  }, []);
-  useEffect(() => {
-    if(getPartDetailsResp.loading === false && getPartDetailsResp.success){
-      const articles = getPartDetailsResp.data?.articles || [];
-      if (articles?.length > 0) {
-        const article = articles[0];
-        // console.log(article)
 
-        if (Array.isArray(article.images) && article.images[0]?.imageURL400) {
-          setMainImage({
-            uri: article.images[0]?.imageURL400, 
-            width: 400,
-            height: 400,
-            type: "image/jpeg"
-          });
-        }
-  
-        // Set the item title from the backend if available
-        if (article.genericArticles?.length) {
-          setTitle(article.genericArticles[0]?.genericArticleDescription ?? '');
-        }
-      }
-    }
-  }, [getPartDetailsResp.loading]);
   useEffect(() => {
-    if(createResp.loading === false){
-      if(createResp.success){
-        console.log('---created inventory', createResp)
-        setIsAddInventoryModal(true);
-      }
-      else {
-        console.log('---shit', createResp)
-        setModal({
-          success: false,
-          visible: true,
-          message: createResp.error,
+    if (productData.articles?.length > 0) {
+      const article = productData.articles[0];
+            
+      if (article.images?.length > 0) {
+        setMainImage({
+          uri: article.images[0].imageURL400, 
+          width: 400,
+          height: 400,
+          type: "image/jpeg"
         });
       }
+
+      // Set the item title from the backend if available
+      if (article.genericArticles?.length > 0) {
+        setTitle(article.genericArticles[0].genericArticleDescription);
+      }
     }
-  }, [createResp.loading]);
+  }, [productData]);
+
 
   
 
@@ -215,15 +210,6 @@ const ProductListing = () => {
           
         </View>
       </CustomModal>
-      <ResponseModal
-        modal={modal}
-        onClose={() => {
-          setModal({
-            ...modal,
-            visible: false,
-          });
-        }}
-      />
 
       <View style={{
         position: 'relative'
@@ -231,7 +217,7 @@ const ProductListing = () => {
         <AppHeader/>
 
         {
-          detailsLoading ? (
+          isLoading ? (
             <View style={[combineStyles(GlobalStyles, 'background_soft_blue', 'padding_y_sm'), {height}]}>
               <ActivityIndicator size="small" color="#000" />
             </View>
@@ -339,10 +325,10 @@ const ProductListing = () => {
         <View style={[combineStyles(GlobalStyles, 'background_white', 'padding_x_sm', 'padding_y_xs', 'fixed'), {top : -height * 0.23, width: width}]}>
         <TouchableOpacity 
           style={combineStyles(GlobalStyles, 'background_royal_blue', 'items_center', 'rounded_full', 'padding_y_sm')} 
-          onPress={async () => await handleSubmit()}
+          onPress={() => handleSubmit()}
         >
           {
-            createLoading ? (
+            isPending ? (
               <ActivityIndicator size={15} color={'white'}/>
             ): (
               <Text style={combineStyles(GlobalStyles, 'text_lg', 'color_white', 'font_medium')}>Add New Inventory</Text>

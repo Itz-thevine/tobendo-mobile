@@ -86,8 +86,8 @@ const ProductSuggestion: React.FC<{setIsVisible: (value: boolean) => void}> = ({
                     ) : (
                         <FlatList
                             data={productsData?.articles}
-                            renderItem={({ item, index }) => (
-                                <ProductSuggestionItem key={`${index}_${item?.id}`} item={item} selectedProduct={selectedProduct} setIsVisible={setIsVisible} />
+                            renderItem={({ item }) => (
+                                <ProductSuggestionItem item={item} selectedProduct={selectedProduct} setIsVisible={setIsVisible} />
                             )}
                             keyExtractor={(item, index) => `${index}`}
                             numColumns={1}
