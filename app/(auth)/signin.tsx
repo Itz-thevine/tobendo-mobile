@@ -12,7 +12,6 @@ import { countries } from '@/lib/countries'; // Ensure this path is correct
 import { useSignInApi } from '@/hooks/api/user/signIn';
 import { useLocalUser } from '@/context/local-user/useLocalUser';
 import ResponseModal, { responseModal } from '@/components/ResponseModal';
-import { useInitializeIsSeller } from '@/hooks/useInitiallizeIsSeller';
 
 type FormValues = {
   emailOrPhone: string;
@@ -21,12 +20,13 @@ type FormValues = {
 
 const SignInScreen: React.FC = () => {
   const localUser = useLocalUser();
-  const isSellerHook = useInitializeIsSeller();
-  const [canInitialize, setCanInitialize] = useState(false);
+  // const isSellerHook = useInitializeIsSeller();
+  // const [canInitialize, setCanInitialize] = useState(false);
 
   const signInApi = useSignInApi();
   const signInResp = signInApi.response;
-  const loading = isSellerHook.loading ?? signInResp.loading;
+  const loading = signInResp.loading;
+  // const loading = isSellerHook.loading ?? signInResp.loading;
 
   const { control, handleSubmit, setValue, formState: { errors } } = useForm<FormValues>({
     defaultValues: {
@@ -86,23 +86,23 @@ const SignInScreen: React.FC = () => {
     });
     if(signInResp.success) router.push('/(customer)');
   }
-  const onIsSellerInitialized = () => {
-    setModal({
-      ...modal,
-      visible: true,
-      message: 'Sign in successful!',
-      success: true,
-    });
-  }
+  // const onIsSellerInitialized = () => {
+  //   setModal({
+  //     ...modal,
+  //     visible: true,
+  //     message: 'Sign in successful!',
+  //     success: true,
+  //   });
+  // }
 
   useEffect(() => {
     const newModal = {...modal};
     
     if(signInResp.loading === false){
       newModal.success = signInResp.success;
+      newModal.visible = true;
 
       if(signInResp.success){
-        newModal.visible = false;
         const data = signInResp.data;
         localUser?.update({
           ...(
@@ -110,10 +110,13 @@ const SignInScreen: React.FC = () => {
           ),
           access_token: data?.access_token,
         });
-        setCanInitialize(true);
+
+        // setCanInitialize(true);
+        // newModal.visible = false;
+        newModal.message = 'Sign in successful!';
       }
       else {
-        newModal.visible = true;
+        // newModal.visible = true;
         newModal.message = `Sign in failed: ${signInResp.error || 'Unknown error'}`;
       }
     }
@@ -121,19 +124,18 @@ const SignInScreen: React.FC = () => {
       newModal.message = undefined;
       newModal.visible = false;
     }
-
     setModal({...newModal});
   }, [signInResp.loading]);
-  useEffect(() => {
-    if(canInitialize && localUser?.data?.access_token){
-      isSellerHook.initialize();
-    }
-  }, [canInitialize]);
-  useEffect(() => {
-    if(isSellerHook.initialized){
-      onIsSellerInitialized();
-    }
-  }, [isSellerHook.initialized]);
+  // useEffect(() => {
+  //   if(canInitialize && localUser?.data?.access_token){
+  //     isSellerHook.initialize();
+  //   }
+  // }, [canInitialize]);
+  // useEffect(() => {
+  //   if(isSellerHook.initialized){
+  //     onIsSellerInitialized();
+  //   }
+  // }, [isSellerHook.initialized]);
 
   return (
     <View style={styles.container}>

@@ -7,7 +7,6 @@ import { useVerifyUserOtpApi } from '@/hooks/api/user/verifyUserOtp';
 import OtpTimer from '@/components/OtpTimer';
 import { useSendUserOtpApi } from '@/hooks/api/user/sendUserOtp';
 import { useLocalUser } from '@/context/local-user/useLocalUser';
-import { useInitializeIsSeller } from '@/hooks/useInitiallizeIsSeller';
 import ResponseModal, { responseModal } from '@/components/ResponseModal';
 
 type FormValues = {
@@ -19,8 +18,8 @@ const OTPVerificationScreen: React.FC = () => {
   const email = localUser?.data?.email;
   const otpType = localUser?.authData.otpType ?? 'email_verification';
   
-  const isSellerHook = useInitializeIsSeller();
-  const [canInitialize, setCanInitialize] = useState(false);
+  // const isSellerHook = useInitializeIsSeller();
+  // const [canInitialize, setCanInitialize] = useState(false);
 
   const verifyApi = useVerifyUserOtpApi();
   const verifyResp = verifyApi.response;
@@ -86,14 +85,14 @@ const OTPVerificationScreen: React.FC = () => {
       router.push(localUser?.authData.continueRoute ? localUser?.authData.continueRoute : '/(seller)/onboarding-seller');
     };
   }
-  const onIsSellerInitialized = () => {
-    setModal({
-      ...modal,
-      visible: true,
-      message: 'OTP verified successfully!',
-      success: true,
-    });
-  }
+  // const onIsSellerInitialized = () => {
+  //   setModal({
+  //     ...modal,
+  //     visible: true,
+  //     message: 'OTP verified successfully!',
+  //     success: true,
+  //   });
+  // }
 
   useEffect(() => {
     if(sendOtpResp.loading === false){
@@ -121,12 +120,15 @@ const OTPVerificationScreen: React.FC = () => {
 
     if(verifyResp.loading === false){
       // console.log('----otpScreen', verifyResp);
+      newModal.visible = true;
+      newModal.success = verifyResp.success;
       if(verifyResp.success){
-        newModal.visible = false;
-        setCanInitialize(true);
+        // newModal.visible = false;
+        // setCanInitialize(true);
+        newModal.message = 'OTP verified successfully!';
       }
       else {
-        newModal.visible = true;
+        // newModal.visible = true;
         newModal.message = `OTP verification failed: ${verifyResp.error || 'Unknown error'}`;
       }
     }
@@ -137,16 +139,16 @@ const OTPVerificationScreen: React.FC = () => {
 
     setModal({...newModal});
   }, [verifyResp.loading]);
-  useEffect(() => {
-    if(canInitialize && localUser?.data?.access_token){
-      isSellerHook.initialize();
-    }
-  }, [canInitialize]);
-  useEffect(() => {
-    if(isSellerHook.initialized){
-      onIsSellerInitialized();
-    }
-  }, [isSellerHook.initialized]);
+  // useEffect(() => {
+  //   if(canInitialize && localUser?.data?.access_token){
+  //     isSellerHook.initialize();
+  //   }
+  // }, [canInitialize]);
+  // useEffect(() => {
+  //   if(isSellerHook.initialized){
+  //     onIsSellerInitialized();
+  //   }
+  // }, [isSellerHook.initialized]);
 
   return (
     <View style={styles.container}>

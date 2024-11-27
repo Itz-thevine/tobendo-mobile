@@ -1,7 +1,7 @@
 import { combineStyles, height, width } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, SafeAreaView, ScrollView, ActivityIndicator } from 'react-native';
 import TopSellerItemCard from './top-seller-item-card-V1';
 import InventoryItemCard from './inventory-item-card';
 import CustomModal from '@/components/shared/custom-modal';
@@ -16,6 +16,7 @@ const Inventory: React.FC = () => {
   
   const getProductsApi = useGetUserProductsApi();
   const getProductsResp = getProductsApi.response;
+  const productsLoading = getProductsResp.loading;
 
   const [isProductListModal, setIsProductListModal] = useState(false)
   
@@ -60,6 +61,11 @@ const Inventory: React.FC = () => {
               contentContainerStyle={[combineStyles(GlobalStyles, 'gap_xl')]}
               showsHorizontalScrollIndicator={false}
           />
+          {
+            productsLoading ?
+            <ActivityIndicator /> :
+            <></>
+          }
           <Text style={combineStyles(GlobalStyles, 'text_2xl', 'margin_t_sm', 'margin_b_sm')}>Inventory</Text>
           <FlatList
               data={productItems}
@@ -72,6 +78,11 @@ const Inventory: React.FC = () => {
               keyExtractor={(item, i) => `${i}_${item.product_id ?? ''}`}
               contentContainerStyle={[combineStyles(GlobalStyles, 'gap_xl')]}
           />
+          {
+            productsLoading ?
+            <ActivityIndicator /> :
+            <></>
+          }
           <View style={{width: '100%', height: 200}}></View>
       </ScrollView>
       <View style={[combineStyles(GlobalStyles, 'background_white', 'padding_x_sm', 'padding_y_xs', 'fixed'), {top : height * -0.18, width: width}]}>

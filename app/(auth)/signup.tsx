@@ -58,7 +58,10 @@ const SignUpScreen: React.FC = () => {
         setModalMessage('Sign up successful!');
 
         const email = createResp.data?.email;
-        // authHook.login(createResp.data);
+        localUser?.update({
+          email,
+          user_id: createResp.data?.user_id,
+        });
         if(email){
           setEmail(email);
 

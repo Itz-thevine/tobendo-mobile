@@ -1,7 +1,8 @@
 import { useLocalUser } from "@/context/local-user/useLocalUser";
 import { useGetUserApi } from "./api/user/getUser";
 import { useGetCompanyDetailsApi } from "./api/user/getCompanyDetails";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Redirect, useRootNavigationState } from "expo-router";
 
 type useInitializeLocalUserProps = {
     onAuthed?: (authed: boolean) => void;
@@ -14,20 +15,35 @@ export const useInitializeLocalUser = (props?: useInitializeLocalUserProps) => {
   
     const getCompanyApi = useGetCompanyDetailsApi();
     const getCompanyResp = getCompanyApi.response;
+
+    const rootNavigationState = useRootNavigationState();
+    const localUserId = localUser?.data?.user_id;
+    const [redirectNode, setRedirectNode] = useState<React.ReactNode | undefined>(undefined);
+
+    useEffect(() => {
+        if(rootNavigationState.key){
+            if(localUserId && redirectNode){
+                setRedirectNode(undefined);
+            }
+            else if(!localUserId && !redirectNode){
+                setRedirectNode(<>
+                    <Redirect href={'/(auth)/signin'} />
+                </>);
+            }
+        }
+    }, [rootNavigationState.key, localUserId]);
     
     useEffect(() => {
-        // console.log('---ran')
       if(localUser?.data?.access_token){
-        // console.log('---can get things');
-        getUserApi.trigger();
-        getCompanyApi.trigger();
+        if(!localUser.data.user_id) getUserApi.trigger();
+        if(localUser.data.isSeller === undefined) getCompanyApi.trigger();
       }
       else {
         if(props?.onAuthed) props?.onAuthed(false);
       }
     }, [localUser?.data?.access_token]);
     useEffect(() => {
-      if(getUserResp.loading){
+      if(getUserResp.loading === false){
         let authed = false;
         if(getUserResp.success){
           localUser?.update({
@@ -40,12 +56,16 @@ export const useInitializeLocalUser = (props?: useInitializeLocalUserProps) => {
       }
     }, [getUserResp.loading]);
     useEffect(() => {
-      if(getCompanyResp.loading && getCompanyResp.success){
-        // console.log('-----tell me seller')
-        localUser?.update({
-          isSeller: getCompanyResp.data?.is_seller,
-        });
+      if(getCompanyResp.loading === false){
+        if(getCompanyResp.success){
+          localUser?.update({
+            isSeller: getCompanyResp.data?.is_seller,
+          });
+        }
       }
     }, [getCompanyResp.loading]);
 
+    return {
+      redirectNode,
+    };
 };
