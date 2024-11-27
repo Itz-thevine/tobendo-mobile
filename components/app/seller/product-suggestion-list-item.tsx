@@ -39,14 +39,14 @@ const ProductSuggestionItem: React.FC<any> = ({ item, setIsVisible }) => {
                     </Text>
                     
                     {/* Price and Manufacturer */}
-                    <View style={combineStyles(GlobalStyles, 'flex_row', 'margin_t_xs')}>
+                    {/* <View style={combineStyles(GlobalStyles, 'flex_row', 'margin_t_xs')}>
                         <Text style={[combineStyles(GlobalStyles, 'background_warning', 'color_white', 'padding_x_xs', 'rounded_md'), { paddingVertical: 5 }]}>
                             {'$'}
                         </Text>
                         <Text style={combineStyles(GlobalStyles, 'text_3xl', 'margin_l_xs')}>
                             {'500,000'}
                         </Text>
-                    </View>
+                    </View> */}
                     
                     {/* Manufacturer Info */}
                     <View style={combineStyles(GlobalStyles, 'flex_row', 'items_center', 'margin_t_xs')}>

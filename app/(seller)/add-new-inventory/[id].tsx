@@ -75,66 +75,63 @@ const ProductListing = () => {
   const addAdditionalImage = (image: ImageDetails) => {
     setAdditionalImages([...additionalImages, image]);
   };
-  const convertToBase64 = async (uri: string) => {
-    let base64: string | undefined;
-    try {
-      // base64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
-    }
-    catch (error) {
-      console.log(error);
-    }
-    
-    return base64;
-  };
+  
   const handleSubmit = async () => {
     if (!productArticle) {
       console.error("No product data available");
       return;
     }
   
-    let mainImageBase64 = null;
+    let mainImageBase64: string | undefined;
     if (mainImage) {
-      mainImageBase64 = await convertToBase64(mainImage.uri);
+      mainImageBase64 = (await convertImageToBase64(mainImage.uri)).base64String;
     }
   
-    let additionalImagesBase64: any[] = [];
+    let additionalImagesBase64: string[] = [];
     if (additionalImages.length > 0) {
-      additionalImagesBase64 = await Promise.all(
-        additionalImages.map(async (image) => {
-          return await convertToBase64(image.uri);
-        })
-      );
+      for(let i = 0; i < additionalImages.length; i++){
+        const image = additionalImages[i];
+        const base64 = (await convertImageToBase64(image.uri)).base64String;
+        if(base64){
+          additionalImagesBase64.push(base64);
+        }
+      }
     }
-  
-    const article = {
-      articleNumber: returnNumberFromAny(productArticle?.articleNumber),
-      dataSupplierId: returnNumberFromAny(productArticle?.dataSupplierId),
-      mfrName: productArticle?.mfrName,
+
+    createApi.trigger({
+      articleNumber: returnNumberFromAny(productArticle.articleNumber),
+      dataSupplierId: 0,
+      mfrName: productArticle?.mfrName ?? '',
       genericArticleDescription: title,
-      itemDescription: productArticle.itemDescription ?? "",
+      itemDescription: '',
       detailDescription: {},
-      legacyArticleId: `${productArticle?.genericArticles[0]?.legacyArticleId ?? ''}`,
-      assemblyGroupNodeId:
-        selectedCategories.length > 0 ? returnNumberFromAny(selectedCategories[selectedCategories?.length - 1].assemblyGroupNodeId) : 0,
-      assemblyGroupName:
-        selectedCategories.length > 0 ? selectedCategories[selectedCategories?.length - 1].assemblyGroupName : 0,
-      linkageTargetTypes: productArticle?.genericArticles[0]?.linkageTargetTypes,
+      legacyArticleId: '',
+      assemblyGroupNodeId: (
+        selectedCategories.length > 0 ?
+        returnNumberFromAny(selectedCategories[selectedCategories?.length - 1].assemblyGroupNodeId) :
+        0
+      ),
+      assemblyGroupName: (
+        selectedCategories.length > 0 ?
+        (selectedCategories[selectedCategories?.length - 1].assemblyGroupName ?? '') :
+        ''
+      ),
+      linkageTargetTypes: [],
       condition: "new",
       currency: "usd",
       count: returnNumberFromAny(quantity),
       price: returnNumberFromAny(price),
-      gtins: productArticle?.gtins ?? [],
-      tradeNumbers: productArticle?.tradeNumbers,
-      oemNumbers: productArticle?.oemNumbers ?? [],
-      // images: [mainImageBase64, ...additionalImagesBase64],
-      car_ids: selectedCompatibilities.map((car) => car.carId),
-      criteria: productArticle?.articleCriteria,
-    };
-
-    console.log(article)
-
-    createApi.trigger({
-      ...article,
+      gtins: [],
+      tradeNumbers: [],
+      oemNumbers: [],
+      images: [
+        ...(
+          mainImageBase64 ? [mainImageBase64] : []
+        ),
+        ...additionalImagesBase64
+      ],
+      car_ids: selectedCompatibilities.map((car) => car.carId) || [],
+      criteria: productArticle?.articleCriteria || [],
     });
   
     // Call the mutation
