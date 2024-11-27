@@ -16,9 +16,12 @@ import { useGetVehicleMakesApi, vehicleMake } from '@/hooks/api/vehicle/getMakes
 import { useGetVehicleModelsApi, vehicleModel } from '@/hooks/api/vehicle/getModels';
 import { useGetVehicleEnginesApi, vehicleEngine } from '@/hooks/api/vehicle/getEngines';
 import SubCategoryItems from '@/components/app/customer/sub-category-items';
+import { useLocalUser } from '@/context/local-user/useLocalUser';
 
 
 const CustomerScreen: React.FC = () => {
+  const localUser = useLocalUser();
+
   const getMakesApi = useGetVehicleMakesApi();
   const getModelsApi = useGetVehicleModelsApi();
   const getEnginesApi = useGetVehicleEnginesApi();
@@ -38,6 +41,11 @@ const CustomerScreen: React.FC = () => {
   const [isEngineModalOpen, setIsEngineModalOpen] = useState(false)
 
   const router = useRouter()
+  
+  useEffect(() => {
+    if(!localUser?.data) router.push('/(auth)/signin');
+    else if(!localUser.data.isSeller) router.push('/(seller)/onboarding-seller');
+  }, []);
   useEffect(() => {
     getMakesApi.trigger();
   }, [])
