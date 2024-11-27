@@ -44,7 +44,6 @@ const CustomerScreen: React.FC = () => {
   
   useEffect(() => {
     if(!localUser?.data) router.push('/(auth)/signin');
-    else if(!localUser.data.isSeller) router.push('/(seller)/onboarding-seller');
   }, []);
   useEffect(() => {
     getMakesApi.trigger();
