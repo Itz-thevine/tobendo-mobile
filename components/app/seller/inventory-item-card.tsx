@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Image } from 'react-native';
+import { View, Text, Image } from 'react-native';
 import StockStatus from '@/components/stock-status';
 import { combineStyles, width } from '@/lib';
 import { GlobalStyles } from '@/styles';
@@ -46,9 +46,9 @@ const InventoryItemCard: React.FC<InventoryItemCardProps> = ({ item }) => {
                 <View style={[combineStyles(GlobalStyles), {marginRight: 2}]}>
                     <StockStatus position='after' stock={item.count ?? 0} />
                 </View>
-                <TouchableOpacity style={combineStyles(GlobalStyles, 'background_warning', 'padding_t_xs', 'padding_b_xs', 'rounded_full', 'items_center', 'padding_x_xs')}>
+                {/* <TouchableOpacity style={combineStyles(GlobalStyles, 'background_warning', 'padding_t_xs', 'padding_b_xs', 'rounded_full', 'items_center', 'padding_x_xs')}>
                     <Text style={combineStyles(GlobalStyles, 'color_white', 'text_lg')}>Add New Stock</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </View>
         </View>
     </View>

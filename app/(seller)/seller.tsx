@@ -1,24 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import AppHeader from '@/components/shared/app-header';
 import { combineStyles } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import CustomTabs from '@/components/app/custom-tab';
 import { router } from 'expo-router';
 
-type Order = {
-  id: string;
-  name: string;
-  items: string;
-  date: string;
-  image: string;
-};
-
-const Tab = createMaterialTopTabNavigator();
-
 const SellerScreen: React.FC = () => {
-    const [isProductListModal, setIsProductListModal] = useState(false)
     const [selectedTab, setSelectedTab] = useState<'Orders' | 'Inventory' | 'Earnings'>('Inventory');
   return (
     <View style={{ flex: 1 }}>

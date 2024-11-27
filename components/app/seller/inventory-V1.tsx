@@ -7,12 +7,12 @@ import InventoryItemCard from './inventory-item-card';
 import CustomModal from '@/components/shared/custom-modal';
 import ProductSuggestion from './product-suggestion-list';
 import { useGetUserProductsApi } from '@/hooks/api/user/getUserProducts';
-import { customerProductItem, useGetCustomerProductsApi } from '@/hooks/api/user/getCustomerProducts';
+import { customerProductItem } from '@/hooks/api/user/getCustomerProducts';
 
 
 const Inventory: React.FC = () => {
-  const getTopSellerProductsApi = useGetCustomerProductsApi();
-  const getTopSellerProductsResp = getTopSellerProductsApi.response;
+  // const getTopSellerProductsApi = useGetCustomerProductsApi();
+  // const getTopSellerProductsResp = getTopSellerProductsApi.response;
   
   const getProductsApi = useGetUserProductsApi();
   const getProductsResp = getProductsApi.response;
@@ -23,14 +23,15 @@ const Inventory: React.FC = () => {
     <TopSellerItemCard key={`${index}_${item?.legacyArticleId}`} item={item}/>
   );
 
-  const topSellerItems = getTopSellerProductsResp.data?.result;
+  // const topSellerItems = getTopSellerProductsResp.data?.result;
   const productItems = getProductsResp.data?.result ?? [];
+  const topProductItems = productItems.slice(0, 10);
   
   useEffect(() => {
-    getTopSellerProductsApi.trigger({
-      page: 1,
-      page_size: 10,
-    });
+    // getTopSellerProductsApi.trigger({
+    //   page: 1,
+    //   page_size: 10,
+    // });
     getProductsApi.trigger({
       page: 1,
       page_size: 10,
@@ -48,10 +49,10 @@ const Inventory: React.FC = () => {
           </View>
       </CustomModal>
       <ScrollView style={combineStyles(GlobalStyles, 'padding_sm')} showsVerticalScrollIndicator={false}>
-          <Text style={combineStyles(GlobalStyles, 'text_2xl', 'margin_b_sm')}>Top Sellers</Text>
+          <Text style={combineStyles(GlobalStyles, 'text_2xl', 'margin_b_sm')}>Top Products</Text>
           <FlatList
               // data={inventoryData}
-              data={topSellerItems}
+              data={topProductItems}
               renderItem={renderTopSellerItem}
               keyExtractor={(item, i) => `${i}_${item.product_id ?? ''}`}
               horizontal
