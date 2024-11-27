@@ -16,6 +16,7 @@ import { useCreateUserProductsApi } from '@/hooks/api/user/createUserProduct';
 import ResponseModal, { responseModal } from '@/components/ResponseModal';
 import { partDetailsArticleItem, useGetPartSuggestionDetailsApi } from '@/hooks/api/vehicle/getPartSuggestionDetails';
 import { returnNumberFromAny } from '@/hooks/useDigit';
+import { convertImageToBase64 } from '@/hooks/useFile';
 
 
 const { width } = Dimensions.get('window');
