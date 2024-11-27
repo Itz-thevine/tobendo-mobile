@@ -5,7 +5,7 @@ import { useCallApiProps } from "../useCallApi";
 type triggerProps = {
     
 }
-type dataItem = {
+export type orderItem = {
     created_at?: string,
     delivery_option?: {
       estimated_date?: string;
@@ -29,7 +29,7 @@ type dataItem = {
     updated_at?: string;
     user_id?: number;
 }
-type dataProps = dataItem[]
+type dataProps = orderItem[]
 export const useGetCustomerOrdersApi = (props?: useCallApiProps) => {
     const api = useApi(props);
     return {

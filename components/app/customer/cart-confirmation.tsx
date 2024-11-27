@@ -34,6 +34,7 @@ const ConfirmPurchaseScreen = (props: ConfirmPurchaseProps) => {
   });
 
   const checkout = () => {
+    console.log(localUser?.data)
     if(localUser?.data?.user_id) checkoutApi.trigger({
       user_id: localUser.data.user_id,
       items: props.cartItems.map((item) => ({

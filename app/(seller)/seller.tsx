@@ -17,10 +17,10 @@ const SellerScreen: React.FC = () => {
       {
         selectedTab === 'Earnings' && (
           <View style={combineStyles(GlobalStyles, 'background_white', 'padding_x_sm', 'padding_y_xs')}>
-                <TouchableOpacity style={combineStyles(GlobalStyles, 'background_royal_blue', 'items_center', 'rounded_full', 'padding_y_sm')} onPress={() =>router.push('/(seller)/withdraw-earnings')}>
-                    <Text style={combineStyles(GlobalStyles, 'text_lg', 'color_white', 'font_medium')}>Withdraw Funds</Text>
-                </TouchableOpacity>
-            </View>
+              <TouchableOpacity style={combineStyles(GlobalStyles, 'background_royal_blue', 'items_center', 'rounded_full', 'padding_y_sm')} onPress={() =>router.push('/(seller)/withdraw-earnings')}>
+                  <Text style={combineStyles(GlobalStyles, 'text_lg', 'color_white', 'font_medium')}>Withdraw Funds</Text>
+              </TouchableOpacity>
+          </View>
         )
       }
     </View>

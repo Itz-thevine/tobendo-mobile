@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, ScrollView, SafeAreaView, Image } from 'react-native';
 import { combineStyles, height } from '@/lib';
 import { GlobalStyles } from '@/styles';
-import { useGetCustomerOrdersApi } from '@/hooks/api/user/getCustomerOrders';
+import { orderItem, useGetCustomerOrdersApi } from '@/hooks/api/user/getCustomerOrders';
 
 const OrderTabs: React.FC = () => {
   const getOrdersApi = useGetCustomerOrdersApi();
@@ -53,25 +53,25 @@ const OrderTabs: React.FC = () => {
   //   },
   // ];
 
-  const renderOrderItem = ({ item, index }: { item: typeof orders[0], index: number }) => (
-    <View key={`${index}_${item?.id}`} style={combineStyles(GlobalStyles, 'background_white')}>
-      {/* <View style={combineStyles(GlobalStyles, 'border_b_xs', 'border_gray', 'padding_b_sm')}>
+  const renderOrderItem = ({ item, index }: { item: orderItem, index: number }) => (
+    <View key={`${index}_${item.order_id}`} style={combineStyles(GlobalStyles, 'background_white')}>
+      <View style={combineStyles(GlobalStyles, 'border_b_xs', 'border_gray', 'padding_b_sm')}>
         {item.items?.map((product) => (
           <View key={product.product_id} style={styles.product}>
             <Image
-              source={product}
+              source={require('../../../assets/images/seller/image 7.png')}
               style={[GlobalStyles.rounded_xs, { width: 100, height: 100 }]}
               resizeMode='contain'
             />
             <View>
-              <Text style={combineStyles(GlobalStyles, 'font_bold')}>{product.name}</Text>
+              <Text style={combineStyles(GlobalStyles, 'font_bold')}>Fan Blades</Text>
               <Text style={combineStyles(GlobalStyles, 'color_gray', 'margin_t_xs')}>
                 5 L - ref. 214178 - Engine oil
               </Text>
             </View>
           </View>
         ))}
-      </View> */}
+      </View>
 
       <View style={combineStyles(GlobalStyles, 'margin_t_sm')}>
         <Text style={styles.statusText}>{item.shipping_address}</Text>
@@ -131,7 +131,7 @@ const OrderTabs: React.FC = () => {
             <FlatList
                 data={getOrders()}
                 renderItem={renderOrderItem}
-                keyExtractor={(item) => item.id ?? ''}
+                keyExtractor={(item) => item.order_id ?? ''}
                 contentContainerStyle={combineStyles(GlobalStyles, 'background_white', 'padding_sm', 'gap_md', 'rounded_xs', 'margin_t_sm')}
             /> :
             <Text style={{textAlign: 'center', marginTop: 20}}>no orders</Text>
