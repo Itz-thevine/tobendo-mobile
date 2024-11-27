@@ -1,20 +1,27 @@
 import { useLocalUser } from '@/context/local-user/useLocalUser';
 import { useInitializeLocalUser } from '@/hooks/useInitializeLocalUser';
 import { Redirect, Stack, useRootNavigationState } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 
 const AppSlot = () => {
     const rootNavigationState = useRootNavigationState();
     useInitializeLocalUser();
-    const localUser = useLocalUser();
-    
-    let redirectNode = <></>
-    if(rootNavigationState?.key && !localUser?.data?.user_id){
-        redirectNode = <>
-            <Redirect href={'/(auth)/signin'} />
-        </>;
-    };
+    const localUserId = useLocalUser()?.data?.user_id;
+    const [redirectNode, setRedirectNode] = useState<React.ReactNode | undefined>(undefined);
+
+    useEffect(() => {
+        if(rootNavigationState.key){
+            if(localUserId && redirectNode){
+                setRedirectNode(undefined);
+            }
+            else if(!localUserId && !redirectNode){
+                setRedirectNode(<>
+                    <Redirect href={'/(auth)/signin'} />
+                </>);
+            }
+        }
+    }, [rootNavigationState.key, localUserId]);
 
     // useEffect(() => {
     //   if(!localUser?.data) router.push('/(auth)/signin');
