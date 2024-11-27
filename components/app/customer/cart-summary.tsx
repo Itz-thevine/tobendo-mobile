@@ -32,20 +32,34 @@ const CartSummary = (props: CartSummaryProps) => {
           <>
             {
               props.cartItems?.length ?
-              <FlatList
-                data={props.cartItems}
-                renderItem={({item, index}) => (
-                  <ProductCard3
-                    item={item}
-                    onDelete={() => {
-                      if(props.removeItem) props.removeItem(index);
-                    }}
-                  />
-                )}
-                keyExtractor={(item) => `${item.cart_id}_${item.product_id}`}
-                style={styles.cartList}
-                contentContainerStyle={combineStyles(GlobalStyles, 'gap_sm', 'margin_sm')}
-              /> :
+              <View style={combineStyles(GlobalStyles, 'gap_sm', 'margin_sm')}>
+                {
+                  props.cartItems.map((item, i) => {
+                    return (
+                      <ProductCard3
+                        item={item}
+                        onDelete={() => {
+                          if(props.removeItem) props.removeItem(i);
+                        }}
+                      />
+                    )
+                  })
+                }
+              </View> :
+              // <FlatList
+              //   data={props.cartItems}
+              //   renderItem={({item, index}) => (
+              //     <ProductCard3
+              //       item={item}
+              //       onDelete={() => {
+              //         if(props.removeItem) props.removeItem(index);
+              //       }}
+              //     />
+              //   )}
+              //   keyExtractor={(item) => `${item.cart_id}_${item.product_id}`}
+              //   style={styles.cartList}
+              //   contentContainerStyle={combineStyles(GlobalStyles, 'gap_sm', 'margin_sm')}
+              // /> :
               <Text style={{textAlign: 'center'}}>no items</Text>
             }
           </>

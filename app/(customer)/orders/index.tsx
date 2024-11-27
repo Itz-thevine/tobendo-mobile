@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image, SafeAreaView, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image, SafeAreaView } from 'react-native';
 import { combineStyles } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import CustomerAppHeader from '@/components/shared/customers-app-header';
@@ -107,7 +107,7 @@ const OrderScreen: React.FC = () => {
   return (
     <SafeAreaView style={combineStyles(GlobalStyles, 'safeArea', 'background_softer_blue')}>
       <CustomerAppHeader/>
-      <ScrollView style={combineStyles(GlobalStyles, 'padding_sm')}>
+      <View style={combineStyles(GlobalStyles, 'padding_sm')}>
         <View style={styles.tabContainer}>
           <TouchableOpacity
             style={activeTab === 'in-progress' ? styles.activeTab : styles.inactiveTab}
@@ -135,7 +135,7 @@ const OrderScreen: React.FC = () => {
           keyExtractor={(item) => item.id}
           contentContainerStyle={combineStyles(GlobalStyles, 'background_white', 'padding_sm', 'gap_md', 'rounded_xs', 'margin_t_sm')}
         />
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 };

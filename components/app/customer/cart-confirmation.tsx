@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList, StyleSheet, Image, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, ActivityIndicator } from 'react-native';
 import { combineStyles } from '@/lib'; // Assuming this is a utility function for combining styles
 import { GlobalStyles } from '@/styles'; // Assuming this is your global styles file
 import { useCheckoutCartApi } from '@/hooks/api/user-cart/checkoutCart';
@@ -71,24 +71,22 @@ const ConfirmPurchaseScreen = (props: ConfirmPurchaseProps) => {
     <View style={combineStyles(GlobalStyles, 'background_soft_blue', 'safeArea')}>
       {/* Cart Items */}
       <ScrollView style={combineStyles(GlobalStyles, 'padding_sm')}>
-        <FlatList
-          data={props.cartItems}
-          keyExtractor={(item) => `${item.cart_id}_${item.product_id}`}
-          contentContainerStyle={combineStyles(GlobalStyles, 'gap_sm', )}
-          renderItem={({item, index}) => (
-            <ProductCard5
-              key={`${index}_${item.product_id}`}
-              item={item}
-              onDelete={() => {
-                if(props.removeItem) props.removeItem(index);
-              }}
-              updateItem={(itemProps) => {
-                if(props.updateItem) props.updateItem(index, itemProps);
-              }}
-            />
-            )}
-        />
-
+        {
+          props.cartItems.map((item, i) => {
+            return (
+              <ProductCard5
+                key={`${i}_${item.product_id}`}
+                item={item}
+                onDelete={() => {
+                  if(props.removeItem) props.removeItem(i);
+                }}
+                updateItem={(itemProps) => {
+                  if(props.updateItem) props.updateItem(i, itemProps);
+                }}
+              />
+            )
+          })
+        }
         {/* Tax and Delivery Fee */}
         <View style={combineStyles(GlobalStyles, 'flex_row', 'jusify_between', 'margin_t_sm')}>
           <Text style={combineStyles(GlobalStyles, 'text_sm', 'color_gray')}>Tax:</Text>

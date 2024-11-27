@@ -67,17 +67,18 @@ const Inventory: React.FC = () => {
             <></>
           }
           <Text style={combineStyles(GlobalStyles, 'text_2xl', 'margin_t_sm', 'margin_b_sm')}>Inventory</Text>
-          <FlatList
-              data={productItems}
-              renderItem={({item, index: i}) => (
-                <InventoryItemCard
-                  key={`${i}_${item.product_id ?? ''}`}
-                  item={item}
-                />
-              )}
-              keyExtractor={(item, i) => `${i}_${item.product_id ?? ''}`}
-              contentContainerStyle={[combineStyles(GlobalStyles, 'gap_xl')]}
-          />
+          <View style={[combineStyles(GlobalStyles, 'gap_xl')]}>
+            {
+              productItems.map((item, i) => {
+                return (
+                  <InventoryItemCard
+                    key={`${i}_${item.product_id ?? ''}`}
+                    item={item}
+                  />
+                )
+              })
+            }
+          </View>
           {
             productsLoading ?
             <ActivityIndicator /> :
@@ -85,7 +86,7 @@ const Inventory: React.FC = () => {
           }
           <View style={{width: '100%', height: 200}}></View>
       </ScrollView>
-      <View style={[combineStyles(GlobalStyles, 'background_white', 'padding_x_sm', 'padding_y_xs', 'fixed'), {top : height * -0.18, width: width}]}>
+      <View style={[combineStyles(GlobalStyles, 'background_white', 'padding_x_sm', 'padding_y_xs', 'fixed'), {top : height * -0.21, width: width}]}>
         <TouchableOpacity 
           style={combineStyles(GlobalStyles, 'background_royal_blue', 'items_center', 'rounded_full', 'padding_y_sm')} 
           onPress={() =>setIsProductListModal(true)}
