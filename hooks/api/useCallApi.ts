@@ -15,7 +15,7 @@ type errorDetailItem = {
 };
 type errorDetail = errorDetailItem[] | string;
 
-type ResponseProps = {
+export type ResponseProps = {
     error?: string;
     errorDetail?: any;
     success?: boolean;

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, SafeAreaView, StyleSheet, Text, TouchableOpacity, TextInput, FlatList, ActivityIndicator } from 'react-native';
+import { View, ScrollView, SafeAreaView, StyleSheet, Text, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
 import { combineStyles } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import CustomerAppHeader from '@/components/shared/customers-app-header';
@@ -26,7 +26,6 @@ const ExploreScreen: React.FC = () => {
   
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [isSortModalOpen, setIsSortModalOpen] = useState(false);
-  const [currentDisplay, setcurrentDisplay] = useState(1);
 
 
   const brands = ['Mercedes', 'BMW', 'Nissan', 'Fiat', 'Mazda', 'Hyundai', 'Audi', 'Alfa Romeo', 'Kia', 'Ford', 'Opel'];
@@ -75,7 +74,7 @@ const ExploreScreen: React.FC = () => {
   useEffect(() => {
     getProductsApi.trigger({
       page: 1,
-      page_size: 10,
+      page_size: 14,
     });
   }, []);
   
@@ -212,19 +211,18 @@ const ExploreScreen: React.FC = () => {
         </View>
       
         <View style={styles.manufacturerContainer}>
-          <FlatList
-            data={filteredItems}
-            renderItem={({item, index: i}) => {
-              return (
-                <ProductCard
-                  key={`${i}_${item.product_id}`}
-                  item={item}
-                />
-              )
-            }}
-            keyExtractor={(item) => (item.product_id ?? '').toString()}
-            contentContainerStyle={[combineStyles(GlobalStyles, 'gap_xl')]}
-          />
+          <View style={[combineStyles(GlobalStyles, 'gap_xl')]}>
+            {
+              filteredItems.map((item, i) => {
+                return (
+                  <ProductCard
+                    key={`${i}_${item.product_id}`}
+                    item={item}
+                  />
+                )
+              })
+            }
+          </View>
           {
             loading ?
             <ActivityIndicator /> : <></>

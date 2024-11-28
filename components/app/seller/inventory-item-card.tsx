@@ -4,19 +4,21 @@ import StockStatus from '@/components/stock-status';
 import { combineStyles, width } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import { userProductItem } from '@/hooks/api/user/getUserProducts';
+import { getImagesFromProductItem } from '@/hooks/useProductItem';
 
 type InventoryItemCardProps = {
   item: userProductItem;
 };
 
 const InventoryItemCard: React.FC<InventoryItemCardProps> = ({ item }) => {
+    const getImages = getImagesFromProductItem(item);
 
   return (
     <View style={[combineStyles(GlobalStyles, 'border_soft_blue', 'background_white', 'border_xs', 'rounded_xs', 'padding_xs', 'jusify_center', 'safeArea')]}>
         <View style={[combineStyles(GlobalStyles, 'flex_row', 'items_center')]}>
             <View >
                 <Image
-                    source={require('../../../assets/images/seller/image 8.png')}
+                    source={getImages.image1}
                     style={[GlobalStyles.rounded_xs, { width: width*0.3, height: 120 }]}
                     resizeMode='contain'
                 />
@@ -24,7 +26,7 @@ const InventoryItemCard: React.FC<InventoryItemCardProps> = ({ item }) => {
             <View style={[combineStyles(GlobalStyles, 'margin_l_xs')]}>
                 <View style={combineStyles(GlobalStyles, 'flex_row', 'items_center')}>
                     <Image
-                    source={require('../../../assets/images/seller/image 6.png')}
+                    source={getImages.image2}
                     // source={{ uri: 'https://via.placeholder.com/50' }}
                     style={[{ width: 50, height: 30 }]}
                     resizeMode='cover'

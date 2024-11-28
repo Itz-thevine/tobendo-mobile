@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getLocalUser, localUser, setLocalUser, unsetLocalUser, updateLocalUser } from "./local-user-funcs";
 import { Href } from "expo-router";
 import { otpType } from "@/hooks/api/user/sendUserOtp";
+import { useBuyerExplore } from "../local-buyer/useBuyerExplore";
 
 type authData = {
     continueRoute?: Href;
@@ -12,6 +13,8 @@ export type localUserContext = ReturnType<typeof useLocalUserContext> | undefine
 export const useLocalUserContext = () => {
     const [authData, setAuthData] = useState<authData>({});
     const [localUserData, setLocalUserData] = useState<localUser | undefined>(undefined);
+
+    const buyerExplore = useBuyerExplore();
 
     const update = (localUser: Partial<localUser>) => {
         updateLocalUser(localUser);
@@ -47,5 +50,7 @@ export const useLocalUserContext = () => {
         update,
         set,
         unset,
+
+        buyerExplore,
     };
 }

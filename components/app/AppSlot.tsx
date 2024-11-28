@@ -5,9 +5,6 @@ import 'react-native-reanimated';
 
 const AppSlot = () => {
     const hook = useInitializeLocalUser();
-    // useEffect(() => {
-    //     console.log('---user', localUser?.data)
-    // }, [localUser?.data]);
 
     return (
         <>

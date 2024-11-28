@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Dimensions, FlatList, SafeAreaView, ScrollView, Keyboard, ActivityIndicator } from 'react-native';
+import { View, Text, Dimensions, SafeAreaView, ScrollView, Keyboard, ActivityIndicator } from 'react-native';
 import { combineStyles } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import Autocomplete from '../auto-complete';
@@ -7,6 +7,7 @@ import ProductSuggestionItem from './product-suggestion-list-item';
 import { useAutoCompleteSuggestions } from '@/hooks/app/useAutoCompleteSuggestions';
 import { useDebounce } from 'use-debounce';
 import { useProducts } from '@/hooks/app/useProducts';
+import { partDetailsArticleItem } from '@/hooks/api/vehicle/getPartSuggestionDetails';
 
 const { width } = Dimensions.get('window');
 
@@ -27,7 +28,8 @@ const ProductSuggestion: React.FC<{setIsVisible: (value: boolean) => void}> = ({
         lang: 'en',
         include_all: false,
         search_type: '99',
-      });
+    });
+    const articles = productsData?.articles as partDetailsArticleItem[] | undefined;
     
     const handleSearchChange = (query: string) => {
         setSearchQuery(query);
@@ -79,22 +81,25 @@ const ProductSuggestion: React.FC<{setIsVisible: (value: boolean) => void}> = ({
                             </View>
                         )
                     }
-                    {productsData?.articles?.length === 0 ? (
+                    {articles?.length === 0 ? (
                         <View>
                             <Text>No products found</Text>
                         </View>
                     ) : (
-                        <FlatList
-                            data={productsData?.articles}
-                            renderItem={({ item }) => (
-                                <ProductSuggestionItem item={item} selectedProduct={selectedProduct} setIsVisible={setIsVisible} />
-                            )}
-                            keyExtractor={(item, index) => `${index}`}
-                            numColumns={1}
-                            contentContainerStyle={combineStyles(GlobalStyles, 'gap_md')}
-                            showsVerticalScrollIndicator={false}
-                            showsHorizontalScrollIndicator={false}
-                        />
+                        <View style={combineStyles(GlobalStyles, 'gap_md')}>
+                            {
+                                articles?.map((item, i) => {
+                                    return (
+                                        <ProductSuggestionItem
+                                            key={`${i}`}
+                                            item={item}
+                                            selectedProduct={selectedProduct}
+                                            setIsVisible={setIsVisible}
+                                        />
+                                    )
+                                })
+                            }
+                        </View>
                     )}
                 </ScrollView>
             </View>

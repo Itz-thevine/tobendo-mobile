@@ -4,25 +4,28 @@ import StockStatus from '@/components/stock-status';
 import { combineStyles } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import { customerProductItem } from '@/hooks/api/user/getCustomerProducts';
+import { getImagesFromProductItem } from '@/hooks/useProductItem';
 
 type InventoryItemCardProps = {
   item: customerProductItem;
 };
 
 const TopSellerItemCard: React.FC<InventoryItemCardProps> = ({ item }) => {
+  const getImages = getImagesFromProductItem(item);
+
   return (
     <View style={[combineStyles(GlobalStyles, 'border_soft_blue', 'border_xs', 'rounded_xs', 'padding_xs', 'background_white'), { width: 250 }]}>
       <View style={[combineStyles(GlobalStyles, 'jusify_start', 'safeArea', 'margin_t_xs', 'margin_b_sm'), { width: 220 }]}>
         <StockStatus stock={item.count ?? 0} />
       </View>
       <Image
-        source={require('../../../assets/images/seller/image 7.png')}
+        source={getImages.image1}
         style={[GlobalStyles.rounded_xs, { width: 220, height: 180 }]}
         resizeMode='contain'
       />
       <View style={combineStyles(GlobalStyles, 'margin_t_sm', 'margin_b_xs')}>
         <Image
-          source={require('../../../assets/images/seller/image 18.png')}
+          source={getImages.image2}
           style={[{ width: 70, height: 25 }]}
           resizeMode='contain'
         />

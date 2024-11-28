@@ -86,7 +86,7 @@ const Inventory: React.FC = () => {
           }
           <View style={{width: '100%', height: 200}}></View>
       </ScrollView>
-      <View style={[combineStyles(GlobalStyles, 'background_white', 'padding_x_sm', 'padding_y_xs', 'fixed'), {top : height * -0.21, width: width}]}>
+      <View style={[combineStyles(GlobalStyles, 'background_white', 'padding_x_sm', 'padding_y_xs', 'fixed'), {top : height * -0.18, width: width}]}>
         <TouchableOpacity 
           style={combineStyles(GlobalStyles, 'background_royal_blue', 'items_center', 'rounded_full', 'padding_y_sm')} 
           onPress={() =>setIsProductListModal(true)}
