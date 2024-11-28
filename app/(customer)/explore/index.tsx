@@ -8,13 +8,18 @@ import CustomModal from '@/components/shared/custom-modal';
 import Filter from '@/components/shared/filter';
 import Sort from '@/components/shared/sort';
 import ProductCard from '@/components/app/customer/product-card-4';
-import { useGetCustomerProductsApi } from '@/hooks/api/user/getCustomerProducts';
+import { useLocalUser } from '@/context/local-user/useLocalUser';
+import { useScroll } from '@/hooks/useScroll';
 
 type sortOrder = 'asc' | 'desc';
 const ExploreScreen: React.FC = () => {
-  const getProductsApi = useGetCustomerProductsApi();
-  const getProductsResp = getProductsApi.response;
-  const loading = getProductsResp.loading;
+  const scrollHook = useScroll();
+  const hook = useLocalUser()?.buyerExplore;
+  const loading = hook?.loading;
+  const productItems = hook?.data;
+  // const getProductsApi = useGetCustomerProductsApi();
+  // const getProductsResp = getProductsApi.response;
+  // const loading = getProductsResp.loading;
 
   const [filters, setFilters] = useState({
     minPrice: undefined as number | undefined,
@@ -35,8 +40,8 @@ const ExploreScreen: React.FC = () => {
     desc: `High to Low`,
   };
 
-  const productItems = getProductsResp.data?.result || [];
-  const filteredItems = productItems.filter((item) => {
+  // const productItems = getProductsResp.data?.result || [];
+  const filteredItems = productItems?.filter((item) => {
     return (
       (
         !filters.searchQuery
@@ -70,13 +75,12 @@ const ExploreScreen: React.FC = () => {
         0
     )
 });
-  
+
   useEffect(() => {
-    getProductsApi.trigger({
-      page: 1,
-      page_size: 14,
-    });
-  }, []);
+    if(scrollHook.hasReachedEnd !== false){
+      hook?.getProducts();
+    }
+  }, [scrollHook.key]);
   
   return (
     <SafeAreaView style={combineStyles(GlobalStyles, 'safeArea')}>
@@ -193,7 +197,10 @@ const ExploreScreen: React.FC = () => {
       </CustomModal>
 
       <CustomerAppHeader />
-      <ScrollView style={combineStyles(GlobalStyles, 'background_softer_blue')}>
+      <ScrollView
+        style={combineStyles(GlobalStyles, 'background_softer_blue')}
+        onScroll={scrollHook.handleScroll}
+      >
         <View style={combineStyles(GlobalStyles, 'background_dark_blue', 'margin_b_sm')}>
           <SearchBar
             onChangeText={(searchQuery) => {
@@ -213,7 +220,7 @@ const ExploreScreen: React.FC = () => {
         <View style={styles.manufacturerContainer}>
           <View style={[combineStyles(GlobalStyles, 'gap_xl')]}>
             {
-              filteredItems.map((item, i) => {
+              filteredItems?.map((item, i) => {
                 return (
                   <ProductCard
                     key={`${i}_${item.product_id}`}
@@ -225,7 +232,7 @@ const ExploreScreen: React.FC = () => {
           </View>
           {
             loading ?
-            <ActivityIndicator /> : <></>
+            <ActivityIndicator style={{margin: 35, marginLeft: 0, marginRight: 0,}} /> : <></>
           }
         </View>
 
