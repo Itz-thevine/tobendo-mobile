@@ -42,6 +42,7 @@ export type userProductItem = {
 type dataProps = {
     result?: userProductItem[];
     page?: number;
+    page_size?: number;
     per_page?: number;
     total_pages?: number;
     total_docs?: number;

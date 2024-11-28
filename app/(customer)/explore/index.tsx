@@ -8,13 +8,13 @@ import CustomModal from '@/components/shared/custom-modal';
 import Filter from '@/components/shared/filter';
 import Sort from '@/components/shared/sort';
 import ProductCard from '@/components/app/customer/product-card-4';
-import { useLocalUser } from '@/context/local-user/useLocalUser';
 import { useScroll } from '@/hooks/useScroll';
 import { productSortOrder } from '@/context/local-buyer/useBuyerExplore';
+import { useLocalBuyer } from '@/context/local-buyer/useLocalBuyer';
 
 const ExploreScreen: React.FC = () => {
   const scrollHook = useScroll();
-  const hook = useLocalUser()?.buyerExplore;
+  const hook = useLocalBuyer()?.explore;
   const loading = hook?.loading;
   
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);

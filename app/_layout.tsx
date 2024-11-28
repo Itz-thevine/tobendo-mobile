@@ -9,6 +9,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import ReactQueryProviders from '@/lib/react-query/provider';
 import { LocalUserProvider } from '@/context/local-user/LocalUserProvider';
 import AppSlot from '@/components/app/AppSlot';
+import { LocalBuyerProvider } from '@/context/local-buyer/LocalBuyerProvider';
+import { LocalSellerProvider } from '@/context/local-seller/LocalSellerProvider';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -49,7 +51,11 @@ const RootLayout: React.FC = () => {
       <ReactQueryProviders>
         <GestureHandlerRootView>
           <LocalUserProvider>
-            <AppSlot />
+            <LocalBuyerProvider>
+              <LocalSellerProvider>
+                <AppSlot />
+              </LocalSellerProvider>
+            </LocalBuyerProvider>
           </LocalUserProvider>
         </GestureHandlerRootView>
       </ReactQueryProviders>

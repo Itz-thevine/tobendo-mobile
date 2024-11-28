@@ -16,11 +16,11 @@ import { useGetVehicleModelsApi, vehicleModel } from '@/hooks/api/vehicle/getMod
 import { useGetVehicleEnginesApi, vehicleEngine } from '@/hooks/api/vehicle/getEngines';
 import SubCategoryItems from '@/components/app/customer/sub-category-items';
 import FakeSearchBar from '@/components/app/customer/FakeSearchBar';
-import { useLocalUser } from '@/context/local-user/useLocalUser';
+import { useLocalBuyer } from '@/context/local-buyer/useLocalBuyer';
 
 
 const CustomerScreen: React.FC = () => {
-  const exploreHook = useLocalUser()?.buyerExplore;
+  const exploreHook = useLocalBuyer()?.explore;
 
   const getMakesApi = useGetVehicleMakesApi();
   const getModelsApi = useGetVehicleModelsApi();
@@ -98,6 +98,9 @@ const CustomerScreen: React.FC = () => {
                 <TouchableOpacity key={`${i}_${make.id}`} onPress={() => {
                   setMake(make)
                   setIsMakeModalOpen(false)
+                  exploreHook?.updateFilters({
+                    make,
+                  });
                 }}>
                   <Text style={combineStyles(GlobalStyles, 'margin_b_xs')} >{make.name}</Text >
                 </TouchableOpacity>
@@ -121,8 +124,11 @@ const CustomerScreen: React.FC = () => {
               // ]
               getModelsResp.data?.counts?.map((model, i) => (
                 <TouchableOpacity key={`${i}_${model.id}`} onPress={() => {
-                  setModel(model)
-                  setIsModelModalOpen(false)
+                  setModel(model);
+                  setIsModelModalOpen(false);
+                  exploreHook?.updateFilters({
+                    model,
+                  });
                 }}>
                   <Text style={combineStyles(GlobalStyles, 'margin_b_xs')} >{model.name}</Text >
                 </TouchableOpacity>
@@ -178,8 +184,11 @@ const CustomerScreen: React.FC = () => {
               // ]
               getEnginesResp.data?.counts?.map((engine, i) => (
                 <TouchableOpacity key={`${i}_${engine.mfrId}`} onPress={() => {
-                  setEngine(engine)
-                  setIsEngineModalOpen(false)
+                  setEngine(engine);
+                  setIsEngineModalOpen(false);
+                  exploreHook?.updateFilters({
+                    engine,
+                  });
                 }}>
                   <Text style={combineStyles(GlobalStyles, 'margin_b_xs')} >{engine.description}</Text >
                 </TouchableOpacity>

@@ -15,6 +15,7 @@ export const useApi = (props?: useCallApiProps) => {
     
     const handle = {
         call: (call_props: tsCallProps) => {
+            console.log('-----api', localUser?.data?.access_token, call_props.url)
             const contentType = (
                 call_props.endContentType === 'form-data' ? 'multipart/form-data' :
                 call_props.endContentType === 'urlencoded' ? 'application/x-www-form-urlencoded' :

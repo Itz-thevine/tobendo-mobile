@@ -6,17 +6,15 @@ import TopSellerItemCard from './top-seller-item-card-V1';
 import InventoryItemCard from './inventory-item-card';
 import CustomModal from '@/components/shared/custom-modal';
 import ProductSuggestion from './product-suggestion-list';
-import { useGetUserProductsApi } from '@/hooks/api/user/getUserProducts';
 import { customerProductItem } from '@/hooks/api/user/getCustomerProducts';
+import { useScroll } from '@/hooks/useScroll';
+import { useLocalSeller } from '@/context/local-seller/useLocalSeller';
 
 
 const Inventory: React.FC = () => {
-  // const getTopSellerProductsApi = useGetCustomerProductsApi();
-  // const getTopSellerProductsResp = getTopSellerProductsApi.response;
-  
-  const getProductsApi = useGetUserProductsApi();
-  const getProductsResp = getProductsApi.response;
-  const productsLoading = getProductsResp.loading;
+  const scrollHook = useScroll();
+  const hook = useLocalSeller()?.inventory;
+  const productsLoading = hook?.loading;
 
   const [isProductListModal, setIsProductListModal] = useState(false)
   
@@ -25,19 +23,14 @@ const Inventory: React.FC = () => {
   );
 
   // const topSellerItems = getTopSellerProductsResp.data?.result;
-  const productItems = getProductsResp.data?.result ?? [];
+  const productItems = hook?.data ?? [];
   const topProductItems = productItems.slice(0, 10);
-  
+
   useEffect(() => {
-    // getTopSellerProductsApi.trigger({
-    //   page: 1,
-    //   page_size: 10,
-    // });
-    getProductsApi.trigger({
-      page: 1,
-      page_size: 10,
-    });
-  }, []);
+    if(scrollHook.hasReachedEnd !== false){
+      hook?.getProducts();
+    }
+  }, [scrollHook.key]);
   
   return (
     <SafeAreaView style={[combineStyles(GlobalStyles, 'relative', 'background_softer_blue'), { height: height}]}>
@@ -49,7 +42,10 @@ const Inventory: React.FC = () => {
               <ProductSuggestion setIsVisible={setIsProductListModal}/>
           </View>
       </CustomModal>
-      <ScrollView style={combineStyles(GlobalStyles, 'padding_sm')} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={combineStyles(GlobalStyles, 'padding_sm')} showsVerticalScrollIndicator={false}
+        onScroll={scrollHook.handleScroll}
+      >
           <Text style={combineStyles(GlobalStyles, 'text_2xl', 'margin_b_sm')}>Top Products</Text>
           <FlatList
               // data={inventoryData}
@@ -64,24 +60,34 @@ const Inventory: React.FC = () => {
           {
             productsLoading ?
             <ActivityIndicator /> :
+            !topProductItems.length ?
+            <Text style={{textAlign: 'center'}}>no items</Text> :
             <></>
           }
           <Text style={combineStyles(GlobalStyles, 'text_2xl', 'margin_t_sm', 'margin_b_sm')}>Inventory</Text>
           <View style={[combineStyles(GlobalStyles, 'gap_xl')]}>
             {
-              productItems.map((item, i) => {
-                return (
-                  <InventoryItemCard
-                    key={`${i}_${item.product_id ?? ''}`}
-                    item={item}
-                  />
-                )
-              })
+              productItems.length ?
+              <>
+                {
+                  productItems.map((item, i) => {
+                    return (
+                      <InventoryItemCard
+                        key={`${i}_${item.product_id ?? ''}`}
+                        item={item}
+                      />
+                    )
+                  })
+                }
+              </> :
+              <></>
             }
           </View>
           {
             productsLoading ?
             <ActivityIndicator /> :
+            !productItems.length ?
+            <Text style={{textAlign: 'center'}}>no items</Text> :
             <></>
           }
           <View style={{width: '100%', height: 200}}></View>

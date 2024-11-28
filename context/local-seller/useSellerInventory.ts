@@ -1,7 +1,5 @@
-import { getCustomerProductsTriggerProps, useGetCustomerProductsApi } from "@/hooks/api/user/getCustomerProducts";
-import { vehicleEngine } from "@/hooks/api/vehicle/getEngines";
-import { vehicleMake } from "@/hooks/api/vehicle/getMakes";
-import { vehicleModel } from "@/hooks/api/vehicle/getModels";
+import { getCustomerProductsTriggerProps } from "@/hooks/api/user/getCustomerProducts";
+import { useGetUserProductsApi } from "@/hooks/api/user/getUserProducts";
 import { useEffect, useState } from "react";
 
 type paginationProps = {
@@ -12,22 +10,9 @@ type paginationProps = {
     next_page?: number;
     prev_page?: number;
 }
-export type productSortOrder = 'asc' | 'desc';
-type productFilters = {
-    brand?: string;
-    minPrice?: number;
-    maxPrice?: number;
-    searchQuery?: string;
-    sortOrder?: productSortOrder;
-    make?: vehicleMake;
-    model?: vehicleModel;
-    engine?: vehicleEngine;
-    vehicle?: string;
-}
-export const useBuyerExplore = () => {
-    const getApi = useGetCustomerProductsApi();
+export const useSellerInventory = () => {
+    const getApi = useGetUserProductsApi();
     const getResp = getApi.response;
-    const [filters, setFilters] = useState<productFilters>({});
     const [states, setStates] = useState({
         result: getResp?.data?.result,
         pagination: {
@@ -47,42 +32,6 @@ export const useBuyerExplore = () => {
             resetKey: `${Date.now()}`,
         });
     };
-    const filterResult = (items?: typeof states.result) => {
-        return states.result?.filter((item) => {
-            return (
-              (
-                !filters.searchQuery
-                || (
-                  filters.searchQuery
-                  && (
-                    item.assemblyGroupName?.toLocaleLowerCase().includes(filters.searchQuery.toLowerCase())
-                    || item.itemDescription?.toLocaleLowerCase().includes(filters.searchQuery.toLowerCase())
-                    || item.genericArticleDescription?.toLocaleLowerCase().includes(filters.searchQuery.toLowerCase())
-                    || item.mfrName?.toLocaleLowerCase().includes(filters.searchQuery.toLowerCase())
-                  )
-                )
-              )
-              && (
-                filters.minPrice === undefined
-                || (
-                  filters.minPrice !== undefined && (item.price ?? 0) >= filters.minPrice
-                )
-              )
-              && (
-                filters.maxPrice === undefined
-                || (
-                  filters.maxPrice !== undefined && (item.price ?? 0) <= filters.maxPrice
-                )
-              )
-            )
-          }).sort((a, b) => {
-              return (
-                  (filters?.sortOrder === 'asc') ? (a.price ?? 0) - (b.price ?? 0) :
-                  (filters?.sortOrder === 'desc') ? (b.price ?? 0) - (a.price ?? 0) :
-                  0
-              )
-          });
-    }
     const getProducts = (getProps?: getCustomerProductsTriggerProps) => {
         if(
             states.pagination?.next_page === undefined
@@ -94,7 +43,6 @@ export const useBuyerExplore = () => {
             getApi.trigger({
                 page: states.pagination?.next_page,
                 page_size: 10,
-                ...(filters.searchQuery ? {search_term: filters.searchQuery} : {}),
                 ...getProps,
             });
         }
@@ -136,23 +84,10 @@ export const useBuyerExplore = () => {
     }, [getResp?.loading]);
     
     return {
-        data: filterResult(states.result),
+        data: states.result,
         initiallyLoading: states.initiallyLoading,
         loading: getResp.loading,
         pagination: states.pagination,
-        filters,
-        updateFilters: (newFilters: Partial<productFilters>) => {
-            setFilters({
-                ...filters,
-                ...newFilters,
-            });
-            resetStates();
-            setTimeout(() => {
-                getProducts({
-                    page: 1,
-                });
-            }, 200);
-        },
         resetStates,
         getProducts,
     };
