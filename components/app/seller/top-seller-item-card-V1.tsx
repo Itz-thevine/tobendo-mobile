@@ -1,35 +1,98 @@
-import React from 'react';
-import { View, Text, Image } from 'react-native';
-import StockStatus from '@/components/stock-status';
-import { combineStyles } from '@/lib';
-import { GlobalStyles } from '@/styles';
-import { customerProductItem } from '@/hooks/api/user/getCustomerProducts';
+import React from "react";
+import { View, Text, Image } from "react-native";
+import StockStatus from "@/components/stock-status";
+import { combineStyles } from "@/lib";
+import { GlobalStyles } from "@/styles";
+import { customerProductItem } from "@/hooks/api/user/getCustomerProducts";
 
 type InventoryItemCardProps = {
   item: customerProductItem;
 };
 
 const TopSellerItemCard: React.FC<InventoryItemCardProps> = ({ item }) => {
+  // console.log(item.images[0]);
+  const [imageSource, setImageSource] = React.useState(
+    item?.images && item.images[0]
+      ? { uri: item.images[0] }
+      : require("@/assets/images/no-image.jpg")
+  );
+
   return (
-    <View style={[combineStyles(GlobalStyles, 'border_soft_blue', 'border_xs', 'rounded_xs', 'padding_xs', 'background_white'), { width: 250 }]}>
-      <View style={[combineStyles(GlobalStyles, 'jusify_start', 'safeArea', 'margin_t_xs', 'margin_b_sm'), { width: 220 }]}>
+    <View
+      style={[
+        combineStyles(
+          GlobalStyles,
+          "border_soft_blue",
+          "border_xs",
+          "rounded_xs",
+          "padding_xs",
+          "background_white"
+        ),
+        { width: 250 },
+      ]}
+    >
+      <View
+        style={[
+          combineStyles(
+            GlobalStyles,
+            "jusify_start",
+            "safeArea",
+            "margin_t_xs",
+            "margin_b_sm"
+          ),
+          { width: 220 },
+        ]}
+      >
         <StockStatus stock={item.count ?? 0} />
       </View>
       <Image
-        source={require('../../../assets/images/seller/image 7.png')}
+        source={imageSource}
         style={[GlobalStyles.rounded_xs, { width: 220, height: 180 }]}
-        resizeMode='contain'
+        resizeMode="contain"
+        onError={() => {
+          // Fallback to a local image if the image URL isn't working
+          setImageSource(require("@/assets/images/no-image.jpg"));
+        }}
       />
-      <View style={combineStyles(GlobalStyles, 'margin_t_sm', 'margin_b_xs')}>
+      <View style={combineStyles(GlobalStyles, "margin_t_sm", "margin_b_xs")}>
         <Image
-          source={require('../../../assets/images/seller/image 18.png')}
+          source={require("../../../assets/images/seller/image 18.png")}
           style={[{ width: 70, height: 25 }]}
-          resizeMode='contain'
+          resizeMode="contain"
         />
-        <Text style={combineStyles(GlobalStyles, 'text_lg', 'font_medium', 'line_lg', 'margin_t_xs')}>{item.assemblyGroupName}</Text>
-        <View style={combineStyles(GlobalStyles, 'flex_row')}>
-          <Text style={combineStyles(GlobalStyles, 'text_3xl', 'margin_t_xs', 'margin_b_xs')}>{'$'}</Text>
-          <Text style={combineStyles(GlobalStyles, 'text_3xl', 'margin_t_xs', 'margin_b_xs', 'font_bold')}>{item.price ?? 0}</Text>
+        <Text
+          style={combineStyles(
+            GlobalStyles,
+            "text_lg",
+            "font_medium",
+            "line_lg",
+            "margin_t_xs"
+          )}
+        >
+          {item.assemblyGroupName}
+        </Text>
+        <View style={combineStyles(GlobalStyles, "flex_row")}>
+          <Text
+            style={combineStyles(
+              GlobalStyles,
+              "text_3xl",
+              "margin_t_xs",
+              "margin_b_xs"
+            )}
+          >
+            {"$"}
+          </Text>
+          <Text
+            style={combineStyles(
+              GlobalStyles,
+              "text_3xl",
+              "margin_t_xs",
+              "margin_b_xs",
+              "font_bold"
+            )}
+          >
+            {item.price ?? 0}
+          </Text>
         </View>
         {/* <View>
           <TouchableOpacity style={combineStyles(GlobalStyles, 'background_warning', 'padding_t_xs', 'padding_b_xs', 'rounded_full', 'items_center')}>
