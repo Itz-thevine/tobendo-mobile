@@ -9,9 +9,21 @@ type paginationProps = {
     next_page?: number;
     prev_page?: number;
 }
+export type productSortOrder = 'asc' | 'desc';
+type productFilters = {
+    brand?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    searchQuery?: string;
+    sortOrder?: productSortOrder;
+    make?: string;
+    model?: string;
+    engine?: string;
+}
 export const useBuyerExplore = () => {
     const getApi = useGetCustomerProductsApi();
     const getResp = getApi.response;
+    const [filters, setFilters] = useState<productFilters>({});
     const [states, setStates] = useState({
         result: getResp?.data?.result,
         pagination: {
@@ -29,6 +41,42 @@ export const useBuyerExplore = () => {
             resetKey: `${Date.now()}`,
         });
     };
+    const filterResult = (items?: typeof states.result) => {
+        return states.result?.filter((item) => {
+            return (
+              (
+                !filters.searchQuery
+                || (
+                  filters.searchQuery
+                  && (
+                    item.assemblyGroupName?.toLocaleLowerCase().includes(filters.searchQuery.toLowerCase())
+                    || item.itemDescription?.toLocaleLowerCase().includes(filters.searchQuery.toLowerCase())
+                    || item.genericArticleDescription?.toLocaleLowerCase().includes(filters.searchQuery.toLowerCase())
+                    || item.mfrName?.toLocaleLowerCase().includes(filters.searchQuery.toLowerCase())
+                  )
+                )
+              )
+              && (
+                filters.minPrice === undefined
+                || (
+                  filters.minPrice !== undefined && (item.price ?? 0) >= filters.minPrice
+                )
+              )
+              && (
+                filters.maxPrice === undefined
+                || (
+                  filters.maxPrice !== undefined && (item.price ?? 0) <= filters.maxPrice
+                )
+              )
+            )
+          }).sort((a, b) => {
+              return (
+                  (filters?.sortOrder === 'asc') ? (a.price ?? 0) - (b.price ?? 0) :
+                  (filters?.sortOrder === 'desc') ? (b.price ?? 0) - (a.price ?? 0) :
+                  0
+              )
+          });
+    }
 
     useEffect(() => {
         const newStates = {...states};
@@ -55,21 +103,28 @@ export const useBuyerExplore = () => {
                     ...(getResp?.data?.result || []),
                 ];
             }
-            else {
-                newStates.result = {
-                    ...(newStates.result || []),
-                    ...(getResp?.data?.result || []),
-                };
-            }
+            // else {
+            //     newStates.result = {
+            //         ...(newStates.result || []),
+            //         ...(getResp?.data?.result || []),
+            //     };
+            // }
         }
         setStates({...newStates});
     }, [getResp?.loading]);
     
     return {
-        data: states.result,
+        data: filterResult(states.result),
         initiallyLoading: states.initiallyLoading,
         loading: getResp.loading,
         pagination: states.pagination,
+        filters,
+        updateFilters: (newFilters: Partial<productFilters>) => {
+            setFilters({
+                ...filters,
+                ...newFilters,
+            });
+        },
         resetStates,
         getProducts: (getProps?: getCustomerProductsTriggerProps) => {
             if(
@@ -83,6 +138,7 @@ export const useBuyerExplore = () => {
                     ...getProps,
                     page: states.pagination?.next_page,
                     page_size: 3,
+                    ...(filters.searchQuery ? {search_term: filters.searchQuery} : {}),
                 });
             }
         },
