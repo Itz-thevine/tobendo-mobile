@@ -19,6 +19,7 @@ type productFilters = {
     make?: string;
     model?: string;
     engine?: string;
+    vehicle?: string;
 }
 export const useBuyerExplore = () => {
     const getApi = useGetCustomerProductsApi();
@@ -36,7 +37,9 @@ export const useBuyerExplore = () => {
     const resetStates = () => {
         setStates({
             result: undefined,
-            pagination: {},
+            pagination: {
+                next_page: 1,
+            },
             initiallyLoading: undefined,
             resetKey: `${Date.now()}`,
         });
@@ -77,6 +80,22 @@ export const useBuyerExplore = () => {
               )
           });
     }
+    const getProducts = (getProps?: getCustomerProductsTriggerProps) => {
+        if(
+            states.pagination?.next_page === undefined
+            || (
+                typeof states.pagination.next_page === 'number'
+                && states.pagination.next_page > 0
+            )
+        ){
+            getApi.trigger({
+                page: states.pagination?.next_page,
+                page_size: 10,
+                ...(filters.searchQuery ? {search_term: filters.searchQuery} : {}),
+                ...getProps,
+            });
+        }
+    };
 
     useEffect(() => {
         const newStates = {...states};
@@ -124,23 +143,14 @@ export const useBuyerExplore = () => {
                 ...filters,
                 ...newFilters,
             });
+            resetStates();
+            setTimeout(() => {
+                getProducts({
+                    page: 1,
+                });
+            }, 200);
         },
         resetStates,
-        getProducts: (getProps?: getCustomerProductsTriggerProps) => {
-            if(
-                states.pagination?.next_page === undefined
-                || (
-                    typeof states.pagination.next_page === 'number'
-                    && states.pagination.next_page > 0
-                )
-            ){
-                getApi.trigger({
-                    ...getProps,
-                    page: states.pagination?.next_page,
-                    page_size: 3,
-                    ...(filters.searchQuery ? {search_term: filters.searchQuery} : {}),
-                });
-            }
-        },
+        getProducts,
     };
 }

@@ -16,9 +16,12 @@ import { useGetVehicleModelsApi, vehicleModel } from '@/hooks/api/vehicle/getMod
 import { useGetVehicleEnginesApi, vehicleEngine } from '@/hooks/api/vehicle/getEngines';
 import SubCategoryItems from '@/components/app/customer/sub-category-items';
 import FakeSearchBar from '@/components/app/customer/FakeSearchBar';
+import { useLocalUser } from '@/context/local-user/useLocalUser';
 
 
 const CustomerScreen: React.FC = () => {
+  const exploreHook = useLocalUser()?.buyerExplore;
+
   const getMakesApi = useGetVehicleMakesApi();
   const getModelsApi = useGetVehicleModelsApi();
   const getEnginesApi = useGetVehicleEnginesApi();
@@ -175,7 +178,6 @@ const CustomerScreen: React.FC = () => {
               // ]
               getEnginesResp.data?.counts?.map((engine, i) => (
                 <TouchableOpacity key={`${i}_${engine.mfrId}`} onPress={() => {
-                  console.log(engine.description)
                   setEngine(engine)
                   setIsEngineModalOpen(false)
                 }}>
@@ -221,7 +223,15 @@ const CustomerScreen: React.FC = () => {
           </ImageBackground>
 
           <View style={combineStyles(GlobalStyles, 'background_white', 'padding_sm', 'margin_sm', 'rounded_xs')}>
-            <VehicleSelector selectedVehicle={selectedVehicle} setSelectedVehicle={setSelectedVehicle} />
+            <VehicleSelector
+              selectedVehicle={selectedVehicle}
+              setSelectedVehicle={(vehicle) => {
+                exploreHook?.updateFilters({
+                  vehicle,
+                });
+                setSelectedVehicle(vehicle);
+              }}
+            />
 
             <DropdownItem
               label={
