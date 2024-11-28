@@ -39,7 +39,6 @@ const Sidebar: React.FC<{ isVisible: boolean; onClose: () => void }> = ({
     () => [styles.sidebar, { transform: [{ translateX: sidebarAnim }] }],
     [sidebarAnim]
   );
-  //TODO:  fix sidebar redirects
   return (
     <Animated.View style={containerStyles}>
       <ScrollView
@@ -107,17 +106,17 @@ const Sidebar: React.FC<{ isVisible: boolean; onClose: () => void }> = ({
             <MenuItem
               title="Orders"
               icon="cart-outline"
-              onPress={() => router.push("/(seller)/seller")}
+              onPress={() => router.push("/(seller)/seller?query=Orders")}
             />
             <MenuItem
               title="Inventory"
               icon="clipboard-list-outline"
-              onPress={() => router.push("/(seller)/seller")}
+              onPress={() => router.push("/(seller)/seller?query=Inventory")}
             />
             <MenuItem
               title="Earnings"
               icon="currency-usd"
-              onPress={() => router.push("/(seller)/seller")}
+              onPress={() => router.push("/(seller)/seller?query=Earnings")}
             />
           </MenuContainer>
         </View>
