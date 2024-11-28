@@ -6,6 +6,8 @@ import Counter from '@/components/shared/counter';
 import { router } from 'expo-router';
 import { useAddItemToCartApi } from '@/hooks/api/user-cart/addItemToCart';
 import { userProductItem } from '@/hooks/api/user/getUserProducts';
+import { getImagesFromProductItem } from '@/hooks/useProductItem';
+import ResponseModal, { responseModal } from '@/components/ResponseModal';
 
 type productCard = {
   item: userProductItem;
@@ -18,9 +20,9 @@ const ProductCard: React.FC<productCard> = ({ item }) => {
 
     const [count, setCount] = useState(1);
     const [itemAdded, setItemAdded] = useState(false);
+    const [modal, setModal] = useState<responseModal>({});
 
-    const itemImages = item.images || [];
-    const itemImageUrl = itemImages[0];
+    const getImages = getImagesFromProductItem(item);
     
     const productId = item.product_id;
 
@@ -34,14 +36,22 @@ const ProductCard: React.FC<productCard> = ({ item }) => {
         if(addItemResp.success){
             setItemAdded(true);
         }
-    }, [addItemResp.success]);
+        else if(addItemResp.success === false){
+          setModal({
+            ...modal,
+            success: false,
+            visible: true,
+            message: addItemResp.error,
+          });
+        }
+    }, [addItemResp.loading]);
     
   return (
     <TouchableOpacity onPress={() => router.push(`/(customer)/product-details/${productId}`)} style={[combineStyles(GlobalStyles, 'border_soft_blue', 'background_white', 'border_xs', 'rounded_xs', 'padding_xs', 'jusify_center', 'safeArea')]}>
         <View style={[combineStyles(GlobalStyles, 'flex_row', 'items_center')]}>
             <View >
                 <Image
-                    source={require('../../../assets/images/seller/image 7.png')}
+                    source={getImages.image1}
                     // source={{uri: itemImageUrl}}
                     style={[GlobalStyles.rounded_xs, { width: width*0.3, height: 120 }]}
                     resizeMode='contain'
@@ -50,7 +60,7 @@ const ProductCard: React.FC<productCard> = ({ item }) => {
             <View style={[combineStyles(GlobalStyles, 'margin_l_xs')]}>
                 <View style={combineStyles(GlobalStyles, 'flex_row', 'items_center')}>
                     <Image
-                    source={require('../../../assets/images/seller/image 6.png')}
+                    source={getImages.image2}
                     // source={{ uri: itemImageUrl}}
                     style={[{ width: 50, height: 30 }]}
                     resizeMode='cover'
@@ -100,6 +110,16 @@ const ProductCard: React.FC<productCard> = ({ item }) => {
                 </View>
             </View>
         </View>
+      
+      <ResponseModal
+        modal={modal}
+        onClose={() => {
+          setModal({
+            ...modal,
+            visible: false,
+          });
+        }}
+      />
     </TouchableOpacity>
   );
 };

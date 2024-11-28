@@ -3,7 +3,6 @@ import { View, ScrollView, SafeAreaView, Image, ImageBackground, StyleSheet, Tex
 import { combineStyles, width } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import CustomerAppHeader from '@/components/shared/customers-app-header';
-import SearchBar from '@/components/app/customer/search-bar';
 import VehicleSelector from '@/components/app/customer/vehicle-selector';
 import DropdownItem from '@/components/app/customer/drop-down-item';
 import PromoItem from '@/components/app/customer/promo-item';
@@ -16,9 +15,13 @@ import { useGetVehicleMakesApi, vehicleMake } from '@/hooks/api/vehicle/getMakes
 import { useGetVehicleModelsApi, vehicleModel } from '@/hooks/api/vehicle/getModels';
 import { useGetVehicleEnginesApi, vehicleEngine } from '@/hooks/api/vehicle/getEngines';
 import SubCategoryItems from '@/components/app/customer/sub-category-items';
+import FakeSearchBar from '@/components/app/customer/FakeSearchBar';
+import { useLocalUser } from '@/context/local-user/useLocalUser';
 
 
 const CustomerScreen: React.FC = () => {
+  const exploreHook = useLocalUser()?.buyerExplore;
+
   const getMakesApi = useGetVehicleMakesApi();
   const getModelsApi = useGetVehicleModelsApi();
   const getEnginesApi = useGetVehicleEnginesApi();
@@ -175,7 +178,6 @@ const CustomerScreen: React.FC = () => {
               // ]
               getEnginesResp.data?.counts?.map((engine, i) => (
                 <TouchableOpacity key={`${i}_${engine.mfrId}`} onPress={() => {
-                  console.log(engine.description)
                   setEngine(engine)
                   setIsEngineModalOpen(false)
                 }}>
@@ -205,7 +207,7 @@ const CustomerScreen: React.FC = () => {
       <CustomerAppHeader />
       <ScrollView style={combineStyles(GlobalStyles, 'background_softer_blue')}>
         <View style={combineStyles(GlobalStyles, 'background_dark_blue', 'margin_b_sm')}>
-          <SearchBar />
+          <FakeSearchBar onPress={() => router.push('/(customer)/explore')} />
           <ImageBackground source={require('@/assets/images/customer/Home.png')} resizeMode="contain">
             <View style={GlobalStyles.padding_sm}>
               <View style={GlobalStyles.margin_b_sm}>
@@ -221,7 +223,15 @@ const CustomerScreen: React.FC = () => {
           </ImageBackground>
 
           <View style={combineStyles(GlobalStyles, 'background_white', 'padding_sm', 'margin_sm', 'rounded_xs')}>
-            <VehicleSelector selectedVehicle={selectedVehicle} setSelectedVehicle={setSelectedVehicle} />
+            <VehicleSelector
+              selectedVehicle={selectedVehicle}
+              setSelectedVehicle={(vehicle) => {
+                exploreHook?.updateFilters({
+                  vehicle,
+                });
+                setSelectedVehicle(vehicle);
+              }}
+            />
 
             <DropdownItem
               label={

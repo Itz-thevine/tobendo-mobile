@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   Dimensions,
-  FlatList,
   SafeAreaView,
   ScrollView,
   Keyboard,
   ActivityIndicator,
+  FlatList,
 } from "react-native";
 import { combineStyles } from "@/lib";
 import { GlobalStyles } from "@/styles";
@@ -16,6 +16,7 @@ import ProductSuggestionItem from "./product-suggestion-list-item";
 import { useAutoCompleteSuggestions } from "@/hooks/app/useAutoCompleteSuggestions";
 import { useDebounce } from "use-debounce";
 import { useProducts } from "@/hooks/app/useProducts";
+import { partDetailsArticleItem } from "@/hooks/api/vehicle/getPartSuggestionDetails";
 
 const { width } = Dimensions.get("window");
 

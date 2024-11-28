@@ -3,7 +3,7 @@ import { useApi } from "../useApi";
 import { useCallApiProps } from "../useCallApi";
 import { userProductItem } from "./getUserProducts";
 
-type triggerProps = {
+export type getCustomerProductsTriggerProps = {
     product_id?: string;
     search_term?: string;
     car_id?: string;
@@ -15,7 +15,7 @@ type triggerProps = {
 export type customerProductItem = Omit<userProductItem, 'id'> & {
     id?: string;
 }
-type dataProps = {
+export type getCustomerProductsDataProps = {
     result?: customerProductItem[];
     page?: number;
     page_size?: number;
@@ -29,9 +29,9 @@ export const useGetCustomerProductsApi = (props?: useCallApiProps) => {
     return {
         response: {
             ...api.response,
-            data: api.response?.data as dataProps | undefined,
+            data: api.response?.data as getCustomerProductsDataProps | undefined,
         },
-        trigger: (triggerProps?: triggerProps) => {
+        trigger: (triggerProps?: getCustomerProductsTriggerProps) => {
             api.call({
                 formObject: triggerProps,
                 url: __apiUrls.getCustomerProducts,

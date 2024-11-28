@@ -4,6 +4,8 @@ import { combineStyles } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import { userProductItem } from '@/hooks/api/user/getUserProducts';
 import { useAddItemToCartApi } from '@/hooks/api/user-cart/addItemToCart';
+import { getImagesFromProductItem } from '@/hooks/useProductItem';
+import ResponseModal, { responseModal } from '@/components/ResponseModal';
 
 type InventoryItemCardProps = {
   item: userProductItem;
@@ -15,9 +17,9 @@ const ProductCard2: React.FC<InventoryItemCardProps> = ({ item }) => {
   const loading = addItemResp.loading;
   
   const [itemAdded, setItemAdded] = useState(false);
-  
-    
+  const [modal, setModal] = useState<responseModal>({});
   const productId = item.product_id;
+  const getImages = getImagesFromProductItem(item);
 
   const addItem = () => {
       addItemApi.trigger({
@@ -29,17 +31,25 @@ const ProductCard2: React.FC<InventoryItemCardProps> = ({ item }) => {
       if(addItemResp.success){
           setItemAdded(true);
       }
-  }, [addItemResp.success]);
+      else if(addItemResp.success === false){
+        setModal({
+          ...modal,
+          success: false,
+          visible: true,
+          message: addItemResp.error,
+        });
+      }
+  }, [addItemResp.loading]);
   return (
     <View style={[combineStyles(GlobalStyles, 'border_soft_blue', 'border_xs', 'rounded_xs', 'padding_xs', 'jusify_center', 'items_center', 'background_white'), { width: 250 }]}>
-      {/* <Image
-        source={item.image}
+      <Image
+        source={getImages.image1}
         style={[GlobalStyles.rounded_xs, { width: 220, height: 180 }]}
         resizeMode='contain'
-      /> */}
+      />
       <View style={combineStyles(GlobalStyles, 'margin_t_sm', 'margin_b_xs')}>
         <Image
-          source={require('../../../assets/images/seller/image11.png')}
+          source={getImages.image2}
           style={[{ width: 70, height: 25 }]}
           resizeMode='contain'
         />
@@ -71,6 +81,16 @@ const ProductCard2: React.FC<InventoryItemCardProps> = ({ item }) => {
             }
         </TouchableOpacity>
       </View>
+      
+      <ResponseModal
+        modal={modal}
+        onClose={() => {
+          setModal({
+            ...modal,
+            visible: false,
+          });
+        }}
+      />
     </View>
   );
 };

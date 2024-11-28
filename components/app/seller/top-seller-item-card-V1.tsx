@@ -4,18 +4,14 @@ import StockStatus from "@/components/stock-status";
 import { combineStyles } from "@/lib";
 import { GlobalStyles } from "@/styles";
 import { customerProductItem } from "@/hooks/api/user/getCustomerProducts";
+import { getImagesFromProductItem } from "@/hooks/useProductItem";
 
 type InventoryItemCardProps = {
   item: customerProductItem;
 };
 
 const TopSellerItemCard: React.FC<InventoryItemCardProps> = ({ item }) => {
-  // console.log(item.images[0]);
-  const [imageSource, setImageSource] = React.useState(
-    item?.images && item.images[0]
-      ? { uri: item.images[0] }
-      : require("@/assets/images/no-image.jpg")
-  );
+  const getImages = getImagesFromProductItem(item);
 
   return (
     <View
@@ -46,17 +42,13 @@ const TopSellerItemCard: React.FC<InventoryItemCardProps> = ({ item }) => {
         <StockStatus stock={item.count ?? 0} />
       </View>
       <Image
-        source={imageSource}
+        source={getImages.image1}
         style={[GlobalStyles.rounded_xs, { width: 220, height: 180 }]}
         resizeMode="contain"
-        onError={() => {
-          // Fallback to a local image if the image URL isn't working
-          setImageSource(require("@/assets/images/no-image.jpg"));
-        }}
       />
       <View style={combineStyles(GlobalStyles, "margin_t_sm", "margin_b_xs")}>
         <Image
-          source={require("../../../assets/images/seller/image 18.png")}
+          source={getImages.image2}
           style={[{ width: 70, height: 25 }]}
           resizeMode="contain"
         />

@@ -13,6 +13,8 @@ import { useGetCustomerProductsApi } from '@/hooks/api/user/getCustomerProducts'
 import { userProductItem } from '@/hooks/api/user/getUserProducts';
 import { useGetProductSuggestionsApi } from '@/hooks/api/user/getProductSuggestions';
 import { useAddItemToCartApi } from '@/hooks/api/user-cart/addItemToCart';
+import { getImagesFromProductItem } from '@/hooks/useProductItem';
+import ResponseModal, { responseModal } from '@/components/ResponseModal';
 
 const ProductDetailsScreen: React.FC = () => {
   const {id: productId} = useLocalSearchParams();
@@ -27,9 +29,10 @@ const ProductDetailsScreen: React.FC = () => {
 
   const productItems = getProductsResp.data?.result || [];
   const productItem = productItems[0] ? productItems[0] : undefined;
-  const itemImageUrl = productItem?.images ? productItem.images[0] : undefined;
+  const getImages = getImagesFromProductItem(productItem);
 
   const [count, setCount] = useState<number>(1);
+  const [modal, setModal] = useState<responseModal>({});
 
   const addItem = () => {
       addItemApi.trigger({
@@ -48,7 +51,15 @@ const ProductDetailsScreen: React.FC = () => {
       if(addItemResp.success){
         router.push('/cart');
       }
-  }, [addItemResp.success]);
+      else if(addItemResp.success === false){
+        setModal({
+          ...modal,
+          success: false,
+          visible: true,
+          message: addItemResp.error,
+        });
+      }
+  }, [addItemResp.loading]);
 
   return (
     <SafeAreaView style={combineStyles(GlobalStyles, 'safeArea')}>
@@ -65,7 +76,7 @@ const ProductDetailsScreen: React.FC = () => {
                 </View>
                 <TouchableOpacity>
                   <Image
-                      source={require('@/assets/images/seller/image 6.png')}
+                      source={getImages.image2}
                       style={[{ width: 20, height: 20 }]}
                       resizeMode='contain'
                   />  
@@ -87,13 +98,13 @@ const ProductDetailsScreen: React.FC = () => {
 
             {/* Product Image */}
             <View style={combineStyles(GlobalStyles, 'background_white')}>
-              <Image source={require('@/assets/images/seller/image 7.png')} style={styles.productImage} resizeMode="contain" />
+              <Image source={getImages.image1} style={styles.productImage} resizeMode="contain" />
             </View>
 
             {/* Product Details */}
             <View style={combineStyles(GlobalStyles, 'margin_sm', )}>
               <View style={combineStyles(GlobalStyles, 'flex_row', 'items_center', 'gap_sm', 'margin_b_xs')}>
-                <Image source={require('@/assets/images/seller/image 6.png')} style={{height: 40, width: 50}} resizeMode="contain" />
+                <Image source={getImages.image2} style={{height: 40, width: 50}} resizeMode="contain" />
                 <Text style={styles.productBrand}>{productItem?.assemblyGroupName}</Text>
               </View>
             <Text style={styles.productTitle}>{productItem?.itemDescription || productItem?.genericArticleDescription}</Text>
@@ -167,15 +178,26 @@ const ProductDetailsScreen: React.FC = () => {
                 </View>
             </View>
             <View style={combineStyles(GlobalStyles, 'flex_row', 'jusify_between')}>
-                <TouchableOpacity style={[combineStyles(GlobalStyles, 'border_royal_blue', 'border_sm', 'padding_t_xs', 'padding_b_xs', 'rounded_full', 'items_center', 'padding_x_xs', 'flex_row'), {width: "38%"}]}>
+                <TouchableOpacity
+                  style={[combineStyles(GlobalStyles, 'border_royal_blue', 'border_sm', 'padding_t_xs', 'padding_b_xs', 'rounded_full', 'items_center', 'padding_x_xs', 'flex_row', 'items_center', 'jusify_center'), {
+                    width: '100%',
+                  }]}
+                  onPress={() => {
+                    addItem();
+                  }}
+                >
                     <Image
                         source={require('@/assets/images/Group 28.png')}
                         style={[{ height: 16 }]}
                         resizeMode='contain'
                     />
-                    <Text style={combineStyles(GlobalStyles, 'text_lg', 'margin_l_xs', 'margin_r_xs')}>Add To Cart</Text>
+                    {
+                      addItemResp.loading ?
+                      <ActivityIndicator /> :
+                      <Text style={combineStyles(GlobalStyles, 'text_lg', 'margin_l_xs', 'margin_r_xs')}>Add To Cart</Text>
+                    }
                 </TouchableOpacity>
-                <TouchableOpacity style={[combineStyles(GlobalStyles, 'background_royal_blue', 'items_center', 'rounded_full', 'padding_y_xs'), {width: '58%'}]}
+                {/* <TouchableOpacity style={[combineStyles(GlobalStyles, 'background_royal_blue', 'items_center', 'rounded_full', 'padding_y_xs'), {width: '58%'}]}
                     onPress={() => {
                       addItem();
                     }}
@@ -185,10 +207,20 @@ const ProductDetailsScreen: React.FC = () => {
                       <ActivityIndicator /> :
                       <Text style={combineStyles(GlobalStyles, 'text_lg', 'color_white', 'font_medium')}>Apply</Text>
                     }
-                </TouchableOpacity>
+                </TouchableOpacity> */}
 
             </View>
         </View>
+      
+        <ResponseModal
+          modal={modal}
+          onClose={() => {
+            setModal({
+              ...modal,
+              visible: false,
+            });
+          }}
+        />
     </SafeAreaView>
   );
 };
