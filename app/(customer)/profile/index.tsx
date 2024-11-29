@@ -60,7 +60,7 @@ const WithdrawScreen: React.FC = () => {
 
           <View style={combineStyles(GlobalStyles, 'margin_b_sm', 'margin_t_sm', 'relative')}>
             <Text style={combineStyles(GlobalStyles, 'text_sm', 'color_gray')}>Company Email</Text>
-            <TextInput style={combineStyles(GlobalStyles, 'text_lg', 'margin_t_xs', 'border_b_xs', 'border_gray', 'padding_b_xs', 'font_medium')} defaultValue="alameya@gmail.com" />
+            <TextInput style={combineStyles(GlobalStyles, 'text_lg', 'margin_t_xs', 'border_b_xs', 'border_gray', 'padding_b_xs', 'font_medium')} defaultValue={localUser?.user?.email} />
             <TouchableOpacity style={[combineStyles(GlobalStyles, 'background_white', 'absolute', 'padding_xs', 'rounded_full'), {right: 0, top: 15}]}>
               <Image
                 source={require('../../../assets/images/seller/rect1499.png')}
@@ -72,7 +72,7 @@ const WithdrawScreen: React.FC = () => {
 
           <View style={combineStyles(GlobalStyles, 'margin_b_sm', 'margin_t_sm', 'relative')}>
             <Text style={combineStyles(GlobalStyles, 'text_sm', 'color_gray')}>Phone Number</Text>
-            <TextInput style={combineStyles(GlobalStyles, 'text_lg', 'margin_t_xs', 'border_b_xs', 'border_gray', 'padding_b_xs', 'font_medium')} defaultValue="+221 123-4567-890" />
+            <TextInput style={combineStyles(GlobalStyles, 'text_lg', 'margin_t_xs', 'border_b_xs', 'border_gray', 'padding_b_xs', 'font_medium')} defaultValue={localUser?.user?.phone_number} />
             <TouchableOpacity style={[combineStyles(GlobalStyles, 'background_white', 'absolute', 'padding_xs', 'rounded_full'), {right: 0, top: 15}]}>
               <Image
                 source={require('../../../assets/images/seller/rect1499.png')}
@@ -127,7 +127,7 @@ const WithdrawScreen: React.FC = () => {
                 <View style={combineStyles(GlobalStyles, 'flex_row', 'jusify_between')}>
                     <View style={combineStyles(GlobalStyles, 'flex_row', 'items_center')}>
                         
-                        <Text style={combineStyles(GlobalStyles, 'text_lg')}>Alameya Auto Parts</Text>
+                        <Text style={combineStyles(GlobalStyles, 'text_lg')}>{localUser?.company?.company_name}</Text>
                     </View>
                     <TouchableOpacity>
                         <Image
@@ -138,7 +138,7 @@ const WithdrawScreen: React.FC = () => {
                     </TouchableOpacity>
                     {/* <Icon name="edit" size={20} color="#888" /> */}
                 </View>
-                <Text style={combineStyles(GlobalStyles, 'margin_t_sm', 'color_gray')}>5859584-205-HM</Text>
+                <Text style={combineStyles(GlobalStyles, 'margin_t_sm', 'color_gray')}>{localUser?.company?.license_type}</Text>
                 <Text style={combineStyles(GlobalStyles, 'margin_t_sm', 'text_lg')}>License Type</Text>
             </View>
           </View>
