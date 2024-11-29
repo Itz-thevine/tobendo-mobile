@@ -12,17 +12,16 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useGetCustomerProductsApi } from '@/hooks/api/user/getCustomerProducts';
 import { userProductItem } from '@/hooks/api/user/getUserProducts';
 import { useGetProductSuggestionsApi } from '@/hooks/api/user/getProductSuggestions';
-import { useAddItemToCartApi } from '@/hooks/api/user-cart/addItemToCart';
 import { getImagesFromProductItem } from '@/hooks/useProductItem';
 import ResponseModal, { responseModal } from '@/components/ResponseModal';
+import { useAddItemToCart } from '../../../hooks/useAddItemToCart';
 
 const ProductDetailsScreen: React.FC = () => {
   const {id: productId} = useLocalSearchParams();
+  const addItemHook = useAddItemToCart();
+
   const getProductsApi = useGetCustomerProductsApi();
   const getProductsResp = getProductsApi.response;
-
-  const addItemApi = useAddItemToCartApi();
-  const addItemResp = addItemApi.response;
 
   const getProductSuggestionsApi = useGetProductSuggestionsApi();
   const getProductSuggestionsResp = getProductSuggestionsApi.response;
@@ -34,12 +33,6 @@ const ProductDetailsScreen: React.FC = () => {
   const [count, setCount] = useState<number>(1);
   const [modal, setModal] = useState<responseModal>({});
 
-  const addItem = () => {
-      addItemApi.trigger({
-        product_id: `${productId}`,
-        quantity: count,
-      });
-  }
   
   useEffect(() => {
     getProductsApi.trigger({
@@ -48,18 +41,18 @@ const ProductDetailsScreen: React.FC = () => {
     getProductSuggestionsApi.trigger();
   }, []);
   useEffect(() => {
-      if(addItemResp.success){
+      if(addItemHook.success){
         router.push('/cart');
       }
-      else if(addItemResp.success === false){
+      else if(addItemHook.success === false){
         setModal({
           ...modal,
           success: false,
           visible: true,
-          message: addItemResp.error,
+          message: addItemHook.error,
         });
       }
-  }, [addItemResp.loading]);
+  }, [addItemHook.loading]);
 
   return (
     <SafeAreaView style={combineStyles(GlobalStyles, 'safeArea')}>
@@ -183,7 +176,7 @@ const ProductDetailsScreen: React.FC = () => {
                     width: '100%',
                   }]}
                   onPress={() => {
-                    addItem();
+                    addItemHook.add(`${productId}`, count);
                   }}
                 >
                     <Image
@@ -192,7 +185,7 @@ const ProductDetailsScreen: React.FC = () => {
                         resizeMode='contain'
                     />
                     {
-                      addItemResp.loading ?
+                      addItemHook.loading ?
                       <ActivityIndicator /> :
                       <Text style={combineStyles(GlobalStyles, 'text_lg', 'margin_l_xs', 'margin_r_xs')}>Add To Cart</Text>
                     }

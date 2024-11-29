@@ -4,7 +4,7 @@ import { vehicleMake } from "@/hooks/api/vehicle/getMakes";
 import { vehicleModel } from "@/hooks/api/vehicle/getModels";
 import { useEffect, useState } from "react";
 
-type paginationProps = {
+export type paginationProps = {
     page?: number;
     page_size?: number;
     total_pages?: number;

@@ -37,6 +37,7 @@ const CartSummary = (props: CartSummaryProps) => {
                   props.cartItems.map((item, i) => {
                     return (
                       <ProductCard3
+                        key={`${i}_${item.product_id}`}
                         item={item}
                         onDelete={() => {
                           if(props.removeItem) props.removeItem(i);

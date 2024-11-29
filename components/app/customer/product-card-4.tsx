@@ -4,19 +4,18 @@ import { combineStyles, width } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import Counter from '@/components/shared/counter';
 import { router } from 'expo-router';
-import { useAddItemToCartApi } from '@/hooks/api/user-cart/addItemToCart';
 import { userProductItem } from '@/hooks/api/user/getUserProducts';
 import { getImagesFromProductItem } from '@/hooks/useProductItem';
 import ResponseModal, { responseModal } from '@/components/ResponseModal';
+import { useAddItemToCart } from '../../../hooks/useAddItemToCart';
 
 type productCard = {
   item: userProductItem;
 };
 
 const ProductCard: React.FC<productCard> = ({ item }) => {
-    const addItemApi = useAddItemToCartApi();
-    const addItemResp = addItemApi.response;
-    const loading = addItemResp.loading;
+    const addItemHook = useAddItemToCart();
+    const loading = addItemHook.loading;
 
     const [count, setCount] = useState(1);
     const [itemAdded, setItemAdded] = useState(false);
@@ -26,25 +25,19 @@ const ProductCard: React.FC<productCard> = ({ item }) => {
     
     const productId = item.product_id;
 
-    const addItem = () => {
-        addItemApi.trigger({
-            product_id: `${productId}`,
-            quantity: count,
-        });
-    }
     useEffect(() => {
-        if(addItemResp.success){
+        if(addItemHook.success){
             setItemAdded(true);
         }
-        else if(addItemResp.success === false){
+        else if(addItemHook.success === false){
           setModal({
             ...modal,
             success: false,
             visible: true,
-            message: addItemResp.error,
+            message: addItemHook.error,
           });
         }
-    }, [addItemResp.loading]);
+    }, [addItemHook.loading]);
     
   return (
     <TouchableOpacity onPress={() => router.push(`/(customer)/product-details/${productId}`)} style={[combineStyles(GlobalStyles, 'border_soft_blue', 'background_white', 'border_xs', 'rounded_xs', 'padding_xs', 'jusify_center', 'safeArea')]}>
@@ -86,7 +79,7 @@ const ProductCard: React.FC<productCard> = ({ item }) => {
                     <TouchableOpacity
                         style={combineStyles(GlobalStyles, 'background_royal_blue', 'padding_t_xs', 'padding_b_xs', 'rounded_full', 'items_center', 'padding_x_xs', 'flex_row')}
                         onPress={() => {
-                            if(!itemAdded && count > 0) addItem();
+                            if(!itemAdded && count > 0) addItemHook.add(productId ?? '', count);
                         }}
                     >
                         <Image

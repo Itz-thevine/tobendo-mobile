@@ -19,7 +19,7 @@ export const __apiUrls = {
     getCartItems: `${__apiBaseUrl}/cart/`,
     addItemToCart: `${__apiBaseUrl}/cart/`,
     removeCartItem: (cartId: string) => `${__apiBaseUrl}/cart/${cartId}`,
-    checkoutCart: `${__apiBaseUrl}/checkout/`,
+    checkoutCart: `${__apiBaseUrl}/checkout/checkout/`,
     
     getCustomerOrders: `${__apiBaseUrl}/order/`,
     getCustomerProducts: `${__apiBaseUrl}/customer-product/`,

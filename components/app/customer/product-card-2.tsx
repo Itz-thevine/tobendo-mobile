@@ -3,43 +3,36 @@ import { View, Text, TouchableOpacity, Image, ActivityIndicator } from 'react-na
 import { combineStyles } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import { userProductItem } from '@/hooks/api/user/getUserProducts';
-import { useAddItemToCartApi } from '@/hooks/api/user-cart/addItemToCart';
 import { getImagesFromProductItem } from '@/hooks/useProductItem';
 import ResponseModal, { responseModal } from '@/components/ResponseModal';
+import { useAddItemToCart } from '../../../hooks/useAddItemToCart';
 
 type InventoryItemCardProps = {
   item: userProductItem;
 };
 
 const ProductCard2: React.FC<InventoryItemCardProps> = ({ item }) => {
-  const addItemApi = useAddItemToCartApi();
-  const addItemResp = addItemApi.response;
-  const loading = addItemResp.loading;
+  const addItemHook = useAddItemToCart();
+  const loading = addItemHook.loading;
   
   const [itemAdded, setItemAdded] = useState(false);
   const [modal, setModal] = useState<responseModal>({});
   const productId = item.product_id;
   const getImages = getImagesFromProductItem(item);
 
-  const addItem = () => {
-      addItemApi.trigger({
-        product_id: `${productId}`,
-        quantity: 1,
-      });
-  }
   useEffect(() => {
-      if(addItemResp.success){
+      if(addItemHook.success){
           setItemAdded(true);
       }
-      else if(addItemResp.success === false){
+      else if(addItemHook.success === false){
         setModal({
           ...modal,
           success: false,
           visible: true,
-          message: addItemResp.error,
+          message: addItemHook.error,
         });
       }
-  }, [addItemResp.loading]);
+  }, [addItemHook.loading]);
   return (
     <View style={[combineStyles(GlobalStyles, 'border_soft_blue', 'border_xs', 'rounded_xs', 'padding_xs', 'jusify_center', 'items_center', 'background_white'), { width: 250 }]}>
       <Image
@@ -64,7 +57,7 @@ const ProductCard2: React.FC<InventoryItemCardProps> = ({ item }) => {
             ...{opacity: itemAdded ? 0.6 : undefined},
           }}
           onPress={() => {
-            if(!itemAdded) addItem();
+            if(!itemAdded) addItemHook.add(productId ?? '', 1);
           }}
         >
             <Image

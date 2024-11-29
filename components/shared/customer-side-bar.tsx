@@ -9,11 +9,13 @@ import { router } from 'expo-router';
 import AccordionMenuItem from './accordion-menu-item';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalUser } from '@/context/local-user/useLocalUser';
+import { useLocalBuyer } from '../../context/local-buyer/useLocalBuyer';
 
 const screenWidth = Dimensions.get('window').width;
 
 const Sidebar: React.FC<{ isVisible: boolean, onClose: () => void }> = ({ isVisible, onClose }) => {
   const localUser = useLocalUser();
+  const cartCount = useLocalBuyer()?.cart.data?.length ?? 0;
   const sidebarAnim = useRef(new Animated.Value(-screenWidth)).current;
   
   useEffect(() => {
@@ -75,9 +77,13 @@ const Sidebar: React.FC<{ isVisible: boolean, onClose: () => void }> = ({ isVisi
                         resizeMode='contain'
                     />
                     <Text style={combineStyles(GlobalStyles, 'text_lg', 'color_white')}>{'Cart'}</Text>
-                    <View style={[combineStyles(GlobalStyles, 'jusify_center', 'items_center', 'background_warning', 'rounded_full'), { width: 18, height: 18}]}>
-                        <Text style={combineStyles(GlobalStyles, 'color_white', 'text_xs', 'font_medium')}>2</Text>
-                    </View>
+                    {
+                      cartCount ?
+                      <View style={[combineStyles(GlobalStyles, 'jusify_center', 'items_center', 'background_warning', 'rounded_full'), { width: 18, height: 18}]}>
+                          <Text style={combineStyles(GlobalStyles, 'color_white', 'text_xs', 'font_medium')}>{cartCount}</Text>
+                      </View> :
+                      <></>
+                    }
                 </View>
             </TouchableOpacity>
             <TouchableOpacity style={combineStyles(GlobalStyles, 'margin_b_sm')} onPress={() => router.push('/orders')}>

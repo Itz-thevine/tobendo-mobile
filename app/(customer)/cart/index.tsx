@@ -10,13 +10,13 @@ import { combineStyles } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import CustomModal from '@/components/shared/custom-modal';
 import { router } from 'expo-router';
-import { cartItem, useGetCartItemsApi } from '@/hooks/api/user-cart/getCartItems';
+import { cartItem } from '@/hooks/api/user-cart/getCartItems';
 import { useGetProductSuggestionsApi } from '@/hooks/api/user/getProductSuggestions';
 import { addressProps, useGetAddressesApi } from '@/hooks/api/address/getAddresses';
+import { useLocalBuyer } from '../../../context/local-buyer/useLocalBuyer';
 
 const CartScreen = () => {
-  const getCartItemsApi = useGetCartItemsApi();
-  const getCartItemsResp = getCartItemsApi.response;
+  const cartHook = useLocalBuyer()?.cart;
   
   const getSuggestionsApi = useGetProductSuggestionsApi();
   const getSuggestionsResp = getSuggestionsApi.response;
@@ -25,7 +25,7 @@ const CartScreen = () => {
   const getAddressesApi = useGetAddressesApi();
   const getAddressesResp = getAddressesApi.response;
   
-  const [cartItems, setCartItems] = useState(getCartItemsResp.data || []);
+  const [cartItems, setCartItems] = useState(cartHook?.data || []);
   const [totalAmount, setTotalAmout] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
@@ -54,7 +54,7 @@ const CartScreen = () => {
             totalAmount={totalAmount}
             cartItems={cartItems}
             relatedItems={relatedItems}
-            loading={getCartItemsResp.loading}
+            loading={cartHook?.loading}
             moveNext={moveNext}
             removeItem={removeItem}
           />
@@ -111,13 +111,11 @@ const CartScreen = () => {
   }
 
   useEffect(() => {
-    getCartItemsApi.trigger();
+    cartHook?.get();
   }, []);
   useEffect(() => {
-    if(getCartItemsResp.success){
-      setCartItems(getCartItemsResp.data || []);
-    }
-  }, [getCartItemsResp.success]);
+    setCartItems(cartHook?.data || []);
+  }, [cartHook?.data]);
   useEffect(() => {
     setTotalAmout(getTotalAmount(cartItems));
   }, [cartItems.length]);

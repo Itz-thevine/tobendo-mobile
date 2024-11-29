@@ -3,9 +3,12 @@ import { useEffect, useState } from "react";
 import { Redirect, useRootNavigationState } from "expo-router";
 import { useGetUserApi } from "./api/user/getUser";
 import { useGetCompanyDetailsApi } from "./api/user/getCompanyDetails";
+import { useLocalBuyer } from "../context/local-buyer/useLocalBuyer";
 
 export const useInitializeLocalUser = () => {
     const localUser = useLocalUser();
+    const localBuyer = useLocalBuyer();
+    const cartHook = localBuyer?.cart;
 
     const rootNavigationState = useRootNavigationState();
     const localUserId = localUser?.data?.user_id;
@@ -59,6 +62,12 @@ export const useInitializeLocalUser = () => {
         }
       }
     }, [getCompanyResp.loading]);
+    useEffect(() => {
+      if(getUserResp.data?.user_id){
+        // orderHook?.get();
+        cartHook?.get();
+      }
+    }, [getUserResp.data?.user_id]);
 
     return {
       redirectNode,
