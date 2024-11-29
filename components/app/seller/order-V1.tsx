@@ -1,57 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, ScrollView, SafeAreaView, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, ScrollView, SafeAreaView, Image, ActivityIndicator } from 'react-native';
 import { combineStyles, height } from '@/lib';
 import { GlobalStyles } from '@/styles';
-import { orderItem, useGetCustomerOrdersApi } from '@/hooks/api/user/getCustomerOrders';
+import { orderItem } from '@/hooks/api/user/getCustomerOrders';
+import { useLocalSeller } from '../../../context/local-seller/useLocalSeller';
 
 const OrderTabs: React.FC = () => {
-  const getOrdersApi = useGetCustomerOrdersApi();
-  const getOrdersResp = getOrdersApi.response;
+  const orderHook = useLocalSeller()?.orders;
 
   const [activeTab, setActiveTab] = useState<'in-progress' | 'completed' | 'canceled'>('in-progress');
-
-  const orders = getOrdersResp.data ?? [];
-  const inProgressOrders = orders;
-  const completedOrders = orders;
-  const canceledOrders = orders;
-
-
-  // const inProgressOrders = [
-  //   {
-  //     id: '1',
-  //     products: [
-  //       { id: '1', name: 'QUARTZ INEO FIRST 0W-30', image: require('@/assets/images/seller/image 5.png') },
-  //       { id: '2', name: 'QUARTZ INEO FIRST 0W-30', image: require('@/assets/images/seller/image 5.png') },
-  //     ],
-  //     address: '1234 Main St, Springfield, USA',
-  //     status: 'Shipped',
-  //     arrivalDate: 'Wed, Jun 10',
-  //   },
-  // ];
-
-  // const completedOrders = [
-  //   {
-  //     id: '3',
-  //     products: [
-  //       { id: '4', name: 'MOBIL 1 SYNTHETIC 10W-30', image: require('@/assets/images/seller/image 5.png') },
-  //     ],
-  //     address: '9102 Pine Rd, Springfield, USA',
-  //     status: 'Delivered',
-  //     arrivalDate: 'Mon, Jun 8',
-  //   },
-  // ];
-
-  // const canceledOrders = [
-  //   {
-  //     id: '4',
-  //     products: [
-  //       { id: '5', name: 'PENNZOIL 5W-30', image: require('@/assets/images/seller/image 5.png') },
-  //     ],
-  //     address: '3456 Elm St, Springfield, USA',
-  //     status: 'Canceled',
-  //     arrivalDate: 'Canceled',
-  //   },
-  // ];
 
   const renderOrderItem = ({ item, index }: { item: orderItem, index: number }) => (
     <View key={`${index}_${item.order_id}`} style={combineStyles(GlobalStyles, 'background_white')}>
@@ -88,18 +45,20 @@ const OrderTabs: React.FC = () => {
   const getOrders = () => {
     switch (activeTab) {
       case 'in-progress':
-        return inProgressOrders;
+        return orderHook?.inProgressItems;
       case 'completed':
-        return completedOrders;
+        return orderHook?.completedItems;
       case 'canceled':
-        return canceledOrders;
+        return orderHook?.canceledItems;
       default:
         return [];
     }
   };
+
+  const orderItems = getOrders() ?? [];
   
   useEffect(() => {
-    getOrdersApi.trigger();
+    orderHook?.get();
   }, []);
 
   return (
@@ -127,7 +86,7 @@ const OrderTabs: React.FC = () => {
         </View>
 
         {
-            orders.length ?
+            orderItems.length ?
             <FlatList
                 data={getOrders()}
                 renderItem={renderOrderItem}
@@ -135,6 +94,11 @@ const OrderTabs: React.FC = () => {
                 contentContainerStyle={combineStyles(GlobalStyles, 'background_white', 'padding_sm', 'gap_md', 'rounded_xs', 'margin_t_sm')}
             /> :
             <Text style={{textAlign: 'center', marginTop: 20}}>no orders</Text>
+        }
+        {
+          orderHook?.loading ?
+          <ActivityIndicator /> :
+          <></>
         }
         </ScrollView>
     </SafeAreaView>

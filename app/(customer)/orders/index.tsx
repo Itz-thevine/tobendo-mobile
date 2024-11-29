@@ -1,102 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import { combineStyles } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import CustomerAppHeader from '@/components/shared/customers-app-header';
 import { useLocalBuyer } from '../../../context/local-buyer/useLocalBuyer';
-import { orderItem } from '../../../hooks/api/user/getCustomerOrders';
-
-type Product = {
-  id: string;
-  name: string;
-  image: any;
-};
-
-type Order = {
-  id: string;
-  products: Product[];
-  address: string;
-  status: string;
-  arrivalDate: string;
-};
+import { ActivityIndicator } from 'react-native-paper';
 
 const OrderScreen: React.FC = () => {
   const orderHook = useLocalBuyer()?.orders;
   const [activeTab, setActiveTab] = useState<'in-progress' | 'completed' | 'canceled'>('in-progress');
 
-  // const inProgressOrders: Order[] = [
-  //   {
-  //     id: '1',
-  //     products: [
-  //       { id: '1', name: 'QUARTZ INEO FIRST 0W-30', image: require('@/assets/images/seller/image 5.png') },
-  //       { id: '2', name: 'QUARTZ INEO FIRST 0W-30', image: require('@/assets/images/seller/image 5.png') },
-  //     ],
-  //     address: '1234 Main St, Springfield, USA',
-  //     status: 'Shipped',
-  //     arrivalDate: 'Wed, Jun 10',
-  //   },
-   
-  // ];
-
-  // const completedOrders: Order[] = [
-  //   {
-  //     id: '3',
-  //     products: [
-  //       { id: '4', name: 'MOBIL 1 SYNTHETIC 10W-30', image: require('@/assets/images/seller/image 5.png') },
-  //     ],
-  //     address: '9102 Pine Rd, Springfield, USA',
-  //     status: 'Delivered',
-  //     arrivalDate: 'Mon, Jun 8',
-  //   },
-  // ];
-
-  // const canceledOrders: Order[] = [
-  //   {
-  //     id: '4',
-  //     products: [
-  //       { id: '5', name: 'PENNZOIL 5W-30', image: require('@/assets/images/seller/image 5.png') },
-  //     ],
-  //     address: '3456 Elm St, Springfield, USA',
-  //     status: 'Canceled',
-  //     arrivalDate: 'Canceled',
-  //   },
-  // ];
-
   useEffect(() => {
     orderHook?.get();
   }, []);
-
-  const renderOrderItem = ({ item }: { item: orderItem }) => (
-    <View style={combineStyles(GlobalStyles, 'background_white', )}>
-      <View style={combineStyles(GlobalStyles, 'border_b_xs', 'border_gray', 'padding_b_sm')}>
-        {item.items?.map((product) => (
-          <View key={product.product_id} style={styles.product}>
-            {/* <Image
-              source={product.image}
-              style={[GlobalStyles.rounded_xs, {width: 100, height: 100 }]}
-              resizeMode='contain'
-            /> */}
-            <View>
-              <Text style={combineStyles(GlobalStyles, 'font_bold')}>No name</Text>
-              <Text style={combineStyles(GlobalStyles, 'color_gray', 'margin_t_xs')}>
-                5 L - ref. 214178 - Engine oil
-              </Text>
-            </View>
-          </View>
-        ))}
-      </View>
-      
-        <View style={combineStyles(GlobalStyles, 'margin_t_sm')}>
-          <Text style={styles.statusText}>{item.shipping_address}</Text>
-          <View style={combineStyles(GlobalStyles, 'margin_t_sm', 'flex_row', 'jusify_between')}>
-            <View style={styles.statusBadge}>
-              <Text style={styles.statusText}>{item.status}</Text>
-            </View>
-            <Text style={styles.arrivalDate}>Arrives: {item.placed_at}</Text>
-          </View>
-        </View>
-    </View>
-  );
 
   const getOrders = () => {
     switch (activeTab) {
@@ -110,6 +26,8 @@ const OrderScreen: React.FC = () => {
         return [];
     }
   };
+
+  const orderItems = getOrders() ?? [];
 
   return (
     <SafeAreaView style={combineStyles(GlobalStyles, 'safeArea', 'background_softer_blue')}>
@@ -136,12 +54,50 @@ const OrderScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
 
-        <FlatList
-          data={getOrders()}
-          renderItem={renderOrderItem}
-          keyExtractor={(item, index) => `${index}_${item.order_id}`}
-          contentContainerStyle={combineStyles(GlobalStyles, 'background_white', 'padding_sm', 'gap_md', 'rounded_xs', 'margin_t_sm')}
-        />
+        <View style={combineStyles(GlobalStyles, 'background_white', 'padding_sm', 'gap_md', 'rounded_xs', 'margin_t_sm')}>
+          {
+            orderItems.length ?
+            orderItems.map((item, i) => {
+              return (
+                <View key={`${i}_${item.order_id}`} style={combineStyles(GlobalStyles, 'background_white', )}>
+                  <View style={combineStyles(GlobalStyles, 'border_b_xs', 'border_gray', 'padding_b_sm')}>
+                    {item.items?.map((product) => (
+                      <View key={product.product_id} style={styles.product}>
+                        {/* <Image
+                          source={product.image}
+                          style={[GlobalStyles.rounded_xs, {width: 100, height: 100 }]}
+                          resizeMode='contain'
+                        /> */}
+                        <View>
+                          <Text style={combineStyles(GlobalStyles, 'font_bold')}>No name</Text>
+                          <Text style={combineStyles(GlobalStyles, 'color_gray', 'margin_t_xs')}>
+                            5 L - ref. 214178 - Engine oil
+                          </Text>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                  
+                    <View style={combineStyles(GlobalStyles, 'margin_t_sm')}>
+                      <Text style={styles.statusText}>{item.shipping_address}</Text>
+                      <View style={combineStyles(GlobalStyles, 'margin_t_sm', 'flex_row', 'jusify_between')}>
+                        <View style={styles.statusBadge}>
+                          <Text style={styles.statusText}>{item.status}</Text>
+                        </View>
+                        <Text style={styles.arrivalDate}>Arrives: {item.placed_at}</Text>
+                      </View>
+                    </View>
+                </View>
+              )
+            }) :
+            <Text style={{textAlign: 'center'}}>no items</Text>
+          }
+          {
+            orderHook?.loading ?
+            <ActivityIndicator /> :
+            <></>
+          }
+        </View>
       </View>
     </SafeAreaView>
   );

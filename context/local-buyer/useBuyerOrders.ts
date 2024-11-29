@@ -31,7 +31,7 @@ export const useBuyerOrders = () => {
     };
 
     useEffect(() => {
-        get(true);
+        get();
     }, []);
 
     useEffect(() => {

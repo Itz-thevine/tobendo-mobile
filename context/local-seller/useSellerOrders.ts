@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { useGetCartItemsApi } from "../../hooks/api/user-cart/getCartItems";
+import { sellerOrderItem, useGetSellerOrdersApi } from "../../hooks/api/user/getSellerOrders";
 
-export const useBuyerCart = () => {
-    const getApi = useGetCartItemsApi();
+export const useSellerOrders = () => {
+    const getApi = useGetSellerOrdersApi();
     const getResp = getApi.response;
 
     const [asNew, setAsNew] = useState(false);
@@ -10,6 +10,9 @@ export const useBuyerCart = () => {
         data: getResp?.data,
         initiallyLoading: undefined as boolean | undefined,
         resetKey: '',
+        inProgressItems: [] as sellerOrderItem[],
+        completedItems: [] as sellerOrderItem[],
+        canceledItems: [] as sellerOrderItem[],
     });
 
     const resetStates = () => {
@@ -17,6 +20,9 @@ export const useBuyerCart = () => {
             data: undefined,
             initiallyLoading: undefined,
             resetKey: `${Date.now()}`,
+            inProgressItems: [],
+            completedItems: [],
+            canceledItems: [],
         });
     };
     const get = (getAsNew?: boolean) => {
@@ -48,12 +54,35 @@ export const useBuyerCart = () => {
                     ...orders,
                 ];
             }
+
+            const inProgressItems: sellerOrderItem[] = [];
+            const completedItems: sellerOrderItem[] = [];
+            const canceledItems: sellerOrderItem[] = [];
+
+            newStates.data.map((orderItem) => {
+                if(orderItem.status === 'completed'){
+                    completedItems.push(orderItem);
+                }
+                else if(orderItem.status === 'canceled'){
+                    canceledItems.push(orderItem);
+                }
+                else {
+                    inProgressItems.push(orderItem);
+                }
+            });
+
+            newStates.inProgressItems = inProgressItems;
+            newStates.completedItems = completedItems;
+            newStates.canceledItems = canceledItems;
         }
         setStates({...newStates});
     }, [getResp?.loading]);
     
     return {
         data: states.data,
+        inProgressItems: states.inProgressItems,
+        completedItems: states.completedItems,
+        canceledItems: states.canceledItems,
         initiallyLoading: states.initiallyLoading,
         loading: getResp.loading,
         resetStates,
