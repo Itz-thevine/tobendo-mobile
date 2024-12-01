@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image } from 'react-native';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
 import StockStatus from '@/components/stock-status';
 import { combineStyles } from '@/lib';
 import { GlobalStyles } from '@/styles';
