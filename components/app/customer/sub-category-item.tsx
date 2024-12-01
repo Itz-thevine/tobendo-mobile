@@ -4,6 +4,8 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import { combineStyles } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import { useGetSubCategoriesApi } from '@/hooks/api/vehicle/getSubCategories';
+import { useLocalBuyer } from '../../../context/local-buyer/useLocalBuyer';
+import { router } from 'expo-router';
 
 interface SubCategoryItemProps {
     image?: ImageSourcePropType
@@ -15,6 +17,7 @@ interface SubCategoryItemProps {
 }
 
 const SubCategoryItem: React.FC<SubCategoryItemProps> = (props: SubCategoryItemProps) => {
+  const exploreHook = useLocalBuyer()?.explore;
   const [heightAnim] = useState(new Animated.Value(0));
   const getSubCateogriesApi = useGetSubCategoriesApi();
   const getResp = getSubCateogriesApi.response;
@@ -50,7 +53,17 @@ const SubCategoryItem: React.FC<SubCategoryItemProps> = (props: SubCategoryItemP
       </TouchableOpacity>
       <Animated.View style={{ overflow: 'hidden', height: heightAnim }}>
         {subCategories?.map((subCategory, i) => (
-          <Text style={styles.subCategoryText} key={`${i}_${subCategory.assemblyGroupNodeId}`}>{subCategory.assemblyGroupName}</Text>
+          <TouchableOpacity
+            key={`${i}_${subCategory.assemblyGroupNodeId}`}
+            onPress={() => {
+              exploreHook?.updateFilters({
+                searchQuery: subCategory.assemblyGroupName,
+              });
+              router.push('/(customer)/explore');
+            }}
+          >
+            <Text style={styles.subCategoryText}>{subCategory.assemblyGroupName}</Text>
+          </TouchableOpacity>
         ))}
       </Animated.View>
     </View>

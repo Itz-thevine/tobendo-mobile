@@ -152,6 +152,7 @@ const ExploreScreen: React.FC = () => {
         <View style={combineStyles(GlobalStyles, 'background_dark_blue', 'margin_b_sm')}>
           <SearchBar
             autoFocus
+            defaultSearchQuery={hook?.filters.searchQuery}
             onChangeText={(searchQuery) => {
               hook?.updateFilters({
                 searchQuery,

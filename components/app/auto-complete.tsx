@@ -20,7 +20,10 @@ type AutocompleteProps = {
 
 const Autocomplete: React.FC<AutocompleteProps> = ({ searchQuery, searchResults, searchOptionUp, onSearchChange, onSearchSelect, handleOutsideClick, isFetching, setSearchOptionUp }) => {
     const SearchSuggestions = ({ item }: { item: string }) => (
-        <TouchableOpacity onPress={() => onSearchSelect(item)}>
+        <TouchableOpacity onPress={() => {
+            onSearchSelect(item);
+            onSearchChange(item)
+        }}>
             <Text>{item}</Text>
         </TouchableOpacity>
     );

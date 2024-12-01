@@ -1,8 +1,7 @@
-import { getCustomerProductsTriggerProps, useGetCustomerProductsApi } from "@/hooks/api/user/getCustomerProducts";
-import { vehicleEngine } from "@/hooks/api/vehicle/getEngines";
-import { vehicleMake } from "@/hooks/api/vehicle/getMakes";
-import { vehicleModel } from "@/hooks/api/vehicle/getModels";
+import { getCustomerProductsTriggerProps } from "@/hooks/api/user/getCustomerProducts";
 import { useEffect, useState } from "react";
+import { useGetProductSuggestionsApi } from "./api/user/getProductSuggestions";
+import { useScroll } from "./useScroll";
 
 export type paginationProps = {
     page?: number;
@@ -12,20 +11,12 @@ export type paginationProps = {
     next_page?: number;
     prev_page?: number;
 }
-export type productSortOrder = 'asc' | 'desc';
 type productFilters = {
-    brand?: string;
-    minPrice?: number;
-    maxPrice?: number;
     searchQuery?: string;
-    sortOrder?: productSortOrder;
-    make?: vehicleMake;
-    model?: vehicleModel;
-    engine?: vehicleEngine;
-    vehicle?: string;
 }
-export const useBuyerExplore = () => {
-    const getApi = useGetCustomerProductsApi();
+export const useGetProductSuggestions = () => {
+    const scrollHook = useScroll();
+    const getApi = useGetProductSuggestionsApi();
     const getResp = getApi.response;
     const [filters, setFilters] = useState<productFilters>({});
     const [states, setStates] = useState({
@@ -47,43 +38,7 @@ export const useBuyerExplore = () => {
             resetKey: `${Date.now()}`,
         });
     };
-    const filterResult = (items?: typeof states.result) => {
-        return items?.filter((item) => {
-            return (
-              (
-                !filters.searchQuery
-                || (
-                  filters.searchQuery
-                  && (
-                    item.assemblyGroupName?.toLocaleLowerCase().includes(filters.searchQuery.toLowerCase())
-                    || item.itemDescription?.toLocaleLowerCase().includes(filters.searchQuery.toLowerCase())
-                    || item.genericArticleDescription?.toLocaleLowerCase().includes(filters.searchQuery.toLowerCase())
-                    || item.mfrName?.toLocaleLowerCase().includes(filters.searchQuery.toLowerCase())
-                  )
-                )
-              )
-              && (
-                filters.minPrice === undefined
-                || (
-                  filters.minPrice !== undefined && (item.price ?? 0) >= filters.minPrice
-                )
-              )
-              && (
-                filters.maxPrice === undefined
-                || (
-                  filters.maxPrice !== undefined && (item.price ?? 0) <= filters.maxPrice
-                )
-              )
-            )
-          }).sort((a, b) => {
-              return (
-                  (filters?.sortOrder === 'asc') ? (a.price ?? 0) - (b.price ?? 0) :
-                  (filters?.sortOrder === 'desc') ? (b.price ?? 0) - (a.price ?? 0) :
-                  0
-              )
-          });
-    }
-    const getProducts = (getProps?: getCustomerProductsTriggerProps) => {
+    const getItems = (getProps?: getCustomerProductsTriggerProps) => {
         if(
             states.pagination?.next_page === undefined
             || (
@@ -94,7 +49,11 @@ export const useBuyerExplore = () => {
             getApi.trigger({
                 page: states.pagination?.next_page,
                 page_size: 10,
-                ...(filters.searchQuery ? {search_term: filters.searchQuery} : {}),
+                per_page: 10,
+                lang: 'en',
+                include_all: false,
+                search_type: '99',
+                ...(filters.searchQuery ? {search_query: filters.searchQuery} : {}),
                 ...getProps,
             });
         }
@@ -137,17 +96,21 @@ export const useBuyerExplore = () => {
     useEffect(() => {
         const debouncedCall = setTimeout(() => {
             resetStates();
-            getProducts({
+            getItems({
                 page: 1,
             });
         }, 200);
 
         return () => clearTimeout(debouncedCall);
     }, [filters]);
+    useEffect(() => {
+      if(scrollHook.hasReachedEnd !== false){
+        getItems();
+      }
+    }, [scrollHook.key]);
     
     return {
-        data: filterResult(states.result),
-        // data: states.result,
+        data: states.result,
         initiallyLoading: states.initiallyLoading,
         loading: getResp.loading,
         pagination: states.pagination,
@@ -159,6 +122,7 @@ export const useBuyerExplore = () => {
             });
         },
         resetStates,
-        getProducts,
+        get: getItems,
+        ...scrollHook,
     };
 }

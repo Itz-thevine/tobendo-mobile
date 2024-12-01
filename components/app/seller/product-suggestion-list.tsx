@@ -6,34 +6,33 @@ import Autocomplete from '../auto-complete';
 import ProductSuggestionItem from './product-suggestion-list-item';
 import { useAutoCompleteSuggestions } from '@/hooks/app/useAutoCompleteSuggestions';
 import { useDebounce } from 'use-debounce';
-import { useProducts } from '@/hooks/app/useProducts';
-import { partDetailsArticleItem } from '@/hooks/api/vehicle/getPartSuggestionDetails';
+import { useGetPartSuggestions } from '../../../hooks/useGetPartSuggestions';
 
 const { width } = Dimensions.get('window');
 
 
 
 const ProductSuggestion: React.FC<{setIsVisible: (value: boolean) => void}> = ({setIsVisible}) => {
+    const hook = useGetPartSuggestions();
+    const isLoading = hook.loading;
+    const articles = hook.data;
+
     const [searchOptionUp, setSearchOptionUp] = useState<boolean>(false);
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [selectedProduct, setSelectedProduct] = useState<string>('');
-    const [debouncedSearchValue] = useDebounce(searchQuery, 1000);
 
+    const [debouncedSearchValue] = useDebounce(searchQuery, 1000);
     const { data: searchResults = {}, isFetching } = useAutoCompleteSuggestions(debouncedSearchValue);
 
-    const { data: productsData = {}, isLoading, isError } = useProducts({
-        search_query: searchQuery.length > 0 ? selectedProduct : '',
-        page: 1,
-        per_page: 10,
-        lang: 'en',
-        include_all: false,
-        search_type: '99',
-    });
-    const articles = productsData?.articles as partDetailsArticleItem[] | undefined;
-    
     const handleSearchChange = (query: string) => {
+        if(!searchQuery){
+            hook.get({
+                search_query: '',
+                page: 1,
+            });
+        };
         setSearchQuery(query);
-        setSearchOptionUp(true)
+        if(!searchOptionUp) setSearchOptionUp(true)
       };
 
     const handleOutsideClick = () => {
@@ -42,11 +41,14 @@ const ProductSuggestion: React.FC<{setIsVisible: (value: boolean) => void}> = ({
     };
 
     const handleSearchSelect = (selectedItem: string) => {
-        setSearchOptionUp(false)
+        hook.updateFilters({
+            searchQuery: selectedItem,
+        });
+        if(searchOptionUp) setSearchOptionUp(false)
         setSearchQuery(selectedItem);
         setSelectedProduct(selectedItem)
     };
-
+    
     return (
         <SafeAreaView>
             <View>
@@ -72,15 +74,8 @@ const ProductSuggestion: React.FC<{setIsVisible: (value: boolean) => void}> = ({
                         margin:0
                     }}
                     showsVerticalScrollIndicator={false}
+                    onScroll={hook.handleScroll}
                 >
-
-                    {
-                        isLoading && (
-                            <View style={{flex: 1}}>
-                                <ActivityIndicator size="small" color="#000" />
-                            </View>
-                        )
-                    }
                     {articles?.length === 0 ? (
                         <View>
                             <Text>No products found</Text>
@@ -101,6 +96,13 @@ const ProductSuggestion: React.FC<{setIsVisible: (value: boolean) => void}> = ({
                             }
                         </View>
                     )}
+                    {
+                        isLoading && (
+                            <View style={{flex: 1, margin: 60, marginLeft: 0, marginRight: 0}}>
+                                <ActivityIndicator size="small" color="#000" />
+                            </View>
+                        )
+                    }
                 </ScrollView>
             </View>
         </SafeAreaView>

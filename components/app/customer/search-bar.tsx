@@ -6,6 +6,7 @@ import { GlobalStyles } from '@/styles';
 
 type SearchBarProps = {
   autoFocus?: boolean;
+  defaultSearchQuery?: string;
   onChangeText?: (searchQuery?: string) => void;
 }
 const SearchBar = (props: SearchBarProps) => {
@@ -16,6 +17,7 @@ const SearchBar = (props: SearchBarProps) => {
         style={combineStyles(GlobalStyles, 'color_gray', 'safeArea')}
         placeholderTextColor={'gray'}
         autoFocus={props.autoFocus}
+        defaultValue={props.defaultSearchQuery}
         onChangeText={props.onChangeText}
       />
       <Ionicons name="search" size={20} color="gray" style={styles.searchIcon} />
