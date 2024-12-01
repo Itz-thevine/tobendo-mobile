@@ -4,7 +4,7 @@ import { useCallApiProps } from "../useCallApi";
 import { userProductItem } from "./getUserProducts";
 
 export type createUserProductTriggerProps = {
-    articleNumber: number,
+    articleNumber?: number,
     dataSupplierId: number,
     mfrName: string,
     genericArticleDescription: string,

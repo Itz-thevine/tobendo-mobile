@@ -199,7 +199,8 @@ const styles = StyleSheet.create({
     width: screenWidth,
     backgroundColor: "#1A1D2D",
     zIndex: 1000,
-    height: height,
+    height: height * 1.05,
+    flex: 1,
   },
   container: {
     flex: 1,

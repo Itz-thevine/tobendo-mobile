@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import {
   View,
   Text,
@@ -17,8 +19,9 @@ import { useAutoCompleteSuggestions } from "@/hooks/app/useAutoCompleteSuggestio
 import { useDebounce } from "use-debounce";
 import { useProducts } from "@/hooks/app/useProducts";
 import { partDetailsArticleItem } from "@/hooks/api/vehicle/getPartSuggestionDetails";
+import { useRouter } from "expo-router";
 
-const { width } = Dimensions.get("window");
+const { width, height } = Dimensions.get("window");
 
 const ProductSuggestion: React.FC<{
   setIsVisible: (value: boolean) => void;
@@ -29,7 +32,7 @@ const ProductSuggestion: React.FC<{
   const [debouncedSearchValue] = useDebounce(searchQuery, 1000);
   const [page, setPage] = useState<number>(1);
   const [products, setProducts] = useState<any[]>([]);
-
+  const router = useRouter();
   const { data: searchResults = {}, isFetching } =
     useAutoCompleteSuggestions(debouncedSearchValue);
 
@@ -73,6 +76,9 @@ const ProductSuggestion: React.FC<{
     setProducts([]);
   };
 
+  const handleFabPress = () => {
+    router.push("/(seller)/add-new-inventory/new");
+  };
   const handleLoadMore = () => {
     if (!isLoading && productsData?.articles?.length > 0) {
       setPage((prevPage) => prevPage + 1);
@@ -80,7 +86,11 @@ const ProductSuggestion: React.FC<{
   };
 
   return (
-    <SafeAreaView>
+    <SafeAreaView
+      style={{
+        position: "relative",
+      }}
+    >
       <View>
         <View
           style={[
@@ -118,7 +128,7 @@ const ProductSuggestion: React.FC<{
           showsVerticalScrollIndicator={false}
         >
           {isLoading && page === 1 && (
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1, height: height - 40 }}>
               <ActivityIndicator size="small" color="#000" />
             </View>
           )}
@@ -154,8 +164,36 @@ const ProductSuggestion: React.FC<{
           )}
         </ScrollView>
       </View>
+      <FAB onPress={handleFabPress} />
     </SafeAreaView>
   );
 };
 
 export default ProductSuggestion;
+
+const FAB: React.FC<{ onPress: () => void }> = ({ onPress }) => (
+  <TouchableOpacity
+    style={[
+      combineStyles(GlobalStyles, "background_royal_blue"),
+      {
+        position: "absolute",
+        bottom: 20,
+        right: 20,
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+
+        justifyContent: "center",
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.8,
+        shadowRadius: 2,
+        elevation: 5,
+      },
+    ]}
+    onPress={onPress}
+  >
+    <Ionicons name="add" size={24} color="white" />
+  </TouchableOpacity>
+);
