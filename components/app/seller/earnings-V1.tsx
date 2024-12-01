@@ -1,6 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, SafeAreaView } from 'react-native';
-import { BarChart } from 'react-native-chart-kit';
+import { View, ScrollView, Dimensions, SafeAreaView } from 'react-native';
 import { combineStyles } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import Balance from './earnings-balance';
@@ -30,7 +29,7 @@ const Earnings: React.FC = () => {
     <SafeAreaView style={combineStyles(GlobalStyles, 'background_softer_blue')}>
       <ScrollView style={combineStyles(GlobalStyles, 'padding_sm')}>
         <Balance />
-        <BarChart
+        {/* <BarChart
           data={data}
           width={screenWidth}
           height={220}
@@ -38,7 +37,7 @@ const Earnings: React.FC = () => {
           verticalLabelRotation={0}
           yAxisLabel="$"
           yAxisSuffix=""
-        />
+        /> */}
         <History />
         <View style={{width: '100%', height: 200}}></View>
       </ScrollView>

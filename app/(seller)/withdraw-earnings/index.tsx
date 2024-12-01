@@ -1,11 +1,10 @@
 import AppHeader from '@/components/shared/app-header';
 import CustomModal from '@/components/shared/custom-modal';
-import { combineStyles, height } from '@/lib';
+import { combineStyles } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, SafeAreaView, Image, ScrollView, TextInput } from 'react-native';
-import Icon from 'react-native-vector-icons/Entypo';
+import { View, Text, TouchableOpacity, Dimensions, SafeAreaView, Image, ScrollView, TextInput } from 'react-native';
 import IoIcon from 'react-native-vector-icons/Ionicons';
 
 
@@ -19,7 +18,7 @@ const WithdrawScreen: React.FC = () => {
       <CustomModal
         isVisible={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        height={height}
+        // height={height}
         contentBackground={'transparent'}
         hasCloseBtn={false}
       >
