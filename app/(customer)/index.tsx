@@ -6,7 +6,6 @@ import CustomerAppHeader from '@/components/shared/customers-app-header';
 import VehicleSelector from '@/components/app/customer/vehicle-selector';
 import DropdownItem from '@/components/app/customer/drop-down-item';
 import PromoItem from '@/components/app/customer/promo-item';
-import ManufacturerItem from '@/components/app/customer/manufacturer-item';
 import { MarqueeImages } from '@/static';
 import Marquee from '@/components/shared/marquee';
 import CustomModal from '@/components/shared/custom-modal';
@@ -302,7 +301,7 @@ const CustomerScreen: React.FC = () => {
 
         <SubCategoryItems />
 
-        <View style={combineStyles(GlobalStyles, 'items_center', 'margin_t_sm')}> 
+        {/* <View style={combineStyles(GlobalStyles, 'items_center', 'margin_t_sm')}> 
           <TouchableOpacity style={combineStyles(GlobalStyles, 'background_soft_blue', 'items_center', 'rounded_full', 'padding_x_sm', 'padding_t_xs', 'padding_b_xs' )}> 
               <Text style={combineStyles(GlobalStyles, 'text_lg', 'color_gray')}>More</Text>
           </TouchableOpacity>
@@ -342,7 +341,7 @@ const CustomerScreen: React.FC = () => {
               {search}
             </Text>
           ))}
-        </View>
+        </View> */}
 
       </ScrollView>
     </SafeAreaView>

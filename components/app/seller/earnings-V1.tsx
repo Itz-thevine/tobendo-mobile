@@ -1,14 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Dimensions,
-  SafeAreaView,
-} from "react-native";
-import { BarChart } from "react-native-chart-kit";
+import { View, ScrollView, Dimensions, SafeAreaView } from "react-native";
 import { combineStyles } from "@/lib";
 import { GlobalStyles } from "@/styles";
 import Balance from "./earnings-balance";

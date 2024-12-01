@@ -6,7 +6,6 @@ import MaIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { combineStyles, height } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import { router } from 'expo-router';
-import AccordionMenuItem from './accordion-menu-item';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalUser } from '@/context/local-user/useLocalUser';
 import { useLocalBuyer } from '../../context/local-buyer/useLocalBuyer';
@@ -98,7 +97,7 @@ const Sidebar: React.FC<{ isVisible: boolean, onClose: () => void }> = ({ isVisi
             </TouchableOpacity>            
         </View>
 
-        <View style={[combineStyles(GlobalStyles, 'padding_t_sm', 'padding_b_sm', 'margin_b_sm'), { backgroundColor: 'rgba(255, 255, 255, 0.1)' }]}>
+        {/* <View style={[combineStyles(GlobalStyles, 'padding_t_sm', 'padding_b_sm', 'margin_b_sm'), { backgroundColor: 'rgba(255, 255, 255, 0.1)' }]}>
                 <AccordionMenuItem title="Cars" icon="car">
                     <Text style={styles.subMenuText}>Sedans</Text>
                     <Text style={styles.subMenuText}>SUVs</Text>
@@ -125,7 +124,7 @@ const Sidebar: React.FC<{ isVisible: boolean, onClose: () => void }> = ({ isVisi
                     <Text style={styles.subMenuText}>Hand Tools</Text>
                     <Text style={styles.subMenuText}>Power Tools</Text>
                 </AccordionMenuItem>
-        </View>
+        </View> */}
 
         <MenuContainer>
           <MenuItem title="Switch to Seller" onPress={() => {

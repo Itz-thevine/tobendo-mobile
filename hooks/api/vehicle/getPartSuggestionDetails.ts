@@ -2,7 +2,7 @@ import { __apiUrls } from "../urls";
 import { useApi } from "../useApi";
 import { useCallApiProps } from "../useCallApi";
 
-type triggerProps = {
+export type getPartSuggestionDetailsTriggerProps = {
     legacy_article_ids?: number;
     assembly_group_node_id?: number;
     generic_article_id?: number;
@@ -48,7 +48,7 @@ export const useGetPartSuggestionDetailsApi = (props?: useCallApiProps) => {
             ...api.response,
             data: api.response?.data as dataProps | undefined,
         },
-        trigger: (triggerProps?: triggerProps) => {
+        trigger: (triggerProps?: getPartSuggestionDetailsTriggerProps) => {
             api.call({
                 formObject: triggerProps,
                 url: __apiUrls.getPartSuggestionDetails,
