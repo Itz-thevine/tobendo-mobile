@@ -63,6 +63,7 @@ const ProductCard: React.FC<productCard> = ({ item }) => {
 
                 <Text style={[combineStyles(GlobalStyles, 'text_2xl', 'font_medium', 'line_lg', 'margin_t_xs'), {width: width*0.5}]}>{item.itemDescription || item.genericArticleDescription}</Text>
                 <Text style={combineStyles(GlobalStyles, 'text_lg', 'font_medium', 'line_lg', 'margin_t_xs', 'color_gray')}>{item.assemblyGroupName}</Text>
+                <Text style={combineStyles(GlobalStyles, 'text_lg', 'font_medium', 'line_lg', 'margin_t_xs', 'color_gray')}>{item.store_name}</Text>
             </View>
         </View>
         <View style={[combineStyles(GlobalStyles, 'background_soft_blue', 'margin_t_sm'), {width: '100%', height: 1}]}></View>

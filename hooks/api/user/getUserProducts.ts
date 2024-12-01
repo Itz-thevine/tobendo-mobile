@@ -23,6 +23,7 @@ export type userProductItem = {
     count?: number;
     price?: number;
     gtins?: string[];
+    store_name?: string;
     tradeNumbers?: string[];
     oemNumbers?: {
     articleNumber?: string;
