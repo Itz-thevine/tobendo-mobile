@@ -10,6 +10,7 @@ export type vehicleEngine = {
     mfrId: number;
     mfrName: string;
     description: string;
+    linkageTargetId?: number;
 };
 type dataProps = {
     total?: number;
