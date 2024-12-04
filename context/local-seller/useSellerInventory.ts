@@ -1,5 +1,5 @@
 import { getCustomerProductsTriggerProps } from "@/hooks/api/user/getCustomerProducts";
-import { useGetUserProductsApi } from "@/hooks/api/user/getUserProducts";
+import { useGetUserProductsApi, userProductItem } from "@/hooks/api/user/getUserProducts";
 import { useEffect, useState } from "react";
 
 type paginationProps = {
@@ -47,6 +47,15 @@ export const useSellerInventory = () => {
             });
         }
     };
+    const addProduct = (newProduct: userProductItem) => {
+        setStates({
+            ...states,
+            result: [
+                newProduct,
+                ...states.result || [],
+            ],
+        });
+    };
 
     useEffect(() => {
         const newStates = {...states};
@@ -90,5 +99,6 @@ export const useSellerInventory = () => {
         pagination: states.pagination,
         resetStates,
         getProducts,
+        addProduct,
     };
 }

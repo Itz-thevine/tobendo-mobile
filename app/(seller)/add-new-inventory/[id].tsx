@@ -207,9 +207,13 @@ const ProductListing = () => {
   useEffect(() => {
     if(createResp.loading === false){
       if(createResp.success){
+        const newProduct = createResp.data;
+        if(newProduct){
+          sellerHook?.inventory.addProduct(newProduct);
+        }
         setIsAddInventoryModal(true);
-        sellerHook?.inventory.resetStates();
-        sellerHook?.inventory.getProducts();
+        // sellerHook?.inventory.resetStates();
+        // sellerHook?.inventory.getProducts();
       }
       else {
         setModal({
