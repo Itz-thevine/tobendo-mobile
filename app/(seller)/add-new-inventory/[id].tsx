@@ -95,13 +95,12 @@ const ProductListing = () => {
       console.error("No product data available");
       return;
     }
-  console.log('2');
+    
     let mainImageBase64: string | undefined;
     if (mainImage?.uri) {
       mainImageBase64 = (await handleConvertImage(mainImage.uri));
     }
   
-    console.log('3');
     let additionalImagesBase64: string[] = [];
     if (additionalImages.length > 0) {
       for(let i = 0; i < additionalImages.length; i++){
@@ -115,7 +114,6 @@ const ProductListing = () => {
       }
     }
 
-    console.log('4')
     if(convertingImage) setConvertingImage(false);
     createApi.trigger({
       store_name: localUser?.company?.company_name ?? '',
