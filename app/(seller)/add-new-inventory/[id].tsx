@@ -17,6 +17,8 @@ import ResponseModal, { responseModal } from '@/components/ResponseModal';
 import { partDetailsArticleItem, useGetPartSuggestionDetailsApi } from '@/hooks/api/vehicle/getPartSuggestionDetails';
 import { returnNumberFromAny } from '@/hooks/useDigit';
 import { convertImageToBase64 } from '@/hooks/useFile';
+import { useLocalUser } from '../../../context/local-user/useLocalUser';
+import { useLocalSeller } from '../../../context/local-seller/useLocalSeller';
 
 
 const { width } = Dimensions.get('window');
@@ -26,11 +28,14 @@ interface ImageDetails {
   width: number;
   height: number;
   type: string | undefined;
+  // isLocalFile?: boolean;
 }
 
 
 const ProductListing = () => {
   const { id } = useLocalSearchParams();
+  const localUser = useLocalUser();
+  const sellerHook = useLocalSeller();
 
   const createApi = useCreateUserProductsApi();
   const createResp = createApi.response;
@@ -69,6 +74,7 @@ const ProductListing = () => {
         width: pickedImage.width,
         height: pickedImage.height,
         type: pickedImage.type,
+        // isLocalFile: true,
       });
     }
   };
@@ -78,28 +84,35 @@ const ProductListing = () => {
   };
   
   const handleSubmit = async () => {
+    console.log('1')
     if (!productArticle) {
       console.error("No product data available");
       return;
     }
-  
+  console.log('2');
     let mainImageBase64: string | undefined;
-    if (mainImage) {
+    if (mainImage?.uri) {
+      console.log(mainImage)
       mainImageBase64 = (await convertImageToBase64(mainImage.uri)).base64String;
     }
   
+    console.log('3');
     let additionalImagesBase64: string[] = [];
     if (additionalImages.length > 0) {
       for(let i = 0; i < additionalImages.length; i++){
         const image = additionalImages[i];
-        const base64 = (await convertImageToBase64(image.uri)).base64String;
-        if(base64){
-          additionalImagesBase64.push(base64);
+        if(image.uri){
+          const base64 = (await convertImageToBase64(image.uri)).base64String;
+          if(base64){
+            additionalImagesBase64.push(base64);
+          }
         }
       }
     }
 
+    console.log('4')
     createApi.trigger({
+      store_name: localUser?.company?.company_name ?? '',
       articleNumber: returnNumberFromAny(productArticle.articleNumber),
       dataSupplierId: 0,
       mfrName: productArticle?.mfrName ?? '',
@@ -195,6 +208,8 @@ const ProductListing = () => {
     if(createResp.loading === false){
       if(createResp.success){
         setIsAddInventoryModal(true);
+        sellerHook?.inventory.resetStates();
+        sellerHook?.inventory.getProducts();
       }
       else {
         setModal({
