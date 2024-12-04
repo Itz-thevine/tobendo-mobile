@@ -39,7 +39,6 @@ const ProductListing = () => {
 
   const createApi = useCreateUserProductsApi();
   const createResp = createApi.response;
-  const loading = createResp.loading;
 
   const getPartDetailsApi = useGetPartSuggestionDetailsApi();
   const getPartDetailsResp = getPartDetailsApi.response;
@@ -54,10 +53,13 @@ const ProductListing = () => {
   const [price, setPrice] = useState('');
   const [mainImage, setMainImage] = useState<ImageDetails | null>(null);
   const [additionalImages, setAdditionalImages] = useState<ImageDetails[]>([]);
+  const [convertingImage, setConvertingImage] = useState(false);
   const [agreeToTAC, setAgreeToTAC] = useState(false)
   const [isAddInventoryModal, setIsAddInventoryModal] = useState(false)
   const [selectedCategories, setSelectedCategories] = useState<any[]>([]);
   const [selectedCompatibilities, setCompatibilities] = useState<any[]>([]);
+
+  const loading = convertingImage || createResp.loading;
 
   const pickImage = async (setImage: (image: ImageDetails) => void) => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -82,6 +84,10 @@ const ProductListing = () => {
   const addAdditionalImage = (image: ImageDetails) => {
     setAdditionalImages([...additionalImages, image]);
   };
+  const handleConvertImage = async (uri: string) => {
+    setConvertingImage(true);
+    return (await convertImageToBase64(uri)).base64String;
+  }
   
   const handleSubmit = async () => {
     console.log('1')
@@ -92,8 +98,7 @@ const ProductListing = () => {
   console.log('2');
     let mainImageBase64: string | undefined;
     if (mainImage?.uri) {
-      console.log(mainImage)
-      mainImageBase64 = (await convertImageToBase64(mainImage.uri)).base64String;
+      mainImageBase64 = (await handleConvertImage(mainImage.uri));
     }
   
     console.log('3');
@@ -102,7 +107,7 @@ const ProductListing = () => {
       for(let i = 0; i < additionalImages.length; i++){
         const image = additionalImages[i];
         if(image.uri){
-          const base64 = (await convertImageToBase64(image.uri)).base64String;
+          const base64 = (await handleConvertImage(image.uri));
           if(base64){
             additionalImagesBase64.push(base64);
           }
@@ -111,6 +116,7 @@ const ProductListing = () => {
     }
 
     console.log('4')
+    if(convertingImage) setConvertingImage(false);
     createApi.trigger({
       store_name: localUser?.company?.company_name ?? '',
       articleNumber: returnNumberFromAny(productArticle.articleNumber),
