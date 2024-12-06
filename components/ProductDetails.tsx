@@ -163,50 +163,54 @@ const ProductDetails = (props: ProductDetailsProps) => {
         </ScrollView>
 
          {/* footer */}
-        <View style={combineStyles(GlobalStyles, 'absolute', 'background_white', 'bottom_0', 'right_0', 'left_0', 'padding_y_xs', 'padding_x_sm' )}>
-            <View style={[combineStyles(GlobalStyles, 'flex_row', 'margin_t_xs', 'jusify_between', 'safeArea', 'margin_r_xs', 'margin_l_xs', 'margin_b_xs')]}>
-                <View style={combineStyles(GlobalStyles, 'flex_row')}>
-                    <Text style={combineStyles(GlobalStyles, 'text_3xl', 'margin_t_xs', 'margin_b_xs')}>{'$'}</Text>
-                    <Text style={combineStyles(GlobalStyles, 'text_3xl', 'margin_t_xs', 'margin_b_xs', 'font_bold')}>{productItem?.price}</Text>
-                </View>
-                <View style={[combineStyles(GlobalStyles)]}>
-                    <Counter count={count} setCount={(newCount) => setCount(newCount || 1)}/>
-                </View>
-            </View>
-            <View style={combineStyles(GlobalStyles, 'flex_row', 'jusify_between')}>
-                <TouchableOpacity
-                  style={[combineStyles(GlobalStyles, 'border_royal_blue', 'border_sm', 'padding_t_xs', 'padding_b_xs', 'rounded_full', 'items_center', 'padding_x_xs', 'flex_row', 'items_center', 'jusify_center'), {
-                    width: '100%',
-                  }]}
-                  onPress={() => {
-                    addItemHook.add(`${productId}`, count);
-                  }}
-                >
-                    <Image
-                        source={require('@/assets/images/Group 28.png')}
-                        style={[{ height: 16 }]}
-                        resizeMode='contain'
-                    />
-                    {
-                      addItemHook.loading ?
-                      <ActivityIndicator /> :
-                      <Text style={combineStyles(GlobalStyles, 'text_lg', 'margin_l_xs', 'margin_r_xs')}>Add To Cart</Text>
-                    }
-                </TouchableOpacity>
-                {/* <TouchableOpacity style={[combineStyles(GlobalStyles, 'background_royal_blue', 'items_center', 'rounded_full', 'padding_y_xs'), {width: '58%'}]}
+         {
+          props.view !== "seller" ?
+          <View style={combineStyles(GlobalStyles, 'absolute', 'background_white', 'bottom_0', 'right_0', 'left_0', 'padding_y_xs', 'padding_x_sm' )}>
+              <View style={[combineStyles(GlobalStyles, 'flex_row', 'margin_t_xs', 'jusify_between', 'safeArea', 'margin_r_xs', 'margin_l_xs', 'margin_b_xs')]}>
+                  <View style={combineStyles(GlobalStyles, 'flex_row')}>
+                      <Text style={combineStyles(GlobalStyles, 'text_3xl', 'margin_t_xs', 'margin_b_xs')}>{'$'}</Text>
+                      <Text style={combineStyles(GlobalStyles, 'text_3xl', 'margin_t_xs', 'margin_b_xs', 'font_bold')}>{productItem?.price}</Text>
+                  </View>
+                  <View style={[combineStyles(GlobalStyles)]}>
+                      <Counter count={count} setCount={(newCount) => setCount(newCount || 1)}/>
+                  </View>
+              </View>
+              <View style={combineStyles(GlobalStyles, 'flex_row', 'jusify_between')}>
+                  <TouchableOpacity
+                    style={[combineStyles(GlobalStyles, 'border_royal_blue', 'border_sm', 'padding_t_xs', 'padding_b_xs', 'rounded_full', 'items_center', 'padding_x_xs', 'flex_row', 'items_center', 'jusify_center'), {
+                      width: '100%',
+                    }]}
                     onPress={() => {
-                      addItem();
+                      addItemHook.add(`${productId}`, count);
                     }}
                   >
-                    {
-                      addItemResp.loading ?
-                      <ActivityIndicator /> :
-                      <Text style={combineStyles(GlobalStyles, 'text_lg', 'color_white', 'font_medium')}>Apply</Text>
-                    }
-                </TouchableOpacity> */}
+                      <Image
+                          source={require('@/assets/images/Group 28.png')}
+                          style={[{ height: 16 }]}
+                          resizeMode='contain'
+                      />
+                      {
+                        addItemHook.loading ?
+                        <ActivityIndicator /> :
+                        <Text style={combineStyles(GlobalStyles, 'text_lg', 'margin_l_xs', 'margin_r_xs')}>Add To Cart</Text>
+                      }
+                  </TouchableOpacity>
+                  {/* <TouchableOpacity style={[combineStyles(GlobalStyles, 'background_royal_blue', 'items_center', 'rounded_full', 'padding_y_xs'), {width: '58%'}]}
+                      onPress={() => {
+                        addItem();
+                      }}
+                    >
+                      {
+                        addItemResp.loading ?
+                        <ActivityIndicator /> :
+                        <Text style={combineStyles(GlobalStyles, 'text_lg', 'color_white', 'font_medium')}>Apply</Text>
+                      }
+                  </TouchableOpacity> */}
 
-            </View>
-        </View>
+              </View>
+          </View> :
+          <></>
+        }
       
         <ResponseModal
           modal={modal}
