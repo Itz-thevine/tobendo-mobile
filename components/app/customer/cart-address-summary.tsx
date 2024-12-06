@@ -6,6 +6,9 @@ import {
   StyleSheet,
   SafeAreaView,
   ScrollView,
+  TextInput,
+  Button,
+  ActivityIndicator,
 } from "react-native";
 import { combineStyles } from "@/lib"; // Assuming this is a utility function for combining styles
 import { GlobalStyles } from "@/styles"; // Assuming this is your global styles file
@@ -13,7 +16,7 @@ import MCIIcon from "react-native-vector-icons/MaterialCommunityIcons"; // Make 
 import { addressProps } from "@/hooks/api/address/getAddresses";
 import CustomModal from "@/components/shared/custom-modal";
 import { useLocalUser } from "@/context/local-user/useLocalUser";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 export type deliveryOption = {
   label: string;
@@ -37,6 +40,7 @@ type addressOptions = {
 const CartAddressSummary = (props: CartAddressSummaryProps) => {
   const localUser = useLocalUser();
   const [openAddresses, setOpenAddresses] = useState(false);
+
   const [addressOptions, setAddressOptions] = useState<addressOptions>({
     one: {
       address_id: "one",
@@ -77,20 +81,34 @@ const CartAddressSummary = (props: CartAddressSummaryProps) => {
     });
     return res.json();
   };
+
+  const createAddress = async (address: addressProps) => {
+    const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/address/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localUser?.data?.access_token}`,
+      },
+      body: JSON.stringify(address),
+    });
+    return res.json();
+  };
+
   const {
     data: addressesData,
     isLoading,
     error,
+    refetch,
   } = useQuery({
     queryKey: ["addresses", getAddresses],
     queryFn: getAddresses,
   });
 
-  useEffect(() => {
-    if (addressesData) {
-      console.log("addressesData", addressesData);
-    }
-  }, [addressesData]);
+  const mutation = useMutation({
+    mutationFn: (newAddress: addressProps) => {
+      return createAddress(newAddress);
+    },
+  });
 
   return (
     <SafeAreaView style={combineStyles(GlobalStyles, "safeArea")}>
@@ -102,7 +120,7 @@ const CartAddressSummary = (props: CartAddressSummaryProps) => {
       >
         <View style={combineStyles(GlobalStyles, "padding_xs")}>
           <View style={combineStyles(GlobalStyles, "margin_t_sm")}>
-            {props.addressList?.length ? (
+            {/* {props.addressList?.length ? (
               <>
                 {props.addressList?.map((address, i) => (
                   <TouchableOpacity
@@ -123,7 +141,19 @@ const CartAddressSummary = (props: CartAddressSummaryProps) => {
               </>
             ) : (
               <Text style={{ textAlign: "center" }}>no address</Text>
-            )}
+            )} */}
+
+            <AddressForm
+              isLoading={mutation?.isPending}
+              onSubmit={(newAddress) => {
+                mutation.mutate(newAddress, {
+                  onSuccess: () => {
+                    setOpenAddresses(false);
+                    refetch();
+                  },
+                });
+              }}
+            />
           </View>
         </View>
       </CustomModal>
@@ -139,53 +169,61 @@ const CartAddressSummary = (props: CartAddressSummaryProps) => {
         <Text style={combineStyles(GlobalStyles, "text_2xl", "margin_b_sm")}>
           Address
         </Text>
-        <View>
-          {Object.entries(addressOptions).map(([addressId, address], i) => {
-            const addressNames = [
-              ...(address.city ? [address.city] : []),
-              ...(address.state ? [address.state] : []),
-              ...(address.country ? [address.country] : []),
-            ].join(", ");
-            const addressLines = [
-              ...(address.address_line_1 ? [address.address_line_1] : []),
-              ...(address.address_line_2 ? [address.address_line_2] : []),
-            ].join(", ");
+        {isLoading ? (
+          <ActivityIndicator />
+        ) : (
+          <View>
+            {addressesData?.map((address: addressProps, i: number) => {
+              const addressNames = [
+                ...(address.city ? [address.city] : []),
+                ...(address.state ? [address.state] : []),
+                ...(address.country ? [address.country] : []),
+              ].join(", ");
+              const addressLines = [
+                ...(address.address_line_1 ? [address.address_line_1] : []),
+                ...(address.address_line_2 ? [address.address_line_2] : []),
+              ].join(", ");
 
-            return (
-              <TouchableOpacity
-                key={`${i}_${addressId}`}
-                style={
-                  address.address_id === props.selectedAddress?.address_id
-                    ? styles.selectedOption
-                    : styles.option
-                }
-                onPress={() => {
-                  props.onSelectAddress(address);
-                }}
-              >
-                <View style={styles.optionContent}>
-                  <Text
-                    style={combineStyles(GlobalStyles, "font_bold", "text_lg")}
-                  >
-                    {addressNames}
-                  </Text>
-                  <Text
-                    style={combineStyles(
-                      GlobalStyles,
-                      "color_gray",
-                      "margin_t_xs"
-                    )}
-                  >
-                    {addressLines}
-                  </Text>
-                </View>
-                {address.address_id === props.selectedAddress?.address_id && (
-                  <MCIIcon name="check-circle" size={24} color="#007bff" />
-                )}
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+              return (
+                <TouchableOpacity
+                  key={`${i}_${address.address_id}`}
+                  style={
+                    address.address_id === props.selectedAddress?.address_id
+                      ? styles.selectedOption
+                      : styles.option
+                  }
+                  onPress={() => {
+                    props.onSelectAddress(address);
+                  }}
+                >
+                  <View style={styles.optionContent}>
+                    <Text
+                      style={combineStyles(
+                        GlobalStyles,
+                        "font_bold",
+                        "text_lg"
+                      )}
+                    >
+                      {addressNames}
+                    </Text>
+                    <Text
+                      style={combineStyles(
+                        GlobalStyles,
+                        "color_gray",
+                        "margin_t_xs"
+                      )}
+                    >
+                      {addressLines}
+                    </Text>
+                  </View>
+                  {address.address_id === props.selectedAddress?.address_id && (
+                    <MCIIcon name="check-circle" size={24} color="#007bff" />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
         <TouchableOpacity
           style={combineStyles(
             GlobalStyles,
@@ -344,6 +382,128 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 20,
   },
+  input: {
+    flex: 1,
+    paddingVertical: 12,
+    color: "#333333",
+    borderWidth: 0,
+    borderColor: "white",
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 8,
+    paddingRight: 12,
+    marginBottom: 16,
+    borderWidth: 0,
+    borderColor: "#E8E8E8",
+  },
 });
 
 export default CartAddressSummary;
+const AddressForm = ({
+  onSubmit,
+  isLoading,
+}: {
+  onSubmit: (address: addressProps) => void;
+  isLoading: boolean;
+}) => {
+  const [addressLine1, setAddressLine1] = useState("");
+  const [addressLine2, setAddressLine2] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [country, setCountry] = useState("");
+
+  const handleSubmit = () => {
+    const newAddress: addressProps = {
+      address_id: Math.random().toString(36).substring(7), // Generate a random id
+      address_line_1: addressLine1,
+      address_line_2: addressLine2,
+      city,
+      state,
+      country,
+    };
+    onSubmit(newAddress);
+  };
+
+  return (
+    <View>
+      <View style={[styles.inputContainer, { paddingLeft: 16 }]}>
+        <TextInput
+          style={styles.input}
+          placeholder="Address Line 1"
+          placeholderTextColor="#C4C4C4"
+          value={addressLine1}
+          onChangeText={setAddressLine1}
+        />
+      </View>
+      <View style={[styles.inputContainer, { paddingLeft: 16 }]}>
+        <TextInput
+          style={styles.input}
+          placeholder="Address Line 2"
+          placeholderTextColor="#C4C4C4"
+          value={addressLine2}
+          onChangeText={setAddressLine2}
+        />
+      </View>
+      <View style={[styles.inputContainer, { paddingLeft: 16 }]}>
+        <TextInput
+          style={styles.input}
+          placeholder="City"
+          placeholderTextColor="#C4C4C4"
+          value={city}
+          onChangeText={setCity}
+        />
+      </View>
+      <View style={[styles.inputContainer, { paddingLeft: 16 }]}>
+        <TextInput
+          style={styles.input}
+          placeholder="State"
+          placeholderTextColor="#C4C4C4"
+          value={state}
+          onChangeText={setState}
+        />
+      </View>
+      <View style={[styles.inputContainer, { paddingLeft: 16 }]}>
+        <TextInput
+          style={styles.input}
+          placeholder="Country"
+          placeholderTextColor="#C4C4C4"
+          value={country}
+          onChangeText={setCountry}
+        />
+      </View>
+
+      <TouchableOpacity
+        onPress={handleSubmit}
+        disabled={isLoading}
+        style={[
+          combineStyles(
+            GlobalStyles,
+            "background_royal_blue",
+            "items_center",
+            "rounded_full",
+            "padding_y_sm"
+          ),
+          { width: "100%" },
+        ]}
+      >
+        {isLoading ? (
+          <ActivityIndicator color="white" />
+        ) : (
+          <Text
+            style={combineStyles(
+              GlobalStyles,
+              "text_lg",
+              "color_white",
+              "font_medium"
+            )}
+          >
+            Add Address
+          </Text>
+        )}
+      </TouchableOpacity>
+    </View>
+  );
+};
