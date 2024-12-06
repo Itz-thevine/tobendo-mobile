@@ -90,7 +90,6 @@ const ProductListing = () => {
   }
   
   const handleSubmit = async () => {
-    console.log('1')
     if (!productArticle) {
       console.error("No product data available");
       return;
