@@ -7,11 +7,12 @@ import { GlobalStyles } from '@/styles';
 interface DropdownItemProps {
   label: string;
   onPress: (value: any) => void
+  style?: any;
 }
 
-const DropdownItem: React.FC<DropdownItemProps> = ({ label, onPress }) => {
+const DropdownItem: React.FC<DropdownItemProps> = ({ label, onPress,style }) => {
   return (
-    <TouchableOpacity onPress={onPress} style={combineStyles(GlobalStyles, 'flex_row', 'safeArea', 'jusify_between', 'padding_xs', 'padding_x_sm', 'border_sm', 'rounded_full', 'margin_b_xs', 'border_soft_blue')}>
+    <TouchableOpacity onPress={onPress} style={[combineStyles(GlobalStyles, 'flex_row', 'safeArea', 'jusify_between', 'padding_xs', 'padding_x_sm', 'border_sm', 'rounded_full', 'margin_b_xs', 'border_soft_blue'),style||{}]}>
       <Text style={styles.dropdownText}>{label}</Text>
       <MaterialIcon name="keyboard-arrow-down" size={24} color="#888" />
     </TouchableOpacity>
