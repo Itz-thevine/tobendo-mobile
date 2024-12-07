@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { sellerOrderItem, useGetSellerOrdersApi } from "../../hooks/api/user/getSellerOrders";
+import { useLocalUser } from "../local-user/useLocalUser";
 
 export const useSellerOrders = () => {
+    const userId = useLocalUser()?.user?.id;
     const getApi = useGetSellerOrdersApi();
     const getResp = getApi.response;
 
@@ -26,8 +28,12 @@ export const useSellerOrders = () => {
         });
     };
     const get = (getAsNew?: boolean) => {
-        if(asNew !== (getAsNew ?? true)) setAsNew(getAsNew ?? true);
-        getApi.trigger();
+        if(userId){
+            if(asNew !== (getAsNew ?? true)) setAsNew(getAsNew ?? true);
+            getApi.trigger({
+                user_id: userId,
+            });
+        }
     };
 
     useEffect(() => {

@@ -25,7 +25,7 @@ export const __apiUrls = {
     getCustomerProducts: `${__apiBaseUrl}/customer-product`,
     getProductSuggestions: `${__apiBaseUrl}/customer-product`,
     
-    getSellerOrders: `${__apiBaseUrl}/seller_orders`,
+    getSellerOrders: `${__apiBaseUrl}/seller_orders/`,
 
     getVehicleMakes: `${__apiBaseUrl}/techallience/brands`,
     getVehicleModels: (brandId: number | string) => `${__apiBaseUrl}/techallience/models/${brandId}`,

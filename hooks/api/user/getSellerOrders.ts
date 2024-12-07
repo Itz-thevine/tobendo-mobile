@@ -3,7 +3,7 @@ import { useApi } from "../useApi";
 import { useCallApiProps } from "../useCallApi";
 
 type triggerProps = {
-    
+    user_id: string;
 }
 export type sellerOrderItem = {
     order_id?: string;
@@ -25,7 +25,7 @@ export const useGetSellerOrdersApi = (props?: useCallApiProps) => {
             ...api.response,
             data: api.response?.data as dataProps | undefined,
         },
-        trigger: (triggerProps?: triggerProps) => {
+        trigger: (triggerProps: triggerProps) => {
             api.call({
                 formObject: triggerProps,
                 url: __apiUrls.getSellerOrders,

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Image, ScrollView } from 'react-native';
 import { combineStyles } from '@/lib';
 import { GlobalStyles } from '@/styles';
 import CustomerAppHeader from '@/components/shared/customers-app-header';
 import { useLocalBuyer } from '../../../context/local-buyer/useLocalBuyer';
 import { ActivityIndicator } from 'react-native-paper';
+import { fromIsoDate } from '../../../hooks/useDate';
 
 const OrderScreen: React.FC = () => {
   const orderHook = useLocalBuyer()?.orders;
@@ -38,7 +39,7 @@ const OrderScreen: React.FC = () => {
             style={activeTab === 'in-progress' ? styles.activeTab : styles.inactiveTab}
             onPress={() => setActiveTab('in-progress')}
           >
-            <Text style={activeTab === 'in-progress' ? styles.activeTabText : styles.inactiveTabText}>In-progress</Text>
+            <Text style={activeTab === 'in-progress' ? styles.activeTabText : styles.inactiveTabText}>In progress</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={activeTab === 'completed' ? styles.activeTab : styles.inactiveTab}
@@ -54,50 +55,58 @@ const OrderScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
 
-        <View style={combineStyles(GlobalStyles, 'background_white', 'padding_sm', 'gap_md', 'rounded_xs', 'margin_t_sm')}>
-          {
-            orderItems.length ?
-            orderItems.map((item, i) => {
-              return (
-                <View key={`${i}_${item.order_id}`} style={combineStyles(GlobalStyles, 'background_white', )}>
-                  <View style={combineStyles(GlobalStyles, 'border_b_xs', 'border_gray', 'padding_b_sm')}>
-                    {item.items?.map((product) => (
-                      <View key={product.product_id} style={styles.product}>
-                        {/* <Image
-                          source={product.image}
-                          style={[GlobalStyles.rounded_xs, {width: 100, height: 100 }]}
-                          resizeMode='contain'
-                        /> */}
-                        <View>
-                          <Text style={combineStyles(GlobalStyles, 'font_bold')}>No name</Text>
-                          <Text style={combineStyles(GlobalStyles, 'color_gray', 'margin_t_xs')}>
-                            5 L - ref. 214178 - Engine oil
-                          </Text>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={combineStyles(GlobalStyles, 'background_white', 'padding_sm', 'gap_md', 'rounded_xs', 'margin_t_sm')}>
+            {
+              orderItems.length ?
+              orderItems.map((item, i) => {
+                return (
+                  <View key={`${i}_${item.order_id}}`} style={combineStyles(GlobalStyles, 'background_white', )}>
+                    <View style={combineStyles(GlobalStyles, 'border_b_xs', 'border_gray', 'padding_b_sm')}>
+                      {item.items?.map((product, j) => (
+                        <View key={`${i}_${j}_${product.product_id}`} style={styles.product}>
+                          <Image
+                            source={require('@/assets/images/no-image.jpg')}
+                            style={[GlobalStyles.rounded_xs, {width: 100, height: 100, marginRight: 10}]}
+                            resizeMode='contain'
+                          />
+                          <View>
+                            <Text style={combineStyles(GlobalStyles, 'font_bold')}>No name</Text>
+                            <Text style={combineStyles(GlobalStyles, 'color_gray', 'margin_t_xs')}>
+                              5 L - ref. 214178 - Engine oil
+                            </Text>
+                          </View>
                         </View>
-                      </View>
-                    ))}
-                  </View>
-                  
-                    <View style={combineStyles(GlobalStyles, 'margin_t_sm')}>
-                      <Text style={styles.statusText}>{item.shipping_address}</Text>
-                      <View style={combineStyles(GlobalStyles, 'margin_t_sm', 'flex_row', 'jusify_between')}>
-                        <View style={styles.statusBadge}>
-                          <Text style={styles.statusText}>{item.status}</Text>
-                        </View>
-                        <Text style={styles.arrivalDate}>Arrives: {item.placed_at}</Text>
-                      </View>
+                      ))}
                     </View>
-                </View>
-              )
-            }) :
-            <Text style={{textAlign: 'center'}}>no items</Text>
-          }
-          {
-            orderHook?.loading ?
-            <ActivityIndicator /> :
-            <></>
-          }
-        </View>
+                    
+                      <View style={combineStyles(GlobalStyles, 'margin_t_sm')}>
+                        <Text style={styles.statusText}>{item.shipping_address}</Text>
+                        <View style={combineStyles(GlobalStyles, 'margin_t_sm', 'flex_row', 'jusify_between')}>
+                          <View style={styles.statusBadge}>
+                            <Text style={styles.statusText}>
+                              {
+                                item.status === 'canceled' ? 'Canceled' :
+                                item.status === 'completed' ? 'Completed' :
+                                'In progress'
+                              }
+                            </Text>
+                          </View>
+                          <Text style={styles.arrivalDate}>Arrives: {fromIsoDate(item.placed_at).readableDate}</Text>
+                        </View>
+                      </View>
+                  </View>
+                )
+              }) :
+              <Text style={{textAlign: 'center'}}>no items</Text>
+            }
+            {
+              orderHook?.loading ?
+              <ActivityIndicator /> :
+              <></>
+            }
+          </View>
+        </ScrollView>
       </View>
     </SafeAreaView>
   );

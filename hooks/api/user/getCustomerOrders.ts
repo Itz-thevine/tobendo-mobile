@@ -24,7 +24,7 @@ export type orderItem = {
     };
     placed_at?: string;
     shipping_address?: string;
-    status?: string;
+    status?: 'completed' | 'canceled' | 'in_progress';
     total_price?: number;
     updated_at?: string;
     user_id?: number;
